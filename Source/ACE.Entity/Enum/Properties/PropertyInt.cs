@@ -649,6 +649,8 @@ namespace ACE.Entity.Enum.Properties
         RaisedMana = 9024,
         [ServerOnly]
         LastLevel = 9035,
+        [ServerOnly]
+        NumberOfPets = 9036,
     }
 
     public static class PropertyIntExtensions

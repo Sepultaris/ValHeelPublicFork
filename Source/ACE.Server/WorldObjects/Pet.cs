@@ -108,27 +108,32 @@ namespace ACE.Server.WorldObjects
         public bool HandleCurrentActivePet_Replace(Player player)
         {
             // original ace logic
-            if (player.CurrentActivePet == null)
+            if (player.NumberOfPets <= 3)
                 return true;
 
-            if (player.CurrentActivePet is CombatPet)
+           /* if (player.NumberOfPets >= 3)
             {
                 // possibly add the ability to stow combat pets with passive pet devices here?
                 player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
                 return false;
-            }
+            } */
 
             var stowPet = WeenieClassId == player.CurrentActivePet.WeenieClassId;
 
             // despawn passive pet
-            player.CurrentActivePet.Destroy();
+            if (player.NumberOfPets >= 3)
+            {
+                player.CurrentActivePet.Destroy();
+                player.NumberOfPets--;
+            }
+               
 
             return !stowPet;
         }
 
         public bool? HandleCurrentActivePet_Retail(Player player)
         {
-            if (player.CurrentActivePet == null)
+            if (player.NumberOfPets <= 3)
                 return true;
 
             if (IsPassivePet)
@@ -141,19 +146,15 @@ namespace ACE.Server.WorldObjects
             else
             {
                 // using a combat pet device
-                if (player.CurrentActivePet is CombatPet)
+                if (player.NumberOfPets >= 3)
                 {
                     player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
-                }
-                else
-                {
-                    // stow currently active passive pet
-                    // stowing the currently active passive pet w/ a combat pet device will unfortunately start the cooldown timer (and decrease the structure?) on the combat pet device, as per retail
-                    // spawning the combat pet will require another double click in ~45s, as per retail
                     player.CurrentActivePet.Destroy();
+                    player.NumberOfPets--;
 
-                    return null;
+                    return true;
                 }
+    
             }
             return false;
         }

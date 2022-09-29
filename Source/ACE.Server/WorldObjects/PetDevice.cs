@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Timers;
 
 using log4net;
 
@@ -67,7 +68,7 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            if (Structure == 0)
+            if (Structure == 0 )
             {
                 //player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, "You must refill the essence to use it again."));
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat("Your summoning device does not have enough charges to function!", ChatMessageType.Broadcast));
@@ -78,7 +79,9 @@ namespace ACE.Server.WorldObjects
 
             var result = SummonCreature(player, wcid);
 
-            if (result == null || result.Value)
+            
+
+                if (result == null || result.Value)
             {
                 // CombatPet devices should always have structure
                 if (Structure != null)
@@ -93,7 +96,7 @@ namespace ACE.Server.WorldObjects
             {
                 // this would be a good place to send a friendly reminder to install the latest summoning updates from ACE-World-Patch
             }
-        }
+        }    
 
         public override ActivationResult CheckUseRequirements(WorldObject activator)
         {
@@ -111,31 +114,20 @@ namespace ACE.Server.WorldObjects
                 return new ActivationResult(false);
             }
 
+            if (player.CurrentActivePet == null)
+                player.NumberOfPets = 0;
             // duplicating some of this verification logic here from Pet.Init()
             // since the PetDevice owner and the summoned Pet are separate objects w/ potentially different heartbeat offsets,
             // the cooldown can still expire before the CombatPet's lifespan
             // in this case, if the player tries to re-activate the PetDevice while the CombatPet is still in the world,
             // we want to return an error without re-activating the cooldown
+            if (player.NumberOfPets < 3)
+                return new ActivationResult(true);
 
-            if (player.CurrentActivePet != null && player.CurrentActivePet is CombatPet)
+            if (player.NumberOfPets >= 3)
             {
-                if (PropertyManager.GetBool("pet_stow_replace").Item)
-                {
-                    // original ace
-                    player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
-                    return new ActivationResult(false);
-                }
-                else
-                {
-                    // retail stow
-                    var pet = WorldObjectFactory.CreateNewWorldObject((uint)PetClass) as Pet;
-
-                    if (pet == null || !pet.IsPassivePet)
-                    {
-                        player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
-                        return new ActivationResult(false);
-                    }
-                }
+                player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
+                return new ActivationResult(false);
             }
             return new ActivationResult(true);
         }
@@ -158,6 +150,7 @@ namespace ACE.Server.WorldObjects
                 return false;
             }
             var success = pet.Init(player, this);
+            player.NumberOfPets++;
 
             return success;
         }

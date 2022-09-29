@@ -1343,6 +1343,12 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastPortalTeleportTimestamp); else SetProperty(PropertyFloat.LastPortalTeleportTimestamp, value.Value); }
         }
 
+
+        public int? NumberOfPets
+        {
+            get => GetProperty(PropertyInt.NumberOfPets);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.NumberOfPets); else SetProperty(PropertyInt.NumberOfPets, value.Value); }
+        }
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>
