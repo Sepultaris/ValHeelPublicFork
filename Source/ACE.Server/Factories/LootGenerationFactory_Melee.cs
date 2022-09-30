@@ -200,7 +200,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 18f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 20f);
             }
             else if (profile.Tier == 9 && empowered <= 0.5f && isMagical || profile.Tier == 9 && isMagical && profile.TreasureType == 3112)
             {
@@ -220,7 +220,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);                
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 20f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
             }
 
                 return true;

@@ -1044,7 +1044,7 @@ namespace ACE.Server.Factories
                 return false;
 
             // shields don't have gear ratings
-            if (wo.IsShield) return false;         
+           /* if (wo.IsShield) return false; */         
 
             var gearRating = GearRatingChance.Roll(wo, profile, roll);
 
@@ -1053,29 +1053,67 @@ namespace ACE.Server.Factories
 
             var rng = ThreadSafeRandom.Next(0, 1);
 
-            if (roll.HasArmorLevel(wo))
+            if (roll.HasArmorLevel(wo) && profile.Tier != 9)
+            {
+                // clothing w/ al, and crowns would be included in this group
+                if (rng == 0)
+                    wo.GearCritDamage = gearRating;                
+                else
+                    wo.GearCritDamageResist = gearRating;
+                
+            }
+            else if (roll.IsClothing || roll.IsCloak && profile.Tier != 9)
+            {
+                if (rng == 0)
+                    wo.GearDamage = gearRating;
+                else
+                    wo.GearDamageResist = gearRating;
+                
+            }
+            else if (roll.IsJewelry && profile.Tier != 9)
+            {
+                if (rng == 0)
+                    wo.GearHealingBoost = gearRating;
+                else
+                    wo.GearMaxHealth = gearRating;
+                             
+            }
+
+            else if (roll.HasArmorLevel(wo) && profile.Tier == 9)
             {
                 // clothing w/ al, and crowns would be included in this group
                 if (rng == 0)
                     wo.GearCritDamage = gearRating;
                 else
                     wo.GearCritDamageResist = gearRating;
+                wo.GearDamage = gearRating;
+                wo.GearDamageResist = gearRating;
+                wo.GearHealingBoost = gearRating;
+                wo.GearMaxHealth = gearRating;
             }
-            else if (roll.IsClothing || roll.IsCloak)
+            else if (roll.IsClothing || roll.IsCloak && profile.Tier == 9)
             {
                 if (rng == 0)
                     wo.GearDamage = gearRating;
                 else
                     wo.GearDamageResist = gearRating;
+                wo.GearCritDamageResist = gearRating;
+                wo.GearDamage = gearRating;
+                wo.GearHealingBoost = gearRating;
+                wo.GearMaxHealth = gearRating;
             }
-            else if (roll.IsJewelry)
+            else if (roll.IsJewelry && profile.Tier == 9)
             {
                 if (rng == 0)
                     wo.GearHealingBoost = gearRating;
                 else
                     wo.GearMaxHealth = gearRating;
-            }          
-                    
+                wo.GearCritDamageResist = gearRating;
+                wo.GearDamage = gearRating;
+                wo.GearDamageResist = gearRating;
+                wo.GearHealingBoost = gearRating;
+            }
+
             else
             {
                 log.Error($"TryMutateGearRating({wo.Name}, {profile.TreasureType}, {roll.ItemType}): unknown item type");
