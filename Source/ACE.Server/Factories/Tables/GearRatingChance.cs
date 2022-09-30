@@ -32,34 +32,7 @@ namespace ACE.Server.Factories.Tables
             ( 1, 0.70f ),
             ( 2, 0.25f ),
             ( 3, 0.05f ),
-        };
-
-        private static ChanceTable<int> T9_ArmorRating = new ChanceTable<int>()       
-        {
-            ( 8, 0.70f ),
-            ( 9, 0.25f ),
-            ( 10, 0.05f ),
-            ( 11, 0.05f ),
-            ( 12, 0.05f ),
-            ( 13, 0.05f ),
-            ( 14, 0.05f ),
-            ( 15, 0.05f ),           
-
-        };
-
-        private static ChanceTable<int> T9_ClothingJewelryRating = new ChanceTable<int>()
-        {
-
-            ( 8, 0.70f ),
-            ( 9, 0.25f ),
-            ( 10, 0.05f ),
-            ( 11, 0.05f ),
-            ( 12, 0.05f ),
-            ( 13, 0.05f ),
-            ( 14, 0.05f ),
-            ( 15, 0.05f ),
-
-        };
+        };       
         
         public static int Roll(WorldObject wo, TreasureDeath profile, TreasureRoll roll)
         {
@@ -70,15 +43,15 @@ namespace ACE.Server.Factories.Tables
             // roll for the actual rating
             ChanceTable<int> rating = null;
 
-            if (roll.HasArmorLevel(wo) && profile.Tier <= 8)
+            if (roll.HasArmorLevel(wo))
             {                
                 rating = ArmorRating;
             }
-            else if (roll.IsClothing && profile.Tier <= 8  || roll.IsJewelry && profile.Tier <= 8  || roll.IsCloak && profile.Tier <= 8)
+            else if (roll.IsClothing || roll.IsJewelry  || roll.IsCloak)
             {
                 rating = ClothingJewelryRating;
             }
-            // T9 roll
+           /* // T9 roll
             else if (roll.HasArmorLevel(wo) && profile.Tier == 9)
             {
                 rating = T9_ArmorRating;
@@ -86,7 +59,7 @@ namespace ACE.Server.Factories.Tables
             else if (roll.IsClothing && profile.Tier == 9 || roll.IsJewelry && profile.Tier == 9 || roll.IsCloak && profile.Tier == 9)
             {
                 rating = T9_ClothingJewelryRating;
-            }
+            } */
             else
             {
                 log.Error($"GearRatingChance.Roll({wo.Name}, {profile.TreasureType}, {roll.ItemType}): unknown item type");

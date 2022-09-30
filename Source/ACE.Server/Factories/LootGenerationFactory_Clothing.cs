@@ -189,6 +189,15 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 // increase damage
                 wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
+                if (wo.IsShield)
+                {
+                    var hasmagicabsorbtion = ThreadSafeRandom.Next(0.0f, 1.0f);
+                    var absorbtionammount = ThreadSafeRandom.Next(1.10f, 1.15f);
+                    if (hasmagicabsorbtion <= 0.25f)
+                        wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
+                }
+                   
+
             }
         }
 
@@ -1046,7 +1055,9 @@ namespace ACE.Server.Factories
             // shields don't have gear ratings
            /* if (wo.IsShield) return false; */         
 
+            
             var gearRating = GearRatingChance.Roll(wo, profile, roll);
+            var t9gearRating = gearRating += ThreadSafeRandom.Next(7, 12);
 
             if (gearRating == 0)
                 return false;
@@ -1083,35 +1094,35 @@ namespace ACE.Server.Factories
             {
                 // clothing w/ al, and crowns would be included in this group
                 if (rng == 0)
-                    wo.GearCritDamage = gearRating;
+                    wo.GearCritDamage = t9gearRating;
                 else
-                    wo.GearCritDamageResist = gearRating;
-                wo.GearDamage = gearRating;
-                wo.GearDamageResist = gearRating;
-                wo.GearHealingBoost = gearRating;
-                wo.GearMaxHealth = gearRating;
+                    wo.GearCritDamageResist = t9gearRating;
+                wo.GearDamage = t9gearRating;
+                wo.GearDamageResist = t9gearRating;
+                wo.GearHealingBoost = t9gearRating;
+                wo.GearMaxHealth = t9gearRating;
             }
             else if (roll.IsClothing || roll.IsCloak && profile.Tier == 9)
             {
                 if (rng == 0)
-                    wo.GearDamage = gearRating;
+                    wo.GearDamage = t9gearRating;
                 else
-                    wo.GearDamageResist = gearRating;
-                wo.GearCritDamageResist = gearRating;
-                wo.GearDamage = gearRating;
-                wo.GearHealingBoost = gearRating;
-                wo.GearMaxHealth = gearRating;
+                    wo.GearDamageResist = t9gearRating;
+                wo.GearCritDamageResist = t9gearRating;
+                wo.GearDamage = t9gearRating;
+                wo.GearHealingBoost = t9gearRating;
+                wo.GearMaxHealth = t9gearRating;
             }
             else if (roll.IsJewelry && profile.Tier == 9)
             {
                 if (rng == 0)
-                    wo.GearHealingBoost = gearRating;
+                    wo.GearHealingBoost = t9gearRating;
                 else
-                    wo.GearMaxHealth = gearRating;
-                wo.GearCritDamageResist = gearRating;
-                wo.GearDamage = gearRating;
-                wo.GearDamageResist = gearRating;
-                wo.GearHealingBoost = gearRating;
+                    wo.GearMaxHealth = t9gearRating;
+                wo.GearCritDamageResist = t9gearRating;
+                wo.GearDamage = t9gearRating;
+                wo.GearDamageResist = t9gearRating;
+                wo.GearHealingBoost = t9gearRating;
             }
 
             else
