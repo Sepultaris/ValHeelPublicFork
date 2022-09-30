@@ -560,56 +560,34 @@ namespace ACE.Server.Entity
         public void SplitLuminance(ulong amount, XpType xpType, ShareType shareType, Player player)
         {
             // https://asheron.fandom.com/wiki/Announcements_-_2002/02_-_Fever_Dreams#Letter_to_the_Players_1
-            var fellowshipMembers = GetFellowshipMembers();
 
             shareType &= ~ShareType.Fellowship;
 
-            // quest turn-ins: flat share (retail default)
-            if (xpType == XpType.Quest && !PropertyManager.GetBool("fellow_quest_bonus").Item)
+            if (xpType == XpType.Quest)
             {
-                var perAmount = (long)amount / fellowshipMembers.Count;
-
-                foreach (var member in fellowshipMembers.Values)
-                {
-                    var fellowXpType = player == member ? XpType.Quest : XpType.Fellowship;
-
-                    member.GrantXP(perAmount, fellowXpType, shareType);
-                }
+                // quest luminance is not shared
+                player.GrantLuminance((long)amount, XpType.Quest, shareType);
             }
-
-            // divides XP evenly to all the sharable fellows within level range,
-            // but with a significant boost to the amount of xp, based on # of fellowship members
-            else if (EvenShare)
+            else
             {
+                // pre-filter: evenly divide between luminance-eligible fellows
+                var shareableMembers = GetFellowshipMembers().Values.Where(f => f.MaximumLuminance != null).ToList();
+
+                if (shareableMembers.Count == 0)
+                    return;
+
+                var perAmount = (long)Math.Round((double)(amount / (ulong)shareableMembers.Count));
+
+                // further filter to fellows in radar range
                 var totalAmount = (ulong)Math.Round(amount * GetMemberSharePercent());
 
-                foreach (var member in fellowshipMembers.Values)
+                foreach (var member in shareableMembers)
                 {
                     var shareAmount = (ulong)Math.Round(totalAmount * GetDistanceScalar(player, member, xpType));
 
                     var fellowXpType = player == member ? xpType : XpType.Fellowship;
 
-                    member.GrantXP((long)shareAmount, fellowXpType, shareType);
-                }
-
-                return;
-            }
-
-            // divides XP to all sharable fellows within level range
-            // based on each fellowship member's level
-            else
-            {
-                var levelXPSum = fellowshipMembers.Values.Select(p => p.GetXPToNextLevel(p.Level.Value)).Sum();
-
-                foreach (var member in fellowshipMembers.Values)
-                {
-                    var levelXPScale = (double)member.GetXPToNextLevel(member.Level.Value) / levelXPSum;
-
-                    var playerTotal = (ulong)Math.Round(amount * levelXPScale * GetDistanceScalar(player, member, xpType));
-
-                    var fellowXpType = player == member ? xpType : XpType.Fellowship;
-
-                    member.GrantXP((long)playerTotal, fellowXpType, shareType);
+                    member.GrantLuminance((long)shareAmount, fellowXpType, shareType);
                 }
             }
         }
