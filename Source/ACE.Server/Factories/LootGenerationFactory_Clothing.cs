@@ -1094,35 +1094,35 @@ namespace ACE.Server.Factories
             {
                 // clothing w/ al, and crowns would be included in this group
                 if (rng == 0)
-                    wo.GearCritDamage = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
+                    wo.GearCritDamage = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
                 else
-                    wo.GearCritDamageResist = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearDamage = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearDamageResist = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearHealingBoost = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearMaxHealth = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
+                    wo.GearCritDamageResist = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearDamage = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearDamageResist = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearHealingBoost = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearMaxHealth = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
             }
             else if (roll.IsClothing || roll.IsCloak && profile.Tier == 9)
             {
                 if (rng == 0)
-                    wo.GearDamage = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
+                    wo.GearDamage = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
                 else
-                    wo.GearDamageResist = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearCritDamageResist = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearDamage = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearHealingBoost = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearMaxHealth = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
+                    wo.GearDamageResist = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearCritDamageResist = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearDamage = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearHealingBoost = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearMaxHealth = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
             }
             else if (roll.IsJewelry && profile.Tier == 9)
             {
                 if (rng == 0)
-                    wo.GearHealingBoost = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
+                    wo.GearHealingBoost = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
                 else
-                    wo.GearMaxHealth = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearCritDamageResist = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearDamage = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearDamageResist = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
-                wo.GearHealingBoost = t9gearRating + (ThreadSafeRandom.Next(-2, 5));
+                    wo.GearMaxHealth = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearCritDamageResist = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearDamage = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearDamageResist = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
+                wo.GearHealingBoost = t9gearRating + (ThreadSafeRandom.Next(-5, 5));
             }
 
             else
