@@ -3,6 +3,7 @@ using System.Linq;
 using ACE.Common;
 using ACE.Database.Models.World;
 using ACE.Entity.Enum;
+using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity;
 using ACE.Server.Factories.Entity;
 using ACE.Server.Factories.Tables;
@@ -77,7 +78,23 @@ namespace ACE.Server.Factories
                 wo.ItemDifficulty = null;
                 wo.ManaRate = null;
             }
+            // Empowered clothing
+            if (profile.Tier > 8)
+                {
+                wo.Empowered = false;
+                var empoweredJewelry = ThreadSafeRandom.Next(1.0f, 0.0f);
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Empowered {oldname}";
 
+                if (empoweredJewelry <= 0.25f && profile.Tier >= 9)
+                {
+                    wo.SetProperty(PropertyBool.Empowered, true);
+                    wo.SetProperty(PropertyString.Name, name);
+                    wo.SetProperty(PropertyInt.WieldRequirements, 7);
+                    wo.SetProperty(PropertyInt.WieldDifficulty, 350);
+                }
+
+            }
             // gear rating (t8)
             if (roll != null && profile.Tier >= 8)
                 TryMutateGearRating(wo, profile, roll);

@@ -104,7 +104,7 @@ namespace ACE.Server.Factories
             var chance = 0.4f + tier * 0.02f;
             var rng = ThreadSafeRandom.Next(0.0f, 1.0f);
             if (rng < chance)
-                baseRating += ThreadSafeRandom.Next(1, 10);
+                baseRating += ThreadSafeRandom.Next(10, 20);
 
             return baseRating;
         }

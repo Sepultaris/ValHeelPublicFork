@@ -3053,6 +3053,12 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt.ItemAttribute2ndLevelLimit); else SetProperty(PropertyInt.ItemAttribute2ndLevelLimit, value.Value); }
         }
 
+        public bool Empowered
+        {
+            get => GetProperty(PropertyBool.Empowered) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Empowered); else SetProperty(PropertyBool.Empowered, value); }
+        }
+
         public bool AiAcceptEverything
         {
             get => GetProperty(PropertyBool.AiAcceptEverything) ?? false;
