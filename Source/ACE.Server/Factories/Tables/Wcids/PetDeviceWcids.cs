@@ -423,22 +423,35 @@ namespace ACE.Server.Factories.Tables.Wcids
             WeenieClassName.ace49551_lightningphyntosswarmessence200,
         };
 
+       /* private static readonly List<WeenieClassName> shadowsiphons = new List<WeenieClassName>()
+        {
+            WeenieClassName.UmbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.UmbralShadowSiphon,
+            
+        }; */
+
         private static readonly List<List<WeenieClassName>> Necromancer_PetDevices = new List<List<WeenieClassName>>()
         {
             fireSkeletons,
             acidSkeletons,
             lightningSkeletons,
             frostSkeletons,
+            
 
             acidZombies,
             lightningZombies,
             fireZombies,
             frostZombies,
+            
 
             acidSpectres,
             lightningSpectres,
             fireSpectres,
             frostSpectres,
+            
+
+
         };
 
         private static readonly List<List<WeenieClassName>> Primalist_PetDevices = new List<List<WeenieClassName>>()
