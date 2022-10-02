@@ -421,7 +421,40 @@ namespace ACE.Server.Factories.Tables.Wcids
             WeenieClassName.ace49549_lightningphyntoswaspessence150,
             WeenieClassName.ace49550_lightningphyntoswaspessence180,
             WeenieClassName.ace49551_lightningphyntosswarmessence200,
-        };         
+        };
+
+        private static readonly List<WeenieClassName> umbrisshadowsiphons = new List<WeenieClassName>()
+        {
+            WeenieClassName.UmbrisShadowSiphon,
+            WeenieClassName.UmbrisShadowSiphon,
+            WeenieClassName.UmbrisShadowSiphon,
+            WeenieClassName.UmbrisShadowSiphon,
+            WeenieClassName.UmbrisShadowSiphon,
+            WeenieClassName.UmbrisShadowSiphon,
+            WeenieClassName.UmbrisShadowSiphon,
+        };
+
+        private static readonly List<WeenieClassName> panumbrisshadowsiphons = new List<WeenieClassName>()
+        {
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+        };
+
+        private static readonly List<WeenieClassName> umbralshadowsiphons = new List<WeenieClassName>()
+        {
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.PanumbrisShadowSiphon,
+        };
 
         private static readonly List<List<WeenieClassName>> Necromancer_PetDevices = new List<List<WeenieClassName>>()
         {
@@ -429,21 +462,31 @@ namespace ACE.Server.Factories.Tables.Wcids
             acidSkeletons,
             lightningSkeletons,
             frostSkeletons,
-           
-            
+            umbrisshadowsiphons,
+            panumbrisshadowsiphons,
+            umbralshadowsiphons,
+
+
+
 
             acidZombies,
             lightningZombies,
             fireZombies,
             frostZombies,
-            
+            umbrisshadowsiphons,
+            panumbrisshadowsiphons,
+            umbralshadowsiphons,
+
 
 
             acidSpectres,
             lightningSpectres,
             fireSpectres,
             frostSpectres,
-            
+            umbrisshadowsiphons,
+            panumbrisshadowsiphons,
+            umbralshadowsiphons,
+
 
 
 

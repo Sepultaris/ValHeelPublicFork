@@ -38812,7 +38812,9 @@ namespace ACE.Server.Factories.Enum
         ace87283_shadowvoidknightvod = 87283,
         ace87284_ravenaugur = 87284,        
         ace777772232_Liner = 777772232,
-        
+        UmbrisShadowSiphon = 801334,
+        PanumbrisShadowSiphon = 801336,
+        UmbralShadowSiphon = 801338,
 
 
     }
