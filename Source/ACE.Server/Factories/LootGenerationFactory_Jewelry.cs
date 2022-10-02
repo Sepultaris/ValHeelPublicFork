@@ -80,21 +80,22 @@ namespace ACE.Server.Factories
             }
             // Empowered jewelry
             if (profile.Tier > 8)
-                {
+            {
                 wo.Empowered = false;
                 var empoweredJewelry = ThreadSafeRandom.Next(1.0f, 0.0f);
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
 
-            // gear rating (t8)
-            if (roll != null && profile.Tier >= 8)
-                TryMutateGearRating(wo, profile, roll);
+                // gear rating (t8)
+                if (roll != null && profile.Tier >= 8)
+                    TryMutateGearRating(wo, profile, roll);
 
-            // item value
-            //  if (wo.HasMutateFilter(MutateFilter.Value))     // fixme: data
+                // item value
+                //  if (wo.HasMutateFilter(MutateFilter.Value))     // fixme: data
                 MutateValue(wo, profile.Tier, roll);
 
-            wo.LongDesc = GetLongDesc(wo);
+                wo.LongDesc = GetLongDesc(wo);
+            }
         }
 
         private static bool GetMutateJewelryData(uint wcid)
@@ -104,7 +105,8 @@ namespace ACE.Server.Factories
                 if (jewelryTable.Contains((int)wcid))
                     return true;
             }
-            return false;
+                return false;
         }
+        
     }
 }
