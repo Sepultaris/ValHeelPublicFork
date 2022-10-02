@@ -116,13 +116,7 @@ namespace ACE.Server.Factories
 
         private static void MutateAetheria_New(WorldObject wo, TreasureDeath profile)
         {
-            wo.ItemMaxLevel = AetheriaChance.Roll_ItemMaxLevel(profile);
-
-            if (profile.Tier == 9)
-            {
-                wo.ItemMaxLevel = 5;
-            }
-
+            wo.ItemMaxLevel = AetheriaChance.Roll_ItemMaxLevel(profile);            
             wo.IconOverlayId = IconOverlay_ItemMaxLevel[wo.ItemMaxLevel.Value - 1];
         }
 
