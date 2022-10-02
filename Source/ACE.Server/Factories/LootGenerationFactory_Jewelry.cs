@@ -78,7 +78,7 @@ namespace ACE.Server.Factories
                 wo.ItemDifficulty = null;
                 wo.ManaRate = null;
             }
-            // Empowered clothing
+            // Empowered jewelry
             if (profile.Tier > 8)
                 {
                 wo.Empowered = false;
@@ -86,7 +86,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
 
-                if (empoweredJewelry <= 0.25f && profile.Tier >= 9)
+                if (empoweredJewelry <= 0.25f && profile.Tier >= 9 || profile.TreasureType == 3112)
                 {
                     wo.SetProperty(PropertyBool.Empowered, true);
                     wo.SetProperty(PropertyString.Name, name);

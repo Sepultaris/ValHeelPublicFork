@@ -12,6 +12,7 @@ using ACE.Server.Factories.Tables;
 using ACE.Server.Managers;
 using ACE.Server.WorldObjects;
 using Org.BouncyCastle.Asn1.X509;
+using Renci.SshNet;
 
 namespace ACE.Server.Factories
 {
@@ -146,7 +147,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
 
-                if (empoweredClothing <= 0.25f && profile.Tier >= 9)
+                if (empoweredClothing <= 0.25f && profile.Tier >= 9 || profile.TreasureType == 3112)
                 {
                     wo.SetProperty(PropertyBool.Empowered, true);
                     wo.SetProperty(PropertyString.Name, name);
