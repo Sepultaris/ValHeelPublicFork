@@ -86,15 +86,6 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
 
-                if (empoweredJewelry <= 0.25f && profile.Tier >= 9 || profile.TreasureType == 3112)
-                {
-                    wo.SetProperty(PropertyBool.Empowered, true);
-                    wo.SetProperty(PropertyString.Name, name);
-                    wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                    wo.SetProperty(PropertyInt.WieldDifficulty, 350);
-                }
-
-            }
             // gear rating (t8)
             if (roll != null && profile.Tier >= 8)
                 TryMutateGearRating(wo, profile, roll);
