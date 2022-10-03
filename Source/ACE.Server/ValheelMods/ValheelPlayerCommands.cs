@@ -13,7 +13,7 @@ namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
-        [CommandHandler("raise", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Allows you to raise attributes past maximum at the cost of 10 billion XP. Allows you to raise Luminance Augmentation for Damage Rating (Destruction), Damage Reduction (Invulnerability), Critical Damage (Glory) and Critical Damage Reduction (Temperance) and Critical Damage Reduction (Vitality) for the cost of 10,000,000 Luminance.", "")]
+        [CommandHandler("raise", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Allows you to raise attributes past maximum at the cost of 10 billion XP. Allows you to raise Luminance Augmentation for Damage Rating (Destruction), Damage Reduction (Invulnerability), Critical Damage (Glory) and Critical Damage Reduction (Temperance) and Max Health, Stamina, and Mana (Vitality) for the cost of 10,000,000 Luminance.", "")]
         public static void HandleRaise(Session session, params string[] parameters)
         {
             Player player = session.Player;
@@ -98,6 +98,8 @@ namespace ACE.Server.Command.Handlers
 
             int _luminanceRating = 0;
 
+            
+
             // allows spending of luminance to increase luminance damage rating
             if (parameters[0].ToLowerInvariant().Equals("destruction"))
             {
@@ -105,13 +107,16 @@ namespace ACE.Server.Command.Handlers
                 {
                     _luminanceRating = player.LumAugDamageRating;
 
+                    var destruction = player.GetProperty(PropertyInt.LumAugDamageRating);
+                    var destructioncost = Math.Round((double)(10000000 * (1 + (destruction * 0.149))));
+
                     // while looping through the number of increases requested - if the total available is not enough to keep looping
                     // break out of the loop and inform the player of how many increases they received
-                    if (10000000L > player.AvailableLuminance || !player.SpendLuminance(10000000L))
+                    if (destructioncost > player.AvailableLuminance || !player.SpendLuminance((long)destructioncost))
                     {
                         player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, _luminanceRating));
                         ChatPacket.SendServerMessage(session, string.Format("Your Luminance Augmentation Damage Rating has been increased by {0}.", j), ChatMessageType.Broadcast);
-                        ChatPacket.SendServerMessage(session, "Not enough Luminance for remaining points, you require 10 million (10,000,000) Luminance per point.", ChatMessageType.Broadcast);
+                        ChatPacket.SendServerMessage(session,($"Not enough Luminance for remaining points, you require {destructioncost} luminance."), ChatMessageType.Broadcast);
                         return;
                     }
                     player.LumAugDamageRating++;
@@ -121,6 +126,8 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
+            
+
             // allows spending of luminance to increase luminance damage reduction rating (Invulnerability)
             if (parameters[0].ToLowerInvariant().Equals("invulnerability"))
             {
@@ -128,13 +135,16 @@ namespace ACE.Server.Command.Handlers
                 {
                     _luminanceRating = player.LumAugDamageReductionRating;
 
+                    var invulnerability = player.GetProperty(PropertyInt.LumAugDamageReductionRating);
+                    var invulnerabilitycost = Math.Round((double)(10000000 * (1 + (invulnerability * 0.149))));
+
                     // while looping through the number of increases requested - if the total available is not enough to keep looping
                     // break out of the loop and inform the player of how many increases they received
-                    if (10000000L > player.AvailableLuminance || !player.SpendLuminance(10000000L))
+                    if (invulnerabilitycost > player.AvailableLuminance || !player.SpendLuminance((long)invulnerabilitycost))
                     {
                         player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, _luminanceRating));
                         ChatPacket.SendServerMessage(session, string.Format("Your Luminance Augmentation Damage Reduction Rating has been increased by {0}.", j), ChatMessageType.Broadcast);
-                        ChatPacket.SendServerMessage(session, "Not enough Luminance for remaining points, you require 10 million (10,000,000) Luminance per point.", ChatMessageType.Broadcast);
+                        ChatPacket.SendServerMessage(session, $"Not enough Luminance for remaining points, you require {invulnerabilitycost} luminance.", ChatMessageType.Broadcast);
                         return;
                     }
                     player.LumAugDamageReductionRating++;
@@ -144,6 +154,8 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
+            
+
             // allows spending of luminance to increase luminance critical damage rating (Glory)
             if (parameters[0].ToLowerInvariant().Equals("glory"))
             {
@@ -151,13 +163,16 @@ namespace ACE.Server.Command.Handlers
                 {
                     _luminanceRating = player.LumAugCritDamageRating;
 
+                    var glory = player.GetProperty(PropertyInt.LumAugCritDamageRating);
+                    var glorycost = Math.Round((double)(10000000 * (1 + (glory * 0.149))));
+
                     // while looping through the number of increases requested - if the total available is not enough to keep looping
                     // break out of the loop and inform the player of how many increases they received
-                    if (10000000L > player.AvailableLuminance || !player.SpendLuminance(10000000L))
+                    if (glorycost > player.AvailableLuminance || !player.SpendLuminance((long)glorycost))
                     {
                         player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, _luminanceRating));
                         ChatPacket.SendServerMessage(session, string.Format("Your Luminance Augmentation Critical Damage Rating has been increased by {0}.", j), ChatMessageType.Broadcast);
-                        ChatPacket.SendServerMessage(session, "Not enough Luminance for remaining points, you require 10 million (10,000,000) Luminance per point.", ChatMessageType.Broadcast);
+                        ChatPacket.SendServerMessage(session, $"Not enough Luminance for remaining points, you require {glorycost} luminance.", ChatMessageType.Broadcast);
                         return;
                     }
                     player.LumAugCritDamageRating++;
@@ -167,6 +182,8 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
+            
+
             // allows spending of luminance to increase luminance critical damage reduction rating (Temperance)
             if (parameters[0].ToLowerInvariant().Equals("temperance"))
             {
@@ -174,13 +191,16 @@ namespace ACE.Server.Command.Handlers
                 {
                     _luminanceRating = player.LumAugCritReductionRating;
 
+                    var temperance = player.GetProperty(PropertyInt.LumAugCritReductionRating);
+                    var temperancecost = Math.Round((double)(10000000 * (1 + (temperance * 0.149))));
+
                     // while looping through the number of increases requested - if the total available is not enough to keep looping
                     // break out of the loop and inform the player of how many increases they received
-                    if (10000000L > player.AvailableLuminance || !player.SpendLuminance(10000000L))
+                    if (temperancecost > player.AvailableLuminance || !player.SpendLuminance((long)temperancecost))
                     {
                         player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, _luminanceRating));
                         ChatPacket.SendServerMessage(session, string.Format("Your Luminance Augmentation Critical Damage Reduction Rating has been increased by {0}.", j), ChatMessageType.Broadcast);
-                        ChatPacket.SendServerMessage(session, "Not enough Luminance for remaining points, you require 10 million (10,000,000) Luminance per point.", ChatMessageType.Broadcast);
+                        ChatPacket.SendServerMessage(session, $"Not enough Luminance for remaining points, you require {temperancecost} luminance.", ChatMessageType.Broadcast);
                         return;
                     }
                     player.LumAugCritReductionRating++;
