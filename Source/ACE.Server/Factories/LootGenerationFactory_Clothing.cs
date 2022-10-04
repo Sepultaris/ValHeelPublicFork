@@ -183,13 +183,13 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 // increase damage
                 wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
-                if (wo.IsShield)
+               /* if (wo.IsShield)
                 {
                     var hasmagicabsorbtion = ThreadSafeRandom.Next(0.0f, 1.0f);
                     var absorbtionammount = ThreadSafeRandom.Next(1.10f, 1.15f);
                     if (hasmagicabsorbtion <= 0.25f)
                         wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
-                }
+                } */
                 wo.SetProperty(PropertyBool.Empowered, true);
             }
 

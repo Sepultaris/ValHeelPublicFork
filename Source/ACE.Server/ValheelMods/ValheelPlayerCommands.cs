@@ -28,6 +28,11 @@ namespace ACE.Server.Command.Handlers
                 ChatPacket.SendServerMessage(session, "Invalid value, values must be valid integers", ChatMessageType.Broadcast);
                 return;
             }
+            if (result <= 0)
+            {
+                ChatPacket.SendServerMessage(session, "Invalid value, values must be valid integers", ChatMessageType.Broadcast);
+                return;
+            }
             parameters[0] = parameters[0].ToLower();
             if (parameters[0].Equals("hp"))
             {
@@ -109,6 +114,10 @@ namespace ACE.Server.Command.Handlers
 
                     var destruction = player.GetProperty(PropertyInt.LumAugDamageRating);
                     var destructioncost = Math.Round((double)(10000000 * (1 + (destruction * 0.149))));
+                    if (result <= 0)
+                    {
+
+                    }
 
                     // while looping through the number of increases requested - if the total available is not enough to keep looping
                     // break out of the loop and inform the player of how many increases they received
