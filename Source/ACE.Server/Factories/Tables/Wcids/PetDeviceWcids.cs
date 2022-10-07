@@ -447,13 +447,13 @@ namespace ACE.Server.Factories.Tables.Wcids
 
         private static readonly List<WeenieClassName> umbralshadowsiphons = new List<WeenieClassName>()
         {
-            WeenieClassName.PanumbrisShadowSiphon,
-            WeenieClassName.PanumbrisShadowSiphon,
-            WeenieClassName.PanumbrisShadowSiphon,
-            WeenieClassName.PanumbrisShadowSiphon,
-            WeenieClassName.PanumbrisShadowSiphon,
-            WeenieClassName.PanumbrisShadowSiphon,
-            WeenieClassName.PanumbrisShadowSiphon,
+            WeenieClassName.UmbralShadowSiphon,
+            WeenieClassName.UmbralShadowSiphon,
+            WeenieClassName.UmbralShadowSiphon,
+            WeenieClassName.UmbralShadowSiphon,
+            WeenieClassName.UmbralShadowSiphon,
+            WeenieClassName.UmbralShadowSiphon,
+            WeenieClassName.UmbralShadowSiphon,
         };
 
         private static readonly List<List<WeenieClassName>> Necromancer_PetDevices = new List<List<WeenieClassName>>()

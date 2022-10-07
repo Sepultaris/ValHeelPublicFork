@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ACE.Database.Models.Shard
@@ -10,7 +10,7 @@ namespace ACE.Database.Models.Shard
             BiotaPropertiesAllegiance = new HashSet<BiotaPropertiesAllegiance>();
             BiotaPropertiesAnimPart = new HashSet<BiotaPropertiesAnimPart>();
             BiotaPropertiesAttribute = new HashSet<BiotaPropertiesAttribute>();
-            BiotaPropertiesAttribute2nd = new HashSet<BiotaPropertiesAttribute2nd>();
+            BiotaPropertiesAttribute2nd = new HashSet<BiotaPropertiesAttribute2nd>();           
             BiotaPropertiesBodyPart = new HashSet<BiotaPropertiesBodyPart>();
             BiotaPropertiesBookPageData = new HashSet<BiotaPropertiesBookPageData>();
             BiotaPropertiesBool = new HashSet<BiotaPropertiesBool>();
@@ -43,6 +43,7 @@ namespace ACE.Database.Models.Shard
         public virtual ICollection<BiotaPropertiesAnimPart> BiotaPropertiesAnimPart { get; set; }
         public virtual ICollection<BiotaPropertiesAttribute> BiotaPropertiesAttribute { get; set; }
         public virtual ICollection<BiotaPropertiesAttribute2nd> BiotaPropertiesAttribute2nd { get; set; }
+     
         public virtual ICollection<BiotaPropertiesBodyPart> BiotaPropertiesBodyPart { get; set; }
         public virtual ICollection<BiotaPropertiesBookPageData> BiotaPropertiesBookPageData { get; set; }
         public virtual ICollection<BiotaPropertiesBool> BiotaPropertiesBool { get; set; }

@@ -4,6 +4,7 @@ using ACE.Server.WorldObjects.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -42,8 +43,8 @@ namespace ACE.Server.DuskfallMods
                     break;
                 case RaiseTarget.Self:
                     player.RaisedSelf = level;
-                    break;
-                    // new vitals                
+                    break;                
+                // new vitals                
                 case RaiseTarget.World:
                     player.LumAugAllSkills = level;
                     break;
@@ -59,8 +60,31 @@ namespace ACE.Server.DuskfallMods
                 case RaiseTarget.Temperance:
                     player.LumAugCritReductionRating = level;
                     break;
-                case RaiseTarget.Vitality:
-                    
+                case RaiseTarget.Vitality:                    
+                    break;               
+            }                        
+            return;
+        }
+
+        public static void SetVitalLevel(this RaiseTargetVital target, Player player, int level)
+        {                        
+            if (target.TryGetVital(player, out CreatureVital vital))
+            {
+                //Find the change in current and desired level
+                var levelChange = level - GetVitalLevel(target, player);
+                vital.StartingValue += (uint)levelChange;   //Tested to work with negatives
+            }
+
+            switch (target)
+            {
+                case RaiseTargetVital.MaxHealth:
+                    player.RaisedHealth = level;
+                    break;
+                case RaiseTargetVital.MaxStamina:
+                    player.RaisedStamina = level;
+                    break;
+                case RaiseTargetVital.MaxMana:
+                    player.RaisedMana = level;
                     break;
             }
             return;
@@ -75,7 +99,7 @@ namespace ACE.Server.DuskfallMods
                 case RaiseTarget.Quick: return player.RaisedQuick;
                 case RaiseTarget.Coord: return player.RaisedCoord;
                 case RaiseTarget.Focus: return player.RaisedFocus;
-                case RaiseTarget.Self: return player.RaisedSelf;               
+                case RaiseTarget.Self: return player.RaisedSelf;                
                 //Ratings
                 case RaiseTarget.World: return player.LumAugAllSkills;
                 case RaiseTarget.Invulnerability: return player.LumAugDamageReductionRating;                
@@ -86,12 +110,22 @@ namespace ACE.Server.DuskfallMods
             }
             return -1;
         }
+        public static int GetVitalLevel(this RaiseTargetVital target, Player player)
+        {
+            switch (target)
+            {                
+                case RaiseTargetVital.MaxHealth: return player.RaisedHealth;
+                case RaiseTargetVital.MaxStamina: return player.RaisedStamina;
+                case RaiseTargetVital.MaxMana: return player.RaisedMana;                
+            }
+            return -1;
+        }
         public static int StartingLevel(this RaiseTarget target)
         {
             switch (target)
             {
                 //Attributes
-                case RaiseTarget t when t.IsAttribute(): return 1;
+                case RaiseTarget t when t.IsAttribute(): return 1;                
                 //Ratings return the normal max.
                 ////Comment out to allow leveling down to 0 which would let a player go through the normal process to net a little Lum
                 ///case RaiseTarget.World: return 10;  //Max World 
@@ -99,6 +133,16 @@ namespace ACE.Server.DuskfallMods
                 case RaiseTarget.Destruction: return 5;
                 case RaiseTarget.Glory: return 5;
                 case RaiseTarget.Temperance: return 5;
+                default: return 0;
+            }
+        }
+
+        public static int StartingVitalLevel(this RaiseTargetVital target)
+        {
+            switch (target)
+            {
+                
+                case RaiseTargetVital i when i.IsVital(): return 1;                
                 default: return 0;
             }
         }
@@ -117,7 +161,7 @@ namespace ACE.Server.DuskfallMods
                         var avgLevel = (1);  //Could use a decimal, but being off a very small amount should be fine
                         long avgCost = (long)(ValheelSettings.RAISE_ATTR_MULT * avgLevel / (ValheelSettings.RAISE_ATTR_MULT_DECAY - ValheelSettings.RAISE_ATTR_LVL_DECAY * avgLevel));
                         cost = checked(avgCost * numLevels);
-                        return true;
+                        return true;                    
                     case RaiseTarget.Destruction:
                     case RaiseTarget.Invulnerability:
                     case RaiseTarget.Glory:
@@ -133,7 +177,33 @@ namespace ACE.Server.DuskfallMods
             catch (OverflowException ex) { }
             return false;
         }
+
+        public static bool TryGetCostToLevelVital(this RaiseTargetVital target, int startLevel, int numLevels, out long cost)
+        {
+            cost = uint.MaxValue;
+            //This may be too restrictive but it guarantees you are /raising some amount from a valid starting point
+            if (startLevel < target.StartingVitalLevel() || numLevels < 1)
+                return false;
+
+            try
+            {
+                switch (target)
+                {
+                    
+                    case RaiseTargetVital i when i.IsVital():
+                        var avgVitalLevel = (1);  //Could use a decimal, but being off a very small amount should be fine
+                        long avgVitalCost = (long)(ValheelSettings.RAISE_ATTR_MULT * avgVitalLevel / (ValheelSettings.RAISE_ATTR_MULT_DECAY - ValheelSettings.RAISE_ATTR_LVL_DECAY * avgVitalLevel));
+                        cost = checked(avgVitalCost * numLevels);
+                        return true;                  
+                }
+            }
+            catch (OverflowException ex) { }
+            return false;
+        }
         private static bool IsAttribute(this RaiseTarget target) { return target < RaiseTarget.World; }
+
+        private static bool IsVital(this RaiseTargetVital target) { return target <= RaiseTargetVital.MaxMana; }
+
         public static bool TryGetAttribute(this RaiseTarget target, Player player, out CreatureAttribute? attribute)
         {
             attribute = null;
@@ -142,6 +212,17 @@ namespace ACE.Server.DuskfallMods
 
             //If the target is an attribute set it and succeed
             attribute = player.Attributes[(PropertyAttribute)target];  //TODO: Requires the RaiseTarget enum to line up with the PropertyAttribute-- probably should do this a better way
+            return true;
+        }
+
+        public static bool TryGetVital(this RaiseTargetVital target, Player player, out CreatureVital? vital)
+        {
+            vital = null;
+            if (!target.IsVital())
+                return false;
+
+            //If the target is an attribute set it and succeed
+            vital = player.Vitals[(PropertyAttribute2nd)target];  //TODO: Requires the RaiseTarget enum to line up with the PropertyAttribute-- probably should do this a better way
             return true;
         }
     }

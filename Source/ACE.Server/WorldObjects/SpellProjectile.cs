@@ -576,6 +576,18 @@ namespace ACE.Server.WorldObjects
             {
                 ShowInfo(target, Spell, attackSkill, criticalChance, criticalHit, critDefended, overpower, weaponCritDamageMod, skillBonus, baseDamage, critDamageBonus, elementalDamageMod, slayerMod, weaponResistanceMod, resistanceMod, absorbMod, LifeProjectileDamage, lifeMagicDamage, finalDamage);
             }
+            if (sourcePlayer != null && target.Overpower != null)
+            {
+                finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod / ((int)target.OverpowerResist * (0.16f + (float)target.Level * 0.0001f));
+            }
+            if (sourcePlayer != null && target.Overpower == null)
+            {
+                finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod;
+            }
+            if (sourcePlayer == null && sourceCreature.Overpower != null)
+            {
+                finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod * (int)(sourceCreature.Overpower * 0.16f + 1);
+            }
             return finalDamage;
         }
 

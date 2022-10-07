@@ -62,6 +62,7 @@ namespace ACE.Server.Command.Handlers
                     CreatureVital creatureVital2 = new CreatureVital(player, PropertyAttribute2nd.Health);
                     creatureVital2.Ranks = Math.Clamp(creatureVital2.Ranks + 1, 1u, uint.MaxValue);
                     player.UpdateVital(creatureVital2, creatureVital2.MaxValue);
+                    player.RaisedHealth++;
                 }
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxHealth]));
                 ChatPacket.SendServerMessage(session, string.Format("Your Maximum Health has been increased by {0}.", result), ChatMessageType.Broadcast);
@@ -95,6 +96,7 @@ namespace ACE.Server.Command.Handlers
                     CreatureVital creatureVital4 = new CreatureVital(player, PropertyAttribute2nd.Stamina);
                     creatureVital4.Ranks = Math.Clamp(creatureVital4.Ranks + 1, 1u, uint.MaxValue);
                     player.UpdateVital(creatureVital4, creatureVital4.MaxValue);
+                    player.RaisedStamina++;
                 }
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxStamina]));
                 ChatPacket.SendServerMessage(session, string.Format("Your Maximum Stamina has been increased by {0}.", result), ChatMessageType.Broadcast);
@@ -103,21 +105,22 @@ namespace ACE.Server.Command.Handlers
 
             int _luminanceRating = 0;
 
-            
 
             // allows spending of luminance to increase luminance damage rating
             if (parameters[0].ToLowerInvariant().Equals("destruction"))
             {
+                
+                _luminanceRating = player.LumAugDamageRating;
+                if (_luminanceRating == 0)
+                    player.LumAugDamageRating = 1;
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, _luminanceRating));
+
                 for (int j = 0; j < result; j++)
                 {
                     _luminanceRating = player.LumAugDamageRating;
 
                     var destruction = player.GetProperty(PropertyInt.LumAugDamageRating);
                     var destructioncost = Math.Round((double)(10000000 * (1 + (destruction * 0.149))));
-                    if (result <= 0)
-                    {
-
-                    }
 
                     // while looping through the number of increases requested - if the total available is not enough to keep looping
                     // break out of the loop and inform the player of how many increases they received
@@ -125,7 +128,7 @@ namespace ACE.Server.Command.Handlers
                     {
                         player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, _luminanceRating));
                         ChatPacket.SendServerMessage(session, string.Format("Your Luminance Augmentation Damage Rating has been increased by {0}.", j), ChatMessageType.Broadcast);
-                        ChatPacket.SendServerMessage(session,($"Not enough Luminance for remaining points, you require {destructioncost} luminance."), ChatMessageType.Broadcast);
+                        ChatPacket.SendServerMessage(session, $"Not enough Luminance for remaining points, you require {destructioncost} luminance.", ChatMessageType.Broadcast);
                         return;
                     }
                     player.LumAugDamageRating++;
@@ -135,7 +138,6 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            
 
             // allows spending of luminance to increase luminance damage reduction rating (Invulnerability)
             if (parameters[0].ToLowerInvariant().Equals("invulnerability"))
@@ -143,6 +145,9 @@ namespace ACE.Server.Command.Handlers
                 for (int j = 0; j < result; j++)
                 {
                     _luminanceRating = player.LumAugDamageReductionRating;
+                    if (_luminanceRating == 0)
+                        player.LumAugDamageReductionRating = 1;
+                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, _luminanceRating));
 
                     var invulnerability = player.GetProperty(PropertyInt.LumAugDamageReductionRating);
                     var invulnerabilitycost = Math.Round((double)(10000000 * (1 + (invulnerability * 0.149))));
@@ -164,13 +169,15 @@ namespace ACE.Server.Command.Handlers
             }
 
             
-
             // allows spending of luminance to increase luminance critical damage rating (Glory)
             if (parameters[0].ToLowerInvariant().Equals("glory"))
             {
                 for (int j = 0; j < result; j++)
                 {
                     _luminanceRating = player.LumAugCritDamageRating;
+                    if (_luminanceRating == 0)
+                        player.LumAugCritDamageRating = 1;
+                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, _luminanceRating));
 
                     var glory = player.GetProperty(PropertyInt.LumAugCritDamageRating);
                     var glorycost = Math.Round((double)(10000000 * (1 + (glory * 0.149))));
@@ -192,13 +199,15 @@ namespace ACE.Server.Command.Handlers
             }
 
             
-
             // allows spending of luminance to increase luminance critical damage reduction rating (Temperance)
             if (parameters[0].ToLowerInvariant().Equals("temperance"))
             {
                 for (int j = 0; j < result; j++)
                 {
                     _luminanceRating = player.LumAugCritReductionRating;
+                    if (_luminanceRating == 0)
+                        player.LumAugCritReductionRating = 1;
+                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, _luminanceRating));
 
                     var temperance = player.GetProperty(PropertyInt.LumAugCritReductionRating);
                     var temperancecost = Math.Round((double)(10000000 * (1 + (temperance * 0.149))));
@@ -299,6 +308,7 @@ namespace ACE.Server.Command.Handlers
                     CreatureVital creatureVital6 = new CreatureVital(player, PropertyAttribute2nd.Mana);
                     creatureVital6.Ranks = Math.Clamp(creatureVital6.Ranks + 1, 1u, uint.MaxValue);
                     player.UpdateVital(creatureVital6, creatureVital6.MaxValue);
+                    player.RaisedMana++;
                 }
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxMana]));
                 ChatPacket.SendServerMessage(session, string.Format("Your Maximum Mana has been increased by {0}.", result), ChatMessageType.Broadcast);
@@ -348,12 +358,43 @@ namespace ACE.Server.Command.Handlers
                     player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Attributes[result2]));
                     ChatPacket.SendServerMessage(session, string.Format("Your {0} has been increased by {1}.", result2.ToString(), l), ChatMessageType.Broadcast);
                     ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                    player.RaisedStr++;
                     return;
                 }
-                player.Attributes[result2].StartingValue++;
+                player.Attributes[result2].StartingValue++;                
+                    
             }
             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Attributes[result2]));
             ChatPacket.SendServerMessage(session, string.Format("Your {0} has been increased by {1}.", result2.ToString(), result), ChatMessageType.Broadcast);
+
+            for (int l = 0; l < result; l++)
+            {
+                if (parameters[0].Equals("Strength"))
+                {
+                    player.RaisedStr++;
+                }
+                else if (parameters[0].Equals("Endurance"))
+                {
+                    player.RaisedEnd++;
+                }
+                else if (parameters[0].Equals("Coordination"))
+                {
+                    player.RaisedCoord++;
+                }
+                else if (parameters[0].Equals("Quickness"))
+                {
+                    player.RaisedQuick++;
+                }
+                else if (parameters[0].Equals("Focus"))
+                {
+                    player.RaisedFocus++;
+                }
+                else if (parameters[0].Equals("Self"))
+                {
+                    player.RaisedSelf++;
+                }
+            }
+            
         }
 
         [CommandHandler("vassalxp", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Shows full experience from vassals.")]

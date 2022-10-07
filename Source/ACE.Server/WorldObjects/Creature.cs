@@ -138,6 +138,19 @@ namespace ACE.Server.WorldObjects
             CurrentMotionState = new Motion(MotionStance.NonCombat, MotionCommand.Ready);
 
             selectedTargets = new Dictionary<uint, WorldObjectInfo>();
+
+            if (IsMonster == true)
+            {
+                var level = GetProperty(PropertyInt.Level);
+                if (level >= 500)
+                {
+                    var damageopvalue = ThreadSafeRandom.Next(1, 9) + (level * 1.17);
+                    var defenseopvalue = ThreadSafeRandom.Next(1, 9) + (level * 1.17);
+                    Overpower = (int)damageopvalue;
+                    OverpowerResist = (int)defenseopvalue;
+                }
+            }
+
         }
 
         // verify logic
