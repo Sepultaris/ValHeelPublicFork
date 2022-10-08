@@ -276,7 +276,7 @@ namespace ACE.Server.Entity
                     RecklessnessMod = 1.0f;
                     DamageRatingMod = Creature.AdditiveCombine(DamageRatingBaseMod, CriticalDamageRatingMod, SneakAttackMod, HeritageMod);
 
-                    DamageBeforeMitigation = BaseDamageMod.MaxDamage * AttributeMod * PowerMod * SlayerMod * DamageRatingMod * CriticalDamageMod * (int)(attacker.Overpower * 0.16f + 1);
+                    DamageBeforeMitigation = BaseDamageMod.MaxDamage * AttributeMod * PowerMod * SlayerMod * DamageRatingMod * CriticalDamageMod * ((int)(attacker.Overpower * 0.16f + 1) + ((int)(attacker.Level * 0.005f) * 20.1f));
                 }
                 if (!CriticalDefended && playerDefender != null && attacker.Overpower == null)
                 {
@@ -475,7 +475,7 @@ namespace ACE.Server.Entity
             BaseDamageMod = attacker.GetBaseDamage(AttackPart.Value);
             if (attacker.Overpower != null)
             {
-                BaseDamage = (float)ThreadSafeRandom.Next(BaseDamageMod.MinDamage, BaseDamageMod.MaxDamage * (int)(attacker.Overpower * 0.16f + 1));
+                BaseDamage = (float)ThreadSafeRandom.Next(BaseDamageMod.MinDamage, BaseDamageMod.MaxDamage * ((int)(attacker.Overpower * 0.16f + 1) + ((int)(attacker.Level * 0.005f) * 20.1f)));
             }
             if (attacker.Overpower == null)
             {
