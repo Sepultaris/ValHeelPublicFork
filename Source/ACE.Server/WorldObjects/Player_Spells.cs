@@ -16,6 +16,7 @@ using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Factories.Tables;
+using MySqlX.XDevAPI.Common;
 
 namespace ACE.Server.WorldObjects
 {
@@ -188,6 +189,8 @@ namespace ACE.Server.WorldObjects
 
             var levelDiff = prevItemLevel - (item.ItemLevel ?? 0);
 
+            var levelDiff1 = (item.ItemLevel) - prevItemLevel;
+
             var prevSpells = GetSpellSet(setItems, levelDiff);
 
             var spells = GetSpellSet(setItems);
@@ -195,84 +198,90 @@ namespace ACE.Server.WorldObjects
             EquipDequipItemFromSet(item, spells, prevSpells);
 
             // grant level up bonus
-            var actionChain = new ActionChain();
-            actionChain.AddAction(this, () =>
-            {                
-                var itemtype = item.GetProperty(PropertyInt.ItemType) ?? 0;
+            for (int j = 0; j < levelDiff1; j++)
+            {
+                var actionChain = new ActionChain();
+                actionChain.AddAction(this, () =>
+
+
+                {
+                    var itemtype = item.GetProperty(PropertyInt.ItemType) ?? 0;
+
+                    EnqueueBroadcast(new GameMessageScript(Guid, PlayScript.AetheriaLevelUp));
+
+                    // decide what do with each ItemType
+
+
+                    if (itemtype == 256) // MissileWeapon
+                    {
+
+                        item.ElementalDamageBonus++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonus = item.GetProperty(PropertyInt.ElementalDamageBonus) ?? 0;
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ElementalDamageBonus, ElementalDamageBonus ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Damage Bonus has increased by 1. And is now {damagebonus} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                    }
+
+                    if (itemtype == 2) // Armor
+                    {
+
+                        item.ArmorLevel++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var armorlevel = item.GetProperty(PropertyInt.ArmorLevel) ?? 0;
+                        var armorbonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ArmorLevel, ArmorLevel ?? 0);
+                        var gearvitalitybonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearMaxHealth, GearMaxHealth ?? 0);
+                        var bonusmessage = $"Your {name}'s Armor Level has increased by 1. And is now {armorlevel} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(armorbonusupdate);
+                        Session.Network.EnqueueSend(gearvitalitybonus);
+
+                    }
+
+                    if (itemtype == 1) // MelleeWeapon
+                    {
+
+                        item.Damage++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonus = item.GetProperty(PropertyInt.Damage) ?? 0;
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.Damage, Damage ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Damage has increased by 1. And is now {damagebonus} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                    }
+
+                    if (itemtype == 32768) // Caster
+                    {
+                        var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
+                        float increment = 0.01f;
+                        float newweapondamage = (float)(weapondamage + increment);
+                        item.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+
+
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyFloat(item, PropertyFloat.ElementalDamageMod, ElementalDamageMod ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Elemental Damage Bonus has increased by 1%. And is now {newweapondamage} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                    }
+                });
+                actionChain.EnqueueChain();                
+            }
                 
-                EnqueueBroadcast(new GameMessageScript(Guid, PlayScript.AetheriaLevelUp));
-
-                // decide what do with each ItemType
-
-
-                if (itemtype == 256) // MissileWeapon
-                {                    
-
-                    item.ElementalDamageBonus++;                    
-
-                    var name = item.GetProperty(PropertyString.Name);
-                    var damagebonus = item.GetProperty(PropertyInt.ElementalDamageBonus) ?? 0;                    
-                    var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ElementalDamageBonus, ElementalDamageBonus ?? 0);
-                    var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
-                    var bonusmessage = $"Your {name}'s Damage Bonus has increased by 1. And is now {damagebonus} !";
-                    Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));                   
-                    Session.Network.EnqueueSend(damagebonusupdate);
-                    Session.Network.EnqueueSend(geardamagebonus);
-
-                }
-
-                if (itemtype == 2) // Armor
-                {
-
-                    item.ArmorLevel++;
-
-                    var name = item.GetProperty(PropertyString.Name);
-                    var armorlevel = item.GetProperty(PropertyInt.ArmorLevel) ?? 0;
-                    var armorbonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ArmorLevel, ArmorLevel ?? 0);
-                    var gearvitalitybonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearMaxHealth, GearMaxHealth ?? 0);
-                    var bonusmessage = $"Your {name}'s Armor Level has increased by 1. And is now {armorlevel} !";
-                    Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
-                    Session.Network.EnqueueSend(armorbonusupdate);
-                    Session.Network.EnqueueSend(gearvitalitybonus);
-
-                }
-
-                if (itemtype == 1) // MelleeWeapon
-                {
-
-                    item.Damage++;
-
-                    var name = item.GetProperty(PropertyString.Name);
-                    var damagebonus = item.GetProperty(PropertyInt.Damage) ?? 0;
-                    var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.Damage, Damage ?? 0);
-                    var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
-                    var bonusmessage = $"Your {name}'s Damage has increased by 1. And is now {damagebonus} !";
-                    Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
-                    Session.Network.EnqueueSend(damagebonusupdate);
-                    Session.Network.EnqueueSend(geardamagebonus);
-
-                }
-
-                if (itemtype == 32768) // Caster
-                {
-                    var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
-                    float increment = 0.01f;
-                    float newweapondamage = (float)(weapondamage + increment);
-                    item.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
-
-
-
-                    var name = item.GetProperty(PropertyString.Name);                  
-                    var damagebonusupdate = new GameMessagePrivateUpdatePropertyFloat(item, PropertyFloat.ElementalDamageMod, ElementalDamageMod ?? 0);
-                    var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
-                    var bonusmessage = $"Your {name}'s Elemental Damage Bonus has increased by 1%. And is now {newweapondamage} !";
-                    Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
-                    Session.Network.EnqueueSend(damagebonusupdate);
-                    Session.Network.EnqueueSend(geardamagebonus);
-
-                }
-            });
-            actionChain.EnqueueChain();
 
 
         }
