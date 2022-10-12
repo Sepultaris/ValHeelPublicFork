@@ -465,19 +465,19 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         Damage += 82
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 33%:
         Damage += 83
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 33%:
         Damage += 84
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
 DaggerMS (HeavyWeapons) Mutation #10:
 

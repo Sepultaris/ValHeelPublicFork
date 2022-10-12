@@ -633,25 +633,25 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         Damage += 97
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 98
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 99
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 100
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
 Mace (HeavyWeapons) Mutation #10:
 

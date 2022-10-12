@@ -639,25 +639,25 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         Damage += 99
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 100
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 102
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 105
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
 Axe (HeavyWeapons) Mutation #10:
 

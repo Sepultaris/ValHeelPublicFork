@@ -366,25 +366,25 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         Damage += 64
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 65
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 66
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
     - Chance: 25%:
         Damage += 67
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 530
+        WieldDifficulty = 490
 
 SwordMS (LightWeapons, FinesseWeapons) Mutation #10:
 
