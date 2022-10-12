@@ -153,6 +153,7 @@ namespace ACE.Server.Factories
                     wo.SetProperty(PropertyString.Name, name);
                     wo.SetProperty(PropertyInt.WieldRequirements, 7);
                     wo.SetProperty(PropertyInt.WieldDifficulty, 350);
+                    TryMutateGearRating(wo, profile, roll);
                 }
 
             }

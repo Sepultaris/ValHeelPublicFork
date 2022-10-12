@@ -81,7 +81,7 @@ namespace ACE.Server.Entity
         public float DamageRatingMod;
 
         public bool IsCritical;
-        
+
 
         public float CriticalChance;
         public float CriticalDamageMod;
@@ -102,7 +102,7 @@ namespace ACE.Server.Entity
 
         public float DamageMitigated;
 
-        
+
         public float OverpowerResist;
 
         // creature attacker
@@ -113,7 +113,7 @@ namespace ACE.Server.Entity
         // creature defender
         public Quadrant Quadrant;
 
-        public bool IgnoreMagicArmor =>  (Weapon?.IgnoreMagicArmor ?? false) || (Attacker?.IgnoreMagicArmor ?? false);      // ignores impen / banes
+        public bool IgnoreMagicArmor => (Weapon?.IgnoreMagicArmor ?? false) || (Attacker?.IgnoreMagicArmor ?? false);      // ignores impen / banes
 
         public bool IgnoreMagicResist => (Weapon?.IgnoreMagicResist ?? false) || (Attacker?.IgnoreMagicResist ?? false);    // ignores life armor / prots
 
@@ -230,15 +230,15 @@ namespace ACE.Server.Entity
             DamageRatingBaseMod = Creature.GetPositiveRatingMod(attacker.GetDamageRating());
             RecklessnessMod = Creature.GetRecklessnessMod(attacker, defender);
             SneakAttackMod = attacker.GetSneakAttackMod(defender);
-            HeritageMod = attacker.GetHeritageBonus(Weapon) ? 1.05f : 1.0f;           
-           
+            HeritageMod = attacker.GetHeritageBonus(Weapon) ? 1.05f : 1.0f;
+
 
             DamageRatingMod = Creature.AdditiveCombine(DamageRatingBaseMod, RecklessnessMod, SneakAttackMod, HeritageMod);
 
             // damage before mitigation
-            
+
             DamageBeforeMitigation = BaseDamage * AttributeMod * PowerMod * SlayerMod * DamageRatingMod;
-            
+
 
             // critical hit?
             var attackSkill = attacker.GetCreatureSkill(attacker.GetCurrentWeaponSkill());
@@ -294,25 +294,25 @@ namespace ACE.Server.Entity
 
                     DamageBeforeMitigation = BaseDamageMod.MaxDamage * AttributeMod * PowerMod * SlayerMod * DamageRatingMod * CriticalDamageMod;
                 }
-               /* if (!CriticalDefended)
-                {
-                    IsCritical = true && playerDefender == null;
+                /* if (!CriticalDefended)
+                 {
+                     IsCritical = true && playerDefender == null;
 
-                    // verify: CriticalMultiplier only applied to the additional crit damage,
-                    // whereas CD/CDR applied to the total damage (base damage + additional crit damage)
-                    CriticalDamageMod = 1.0f + WorldObject.GetWeaponCritDamageMod(Weapon, attacker, attackSkill, defender);
+                     // verify: CriticalMultiplier only applied to the additional crit damage,
+                     // whereas CD/CDR applied to the total damage (base damage + additional crit damage)
+                     CriticalDamageMod = 1.0f + WorldObject.GetWeaponCritDamageMod(Weapon, attacker, attackSkill, defender);
 
-                    CriticalDamageRatingMod = Creature.GetPositiveRatingMod(attacker.GetCritDamageRating());
+                     CriticalDamageRatingMod = Creature.GetPositiveRatingMod(attacker.GetCritDamageRating());
 
-                    // recklessness excluded from crits
-                    RecklessnessMod = 1.0f;
-                    DamageRatingMod = Creature.AdditiveCombine(DamageRatingBaseMod, CriticalDamageRatingMod, SneakAttackMod, HeritageMod);
+                     // recklessness excluded from crits
+                     RecklessnessMod = 1.0f;
+                     DamageRatingMod = Creature.AdditiveCombine(DamageRatingBaseMod, CriticalDamageRatingMod, SneakAttackMod, HeritageMod);
 
-                    DamageBeforeMitigation = BaseDamageMod.MaxDamage * AttributeMod * PowerMod * SlayerMod * DamageRatingMod * CriticalDamageMod;
-                } */
+                     DamageBeforeMitigation = BaseDamageMod.MaxDamage * AttributeMod * PowerMod * SlayerMod * DamageRatingMod * CriticalDamageMod;
+                 } */
             }
 
-            
+
 
             // armor rending and cleaving
             var armorRendingMod = 1.0f;
@@ -380,12 +380,12 @@ namespace ACE.Server.Entity
             ShieldMod = defender.GetShieldMod(attacker, DamageType, Weapon);
             if (playerAttacker != null && defender.Overpower != null)
             {
-                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod / ((int)defender.OverpowerResist * (0.16f + (float)defender.Level * 0.0001f));                
+                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod / ((int)defender.OverpowerResist * (0.16f + (float)defender.Level * 0.0001f));
             }
             if (playerAttacker != null && defender.Overpower == null)
             {
                 Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
-            }            
+            }
             if (playerAttacker == null)
             {
                 Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;

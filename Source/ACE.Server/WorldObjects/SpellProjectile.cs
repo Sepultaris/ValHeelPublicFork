@@ -116,7 +116,7 @@ namespace ACE.Server.WorldObjects
                     ScriptedCollision = false;
                 }
             }
-                
+
             // Whirling Blade spells get omega values and "align path" turned off which
             // creates the nice swirling animation
             if (WeenieClassId == 1636 || WeenieClassId == 7268 || WeenieClassId == 20979)
@@ -281,7 +281,7 @@ namespace ACE.Server.WorldObjects
 
             if (player != null)
                 player.LastHitSpellProjectile = Spell;
-            
+
             // ensure caster can damage target
             var sourceCreature = ProjectileSource as Creature;
             if (sourceCreature != null && !sourceCreature.CanDamage(creatureTarget))
@@ -586,7 +586,7 @@ namespace ACE.Server.WorldObjects
             }
             if (sourcePlayer == null && sourceCreature.Overpower != null)
             {
-                finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod * ((int)(target.Overpower * 0.16f + 1) + ((int)(target.Level * 0.005f) * 20.1f));
+                finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod * ((int)(sourceCreature.Overpower * 0.16f + 1) + ((int)(sourceCreature.Level * 0.005f) * 20.1f));
             }
             return finalDamage;
         }
@@ -787,7 +787,7 @@ namespace ACE.Server.WorldObjects
                 target.DamageHistory.Add(ProjectileSource, Spell.DamageType, amount);
 
                 //if (targetPlayer != null && targetPlayer.Fellowship != null)
-                    //targetPlayer.Fellowship.OnVitalUpdate(targetPlayer);
+                //targetPlayer.Fellowship.OnVitalUpdate(targetPlayer);
             }
 
             amount = (uint)Math.Round(damage);    // full amount for debugging
@@ -919,7 +919,7 @@ namespace ACE.Server.WorldObjects
                 info += $"CriticalDefended: {critDefended}\n";
 
             info += $"Overpower: {overpower}\n";
-        
+
             if (spell.MetaSpellType == ACE.Entity.Enum.SpellType.LifeProjectile)
             {
                 // life magic projectile
@@ -990,7 +990,7 @@ namespace ACE.Server.WorldObjects
                 info += $"DamageRatingMod: {damageRatingMod}\n";
 
             if (critDamageResistRatingMod != 1.0f)
-                 info += $"CritDamageResistRatingMod: {critDamageResistRatingMod}\n";
+                info += $"CritDamageResistRatingMod: {critDamageResistRatingMod}\n";
 
             if (damageResistRatingMod != 1.0f)
                 info += $"DamageResistRatingMod: {damageResistRatingMod}\n";
