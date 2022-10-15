@@ -157,8 +157,7 @@ namespace ACE.Server.Factories
                 var name = $"Empowered {oldname}";
                 var weapondamage = wo.GetProperty(PropertyFloat.DamageMod);
                 float damagebonus = 11.5f;
-                float newweapondamage = (float)(weapondamage + damagebonus);
-                var wieldRequirement = 350;
+                float newweapondamage = (float)(weapondamage + damagebonus);                
 
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
