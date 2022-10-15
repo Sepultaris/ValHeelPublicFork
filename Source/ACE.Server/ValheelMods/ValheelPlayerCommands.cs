@@ -13,6 +13,12 @@ namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        [CommandHandler("raiserefund", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0, "Refunds costs associated with /raise.")]
+        public static void HandleRaiseRefund(Session session, params string[] parameters)
+        {
+            ValheelRaise.RaiseRefundToPlayer(session.Player);
+        }
+
         [CommandHandler("raise", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Allows you to raise attributes past maximum at the cost of 10 billion XP. Allows you to raise Luminance Augmentation for Damage Rating (Destruction), Damage Reduction (Invulnerability), Critical Damage (Glory) and Critical Damage Reduction (Temperance) and Max Health, Stamina, and Mana (Vitality) for the cost of 10,000,000 Luminance.", "")]
         public static void HandleRaise(Session session, params string[] parameters)
         {

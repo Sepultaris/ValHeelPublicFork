@@ -170,7 +170,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 250;
+                var damagebonus = 850;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -180,7 +180,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 15f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
             }
             else if (profile.Tier == 9 && empowered <= 0.5f && isMagical && attacktype > 25 || profile.Tier == 9 && isMagical && attacktype > 25 && profile.TreasureType == 3112)
             {
@@ -190,7 +190,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 250;
+                var damagebonus = 850;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -200,7 +200,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 20f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
             }
             else if (profile.Tier == 9 && empowered <= 0.5f && isMagical || profile.Tier == 9 && isMagical && profile.TreasureType == 3112)
             {
@@ -210,7 +210,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 500;
+                var damagebonus = 1400;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
                 wo.ItemMaxLevel = maxlevel;
