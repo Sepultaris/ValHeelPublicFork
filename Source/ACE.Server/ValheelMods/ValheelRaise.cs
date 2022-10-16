@@ -40,7 +40,7 @@ namespace ACE.Server.DuskfallMods
                     //Get resources spent
                     if (!target.TryGetCostToLevel(startLevel, timesLeveled, out long cost))
                     {
-                        playerMessages.Add($"Failed to get cost for {timesLeveled} levels of {target}.");
+                       // playerMessages.Add($"Failed to get cost for {timesLeveled} levels of {target}.");
                         continue;
                     }
 
@@ -51,11 +51,11 @@ namespace ACE.Server.DuskfallMods
                         playerMessages.Add($"Refunding {timesLeveled} levels of {target} for {cost:N0} xp.");
                         //session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, attribute));
                     }                    
-                    /* else
-                     {
+                    else
+                    {
                          player.AvailableLuminance += cost;
                          playerMessages.Add($"Refunding {timesLeveled} levels of {target} for {cost:N0} lum.");
-                     } */
+                    } 
                     //Finally, set the level to what it should be
                     target.SetLevel(player, startLevel);
                 }
@@ -152,7 +152,7 @@ namespace ACE.Server.DuskfallMods
             foreach (var msg in refundMessagesVital)
                 ChatPacket.SendServerMessage(session, msg, ChatMessageType.Broadcast);
 
-            UpdatePlayerRaiseVital(player, session);
+            UpdatePlayerRaiseVital(player, session); 
         }
 
         private static void UpdatePlayerRaiseProperties(Player player, Session session)
@@ -164,13 +164,13 @@ namespace ACE.Server.DuskfallMods
                     session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, attribute));               
             }           
             //Send player their updated ratings
-           //session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugAllSkills, player.LumAugAllSkills));
+           // session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugAllSkills, player.LumAugAllSkills));
            // session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
            // session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
            // session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
            // session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
             //Send updated resources
-            session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(player, PropertyInt64.AvailableLuminance, player.AvailableLuminance ?? 0));
+           // session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(player, PropertyInt64.AvailableLuminance, player.AvailableLuminance ?? 0));
             session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(player, PropertyInt64.AvailableExperience, player.AvailableExperience ?? 0));
         }
 

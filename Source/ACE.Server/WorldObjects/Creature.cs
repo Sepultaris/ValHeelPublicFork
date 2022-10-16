@@ -139,7 +139,7 @@ namespace ACE.Server.WorldObjects
 
             selectedTargets = new Dictionary<uint, WorldObjectInfo>();
 
-           /* if (IsMonster == true)
+            if (IsMonster == true)
             {
                 var level = GetProperty(PropertyInt.Level);
                 if (level >= 500)
@@ -149,7 +149,7 @@ namespace ACE.Server.WorldObjects
                     Overpower = (int)damageopvalue;
                     OverpowerResist = (int)defenseopvalue;
                 }
-            } */
+            }
 
         }
 

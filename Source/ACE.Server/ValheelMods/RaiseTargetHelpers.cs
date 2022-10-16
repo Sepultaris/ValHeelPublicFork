@@ -129,10 +129,10 @@ namespace ACE.Server.DuskfallMods
                 //Ratings return the normal max.
                 ////Comment out to allow leveling down to 0 which would let a player go through the normal process to net a little Lum
                 ///case RaiseTarget.World: return 10;  //Max World 
-                case RaiseTarget.Invulnerability: return 5;
-                case RaiseTarget.Destruction: return 5;
-                case RaiseTarget.Glory: return 5;
-                case RaiseTarget.Temperance: return 5;
+                case RaiseTarget.Invulnerability: return 1;
+                case RaiseTarget.Destruction: return 1;
+                case RaiseTarget.Glory: return 1;
+                case RaiseTarget.Temperance: return 1;
                 default: return 0;
             }
         }
@@ -162,7 +162,7 @@ namespace ACE.Server.DuskfallMods
                         long avgCost = (long)(ValheelSettings.RAISE_ATTR_MULT * avgLevel / (ValheelSettings.RAISE_ATTR_MULT_DECAY - ValheelSettings.RAISE_ATTR_LVL_DECAY * avgLevel));
                         cost = checked(avgCost * numLevels);
                         return true;                    
-                    case RaiseTarget.Destruction:
+                   /* case RaiseTarget.Destruction:
                     case RaiseTarget.Invulnerability:
                     case RaiseTarget.Glory:
                     case RaiseTarget.Temperance:
@@ -171,7 +171,7 @@ namespace ACE.Server.DuskfallMods
                         return true;
                     case RaiseTarget.World:
                         cost = checked(numLevels * ValheelSettings.RAISE_WORLD_MULT);
-                        return true;
+                        return true; */
                 }
             }
             catch (OverflowException ex) { }
