@@ -342,6 +342,15 @@ namespace ACE.Server.Entity
             Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
 
             DamageMitigated = DamageBeforeMitigation - Damage;
+            // OP damage
+            if (attacker.Overpower != null)
+            {
+                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod * ((int)(attacker.Overpower * 0.16f + 1) + ((int)(attacker.Level * 0.005f) * 20.1f));
+            }
+            if (defender.Overpower != null)
+            {
+                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod / ((int)(defender.Overpower * 0.16f + 1) + ((int)(defender.Level * 0.005f) * 20.1f));
+            }
 
             return Damage;
         }
