@@ -349,7 +349,7 @@ namespace ACE.Server.Entity
             }
             if (defender.Overpower != null)
             {
-                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod / ((int)(defender.Overpower * 0.16f + 1) + ((int)(defender.Level * 0.005f) * 20.1f));
+                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod / ((int)(defender.OverpowerResist * 0.16f + 1) + ((int)(defender.Level * 0.005f) * 20.1f));
             }
 
             return Damage;
