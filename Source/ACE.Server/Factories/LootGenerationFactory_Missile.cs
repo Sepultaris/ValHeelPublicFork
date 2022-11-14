@@ -146,9 +146,10 @@ namespace ACE.Server.Factories
 
             // Empwoered missile weapons T9 only.
 
+            var cleavingRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
             var empowered = ThreadSafeRandom.Next(0.0f, 1.0f);
 
-            if (profile.Tier == 9 && empowered <= 0.5f && isMagical || profile.Tier == 9 && isMagical && profile.TreasureType == 3112)
+            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && profile.TreasureType == 3111 || profile.Tier == 9 && isMagical && profile.TreasureType == 3112)
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 150;
@@ -168,6 +169,35 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 15f);
+                if (cleavingRoll <= 0.1f)
+                    wo.SetProperty(PropertyInt.Cleaving, 3);
+
+            }
+            // Proto Missile Weapons
+
+            if (profile.Tier == 9 && isMagical && profile.TreasureType == 4111)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 2000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.DamageMod);
+                float damagebonus = 11.5f;
+                float newweapondamage = (float)(weapondamage + damagebonus);
+
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 15f);
+                if (cleavingRoll <= 0.1f)
+                    wo.SetProperty(PropertyInt.Cleaving, 3);
 
             }
 

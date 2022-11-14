@@ -4,6 +4,7 @@ using System.Linq;
 
 using ACE.Common;
 using ACE.DatLoader;
+using ACE.DatLoader.Entity;
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Server.Entity;
@@ -865,7 +866,7 @@ namespace ACE.Server.WorldObjects
 
                 return;
             }
-
+           
             var pk_error = CheckPKStatusVsTarget(target, spell);
             if (pk_error != null)
                 castingPreCheckStatus = CastingPreCheckStatus.InvalidPKStatus;
@@ -875,7 +876,7 @@ namespace ACE.Server.WorldObjects
                 case CastingPreCheckStatus.Success:
 
                     if ((spell.Flags & SpellFlags.FellowshipSpell) == 0)
-                        CreatePlayerSpell(target, spell, isWeaponSpell);
+                        CreatePlayerSpell(target, spell, isWeaponSpell);                    
                     else
                     {
                         var fellows = GetFellowshipTargets();
@@ -1077,9 +1078,31 @@ namespace ACE.Server.WorldObjects
             {
                 case MagicSchool.WarMagic:
                     WarMagic(target, spell, caster, isWeaponSpell);
+                    if (caster != null && caster.IsCleaving)
+                    {
+                        var cleave = GetCleaveTarget(targetCreature, caster);
+
+                        foreach (var cleaveHit in cleave)
+                        {
+                            // target procs don't happen for cleaving
+                            //DamageTarget(cleaveHit, caster);
+                            TryProcEquippedItems(this, cleaveHit, false, caster);
+                        }
+                    }
                     break;
                 case MagicSchool.VoidMagic:
                     VoidMagic(target, spell, caster, isWeaponSpell);
+                    if (caster != null && caster.IsCleaving)
+                    {
+                        var cleave = GetCleaveTarget(targetCreature, caster);
+
+                        foreach (var cleaveHit in cleave)
+                        {
+                            // target procs don't happen for cleaving
+                            //DamageTarget(cleaveHit, caster);
+                            TryProcEquippedItems(this, cleaveHit, false, caster);
+                        }
+                    }
                     break;
 
                 case MagicSchool.CreatureEnchantment:

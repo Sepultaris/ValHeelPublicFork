@@ -140,7 +140,7 @@ namespace ACE.Server.Factories
             }
 
             // Empowered clothing
-            if (armorType == LootTables.ArmorType.MiscClothing && !wo.HasArmorLevel())
+            if (armorType == LootTables.ArmorType.MiscClothing && !wo.HasArmorLevel() && profile.TreasureType == 3111)
             {
                 wo.Empowered = false;
                 var empoweredClothing = ThreadSafeRandom.Next(1.0f, 0.0f);
@@ -155,6 +155,21 @@ namespace ACE.Server.Factories
                     wo.SetProperty(PropertyInt.WieldDifficulty, 350);
                     TryMutateGearRating(wo, profile, roll);
                 }
+
+            }
+
+            // Proto Clothing
+            if (armorType == LootTables.ArmorType.MiscClothing && !wo.HasArmorLevel() && profile.TreasureType == 4111)
+            {
+                wo.Empowered = false;                
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.WieldRequirements, 7);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                TryMutateGearRating(wo, profile, roll);
 
             }
 
@@ -186,7 +201,7 @@ namespace ACE.Server.Factories
 
             var empowered = ThreadSafeRandom.Next(0.0f, 1.0f);
 
-            if (profile.Tier == 9 && empowered <= 0.3f && wo.HasArmorLevel() && isMagical || profile.Tier == 9 && wo.HasArmorLevel() && isMagical && profile.TreasureType == 3112)
+            if (profile.Tier == 9 && empowered <= 0.3f && wo.HasArmorLevel() && isMagical && profile.TreasureType == 3111 || profile.Tier == 9 && wo.HasArmorLevel() && isMagical && profile.TreasureType == 3112)
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 150;
@@ -218,7 +233,43 @@ namespace ACE.Server.Factories
                     if (hasmagicabsorbtion <= 0.25f)
                         wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
                 }
-                wo.SetProperty(PropertyBool.Empowered, true);
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+            }
+            if (profile.Tier == 9 && wo.HasArmorLevel() && isMagical && profile.TreasureType == 4111)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 2000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+                var armorlevel = wo.GetProperty(PropertyInt.ArmorLevel);
+                var armorbonus = 600;
+                int newarmorlevel = (int)(armorlevel + armorbonus);
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
+                wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 4.0f, 4.3f);
+                wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 4.0f, 4.3f);
+                wo.ArmorModVsBludgeon = Math.Min((wo.ArmorModVsBludgeon ?? 0) + 4.0f, 4.3f);
+                wo.ArmorModVsAcid = Math.Min((wo.ArmorModVsAcid ?? 0) + 4.0f, 4.3f);
+                wo.ArmorModVsFire = Math.Min((wo.ArmorModVsFire ?? 0) + 4.0f, 4.3f);
+                wo.ArmorModVsCold = Math.Min((wo.ArmorModVsCold ?? 0) + 4.0f, 4.3f);
+                wo.ArmorModVsElectric = Math.Min((wo.ArmorModVsElectric ?? 0) + 4.0f, 4.3f);
+                if (wo.IsShield)
+                {
+                    var hasmagicabsorbtion = ThreadSafeRandom.Next(0.0f, 1.0f);
+                    var absorbtionammount = ThreadSafeRandom.Next(1.10f, 1.15f);
+                    if (hasmagicabsorbtion <= 0.25f)
+                        wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
+                }
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
             }
 
             if (profile.Tier >= 8)
@@ -1110,11 +1161,13 @@ namespace ACE.Server.Factories
 
             var gearRating = GearRatingChance.Roll(wo, profile, roll);
             var t9gearRating = gearRating += ThreadSafeRandom.Next(7, 12);
+            var t10gearRating =  gearRating += ThreadSafeRandom.Next(17, 22);
 
             if (gearRating == 0)
                 return false;
 
             var empowered = wo.GetProperty(PropertyBool.Empowered);
+            var proto = wo.GetProperty(PropertyBool.Proto);
             var rng = ThreadSafeRandom.Next(0, 1);
 
             if (roll.HasArmorLevel(wo) && profile.Tier <= 8)
@@ -1170,19 +1223,47 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
                 wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
             }
+            // T9 Proto Ratings
+            else if (roll.HasArmorLevel(wo) && profile.Tier == 9 && proto == true)
+            {
+                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+            }
+            else if (roll.IsClothing && profile.Tier == 9 && proto == true || roll.IsCloak && profile.Tier == 9 && proto == true)
+            {
+                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+            }
+            else if (roll.IsJewelry && profile.Tier == 9 && proto == true)
+            {
+                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(-5, 5)));
+            }
             // T9 non-empowered ratings
-            else if (roll.HasArmorLevel(wo) && profile.Tier == 9 && empowered == false)
+            else if (roll.HasArmorLevel(wo) && profile.Tier == 9 && empowered == false && proto == false)
             {
 
                 wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
                 wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
             }
-            else if (roll.IsClothing && profile.Tier == 9 && empowered == false || roll.IsCloak && profile.Tier == 9)
+            else if (roll.IsClothing && profile.Tier == 9 && empowered == false || roll.IsCloak && profile.Tier == 9 && empowered == false && proto == false)
             {
                 wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
                 wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
             }
-            else if (roll.IsJewelry && profile.Tier == 9 && empowered == false)
+            else if (roll.IsJewelry && profile.Tier == 9 && empowered == false && proto == false)
             {
 
                 wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));

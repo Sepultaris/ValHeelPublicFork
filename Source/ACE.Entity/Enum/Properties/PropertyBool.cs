@@ -189,6 +189,8 @@ namespace ACE.Entity.Enum.Properties
         SkillTemplesTimerReset           = 9009,
         [ServerOnly]
         Empowered                        = 9010,
+        [ServerOnly]
+        Proto                            = 9011,
     }
 
     public static class PropertyBoolExtensions

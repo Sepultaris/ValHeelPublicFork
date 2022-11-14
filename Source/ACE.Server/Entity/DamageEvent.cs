@@ -76,7 +76,7 @@ namespace ACE.Server.Entity
         public float DamageRatingBaseMod;
         public float RecklessnessMod;
         public float SneakAttackMod;
-        public float HeritageMod;
+        public float HeritageMod;  
 
         public float DamageRatingMod;
 

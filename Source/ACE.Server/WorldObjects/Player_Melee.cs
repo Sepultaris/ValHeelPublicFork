@@ -347,6 +347,7 @@ namespace ACE.Server.WorldObjects
                         {
                             // target procs don't happen for cleaving
                             DamageTarget(cleaveHit, weapon);
+                            TryProcEquippedItems(this, cleaveHit, false, weapon);
                         }
                     }
                 });

@@ -193,7 +193,7 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public static uint GetMaxLevel()
         {
-            return 400;
+            return 500;
         }
 
         /// <summary>

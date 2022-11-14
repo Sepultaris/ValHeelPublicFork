@@ -158,11 +158,12 @@ namespace ACE.Server.Factories
 
             // Empwoered melee weapons T9 only.
 
+            var cleavingRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
             var empowered = ThreadSafeRandom.Next(0.0f, 1.0f);
             var cleaving = wo.GetProperty(PropertyInt.Cleaving);
             var attacktype = wo.GetProperty(PropertyInt.AttackType);
             // apply bonuses based on melee weapon type
-            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && cleaving > 1 || profile.Tier == 9 && isMagical && cleaving > 1 && profile.TreasureType == 3112)               
+            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && cleaving > 1 && profile.TreasureType == 3111 || profile.Tier == 9 && isMagical && cleaving > 1 && profile.TreasureType == 3112)               
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 150;
@@ -173,6 +174,7 @@ namespace ACE.Server.Factories
                 var damagebonus = 850;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
+                wo.SetProperty(PropertyBool.Empowered, true);
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
@@ -181,8 +183,10 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
+                if (cleavingRoll <= 0.1f)
+                    wo.SetProperty(PropertyInt.Cleaving, 3);
             }
-            else if (profile.Tier == 9 && empowered <= 0.5f && isMagical && attacktype > 25 || profile.Tier == 9 && isMagical && attacktype > 25 && profile.TreasureType == 3112)
+            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && attacktype > 25 && profile.TreasureType == 3111 || profile.Tier == 9 && isMagical && attacktype > 25 && profile.TreasureType == 3112)
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 150;
@@ -193,6 +197,7 @@ namespace ACE.Server.Factories
                 var damagebonus = 850;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
+                wo.SetProperty(PropertyBool.Empowered, true);
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
@@ -200,9 +205,9 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);                
             }
-            else if (profile.Tier == 9 && empowered <= 0.5f && isMagical || profile.Tier == 9 && isMagical && profile.TreasureType == 3112)
+            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && profile.TreasureType == 3111 || profile.Tier == 9 && isMagical && profile.TreasureType == 3112)
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 150;
@@ -213,6 +218,7 @@ namespace ACE.Server.Factories
                 var damagebonus = 1400;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
+                wo.SetProperty(PropertyBool.Empowered, true);
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
@@ -220,10 +226,75 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);                
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);                
+            }
+            // Proto Weapons
+            if (profile.Tier == 9 && isMagical && cleaving > 1 && profile.TreasureType == 4111)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 2000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+                var weapondamage = wo.GetProperty(PropertyInt.Damage);
+                var damagebonus = 850;
+                int newweapondamage = (int)(weapondamage + damagebonus);
+
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
+                wo.SetProperty(PropertyInt.Cleaving, 3);
+            }
+            if (profile.Tier == 9 && isMagical && attacktype > 25 && profile.TreasureType == 4111)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 2000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+                var weapondamage = wo.GetProperty(PropertyInt.Damage);
+                var damagebonus = 850;
+                int newweapondamage = (int)(weapondamage + damagebonus);
+
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);           
+            }
+            if (profile.Tier == 9 && isMagical && profile.TreasureType == 4111)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 2000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+                var weapondamage = wo.GetProperty(PropertyInt.Damage);
+                var damagebonus = 1400;
+                int newweapondamage = (int)(weapondamage + damagebonus);
+
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);                
             }
 
-                return true;
+            return true;
         }
 
         private static bool MutateStats_OldMethod(WorldObject wo, TreasureDeath profile, int wieldDifficulty)

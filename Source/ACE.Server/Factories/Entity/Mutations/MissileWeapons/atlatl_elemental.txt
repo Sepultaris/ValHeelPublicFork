@@ -323,49 +323,49 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         ElementalDamageBonus = 150
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.23
 
     - Chance: 10%:
         ElementalDamageBonus = 150
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.25
 
     - Chance: 10%:
         ElementalDamageBonus = 150
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.27
 
     - Chance: 10%:
         ElementalDamageBonus = 150
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.3
 
     - Chance: 15%:
         ElementalDamageBonus = 150
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.35
 
     - Chance: 30%:
         ElementalDamageBonus = 150
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.37
 
     - Chance: 15%:
         ElementalDamageBonus = 150
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.4
 
     - Chance 100%:

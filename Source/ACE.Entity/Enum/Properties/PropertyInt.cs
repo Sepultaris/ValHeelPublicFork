@@ -651,6 +651,10 @@ namespace ACE.Entity.Enum.Properties
         LastLevel = 9035,
         [ServerOnly]
         NumberOfPets = 9036,
+        [ServerOnly]
+        TotalPrestige = 9037,
+        [ServerOnly]
+        AvailablePrestige = 9037,
     }
 
     public static class PropertyIntExtensions

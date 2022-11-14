@@ -195,7 +195,7 @@ namespace ACE.Server.Factories
             var empowered = ThreadSafeRandom.Next(0.0f, 1.0f);
             var hasdamagemod = wo.GetProperty(PropertyFloat.ElementalDamageMod);
 
-            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && hasdamagemod > 0 || profile.Tier == 9 && isMagical && hasdamagemod > 0 && profile.TreasureType == 3112)
+            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && hasdamagemod > 0 && profile.TreasureType == 3111 || profile.Tier == 9 && isMagical && hasdamagemod > 0 && profile.TreasureType == 3112)
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 150;
@@ -215,6 +215,29 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 5f);
+                wo.SetProperty(PropertyBool.Empowered, true);
+            }
+            if (profile.Tier == 9 && isMagical && hasdamagemod > 0 && profile.TreasureType == 4111)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 2000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
+                float damagebonus = 1.5f;
+                float newweapondamage = (float)(weapondamage + damagebonus);
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 5f);
+                wo.SetProperty(PropertyBool.Proto, true);
             }
 
         }

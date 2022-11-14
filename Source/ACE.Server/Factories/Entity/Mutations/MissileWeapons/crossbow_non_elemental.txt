@@ -185,49 +185,49 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.63
 
     - Chance: 10%:
         
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.65
 
     - Chance: 10%:
         
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.67
 
     - Chance: 10%:
         
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.6
 
     - Chance: 15%:
         
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.65
 
     - Chance: 30%:
         
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.67
 
     - Chance: 15%:
         
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 520
+        WieldDifficulty = 490
         DamageMod = 3.7 
 
     - Chance 100%:

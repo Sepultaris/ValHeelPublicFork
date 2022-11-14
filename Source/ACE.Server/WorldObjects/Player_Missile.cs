@@ -243,7 +243,19 @@ namespace ACE.Server.WorldObjects
 
                 var projectile = LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
                 UpdateAmmoAfterLaunch(ammo);
-            });
+
+                if (weapon != null && weapon.IsCleaving)
+                {
+                    var cleave = GetCleaveTarget(creature, weapon);
+
+                    foreach (var cleaveHit in cleave)
+                    {
+                        // target procs don't happen for cleaving
+                        DamageTarget(cleaveHit, weapon);
+                        TryProcEquippedItems(this, cleaveHit, false, weapon);
+                    }
+                }
+            });       
 
             // ammo remaining?
             if (!ammo.UnlimitedUse && (ammo.StackSize == null || ammo.StackSize <= 1))

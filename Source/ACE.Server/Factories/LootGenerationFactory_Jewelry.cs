@@ -95,6 +95,20 @@ namespace ACE.Server.Factories
                 }
 
             }
+            // Proto Jewelry
+            if (profile.TreasureType == 4111)
+            {
+                wo.Empowered = false;
+                var empoweredJewelry = ThreadSafeRandom.Next(1.0f, 0.0f);
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.WieldRequirements, 7);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 425);                
+
+            }
             // gear rating (t8)
             if (roll != null && profile.Tier >= 8)
                 TryMutateGearRating(wo, profile, roll);
