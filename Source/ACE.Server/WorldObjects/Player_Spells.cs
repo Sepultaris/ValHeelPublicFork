@@ -299,13 +299,10 @@ namespace ACE.Server.WorldObjects
 
                         // Proto Evolution
                         // Item "wakes up" and becomes Attuned and Bonded
-                        if (itemLevel == 1)
+                        if (itemLevel >= 1)
                         {
                             item.SetProperty(PropertyInt.Bonded, 1);
                             item.SetProperty(PropertyInt.Attuned, 1);
-
-                            var protoFirstLevel = $"Your {name} has awakened gained sentience! It is now symbiotically bonded to you and has modified itself accordingly!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(protoFirstLevel, ChatMessageType.Broadcast));
 
                             if (damageType == 1)
                             {
@@ -352,20 +349,14 @@ namespace ACE.Server.WorldObjects
                             }
                         }
                         // Add cleaving at level 200
-                        if (itemLevel == 200)
+                        if (itemLevel >= 200)
                         {
-                            if (item.IsCleaving == true)
-                            {
-                                item.SetProperty(PropertyInt.Cleaving, 5);
-                            }
-                            else if (item.IsCleaving == false)
-                                item.SetProperty(PropertyInt.Cleaving, 3);
+                           
+                            item.SetProperty(PropertyInt.Cleaving, 3);
 
-                            var proto200thLevel = $"Your {name} has learned how to channel your power into multiple targets!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto200thLevel, ChatMessageType.Broadcast));
                         }
                         // Add spell proc at level 100
-                        if (itemLevel == 100)
+                        if (itemLevel >= 100)
                         {
                             if (damageType == 1) // Slash
                             {
@@ -419,28 +410,25 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 5356);
                             }
-                            var proto100thLevel = $"Your {name} has learned to focus some of the power you channel into it!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto100thLevel, ChatMessageType.Broadcast));
+
                         }
                         // Increase SpellProcRate every 100 levels from level 300 - 500
-                        if (itemLevel == 300)
+                        if (itemLevel >= 300)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
-                            var proto300thLevel = $"Your {name} has learned how to focus more of your power!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto300thLevel, ChatMessageType.Broadcast));
+
                         }
-                        if (itemLevel == 400)
+                        if (itemLevel >= 400)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
-                            var proto400thLevel = $"Your {name} has learned how to focus even more of your power!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto400thLevel, ChatMessageType.Broadcast));
+
                         }
-                        if (itemLevel == 500)
+                        if (itemLevel >= 500)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
-                            var proto500thLevel = $"Your {name} has learned how to focus all of the power you can channel into it!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto500thLevel, ChatMessageType.Broadcast));
+
                         }
+
 
                     }
 
@@ -481,15 +469,14 @@ namespace ACE.Server.WorldObjects
                         Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                         Session.Network.EnqueueSend(damagebonusupdate);
                         Session.Network.EnqueueSend(geardamagebonus);
+
                         // Proto Evolution
                         // Item "wakes up" and becomes Attuned and Bonded
-                        if (itemLevel == 1)
+                        var attacktype = item.GetProperty(PropertyInt.AttackType);
+                        if (itemLevel >= 1)
                         {
                             item.SetProperty(PropertyInt.Bonded, 1);
                             item.SetProperty(PropertyInt.Attuned, 1);
-
-                            var protoFirstLevel = $"Your {name} has awakened gained sentience! It is now symbiotically bonded to you and has modified itself accordingly!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(protoFirstLevel, ChatMessageType.Broadcast));
 
                             if (damageType == 1)
                             {
@@ -536,20 +523,19 @@ namespace ACE.Server.WorldObjects
                             }
                         }
                         // Add cleaving at level 200
-                        if (itemLevel == 200)
+                        if (itemLevel >= 200)
                         {
-                            if (item.IsCleaving == true)
+                            if (attacktype > 34)
                             {
                                 item.SetProperty(PropertyInt.Cleaving, 5);
                             }
-                            else if (item.IsCleaving == false)
+                            else 
                                 item.SetProperty(PropertyInt.Cleaving, 3);
 
-                            var proto200thLevel = $"Your {name} has learned how to channel your power into multiple targets!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto200thLevel, ChatMessageType.Broadcast));
+
                         }
                         // Add spell proc at level 100
-                        if (itemLevel == 100)
+                        if (itemLevel >= 100)
                         {
                             if (damageType == 1) // Slash
                             {
@@ -603,29 +589,24 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 5356);
                             }
-                            var proto100thLevel = $"Your {name} has learned to focus some of the power you channel into it!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto100thLevel, ChatMessageType.Broadcast));
+
                         }
                         // Increase SpellProcRate every 100 levels from level 300 - 500
-                        if (itemLevel == 300)
+                        if (itemLevel >= 300)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
-                            var proto300thLevel = $"Your {name} has learned how to focus more of your power!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto300thLevel, ChatMessageType.Broadcast));
+
                         }
-                        if (itemLevel == 400)
+                        if (itemLevel >= 400)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
-                            var proto400thLevel = $"Your {name} has learned how to focus even more of your power!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto400thLevel, ChatMessageType.Broadcast));
+
                         }
-                        if (itemLevel == 500)
+                        if (itemLevel >= 500)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
-                            var proto500thLevel = $"Your {name} has learned how to focus all of the power you can channel into it!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto500thLevel, ChatMessageType.Broadcast));
-                        }
 
+                        }
                     }
 
                     if (itemtype == 32768 && proto == true) // Caster
@@ -644,15 +625,13 @@ namespace ACE.Server.WorldObjects
                         Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                         Session.Network.EnqueueSend(damagebonusupdate);
                         Session.Network.EnqueueSend(geardamagebonus);
+
                         // Proto Evolution
-                        // Item "wakes up" and becomes Attuned and Bonded
-                        if (itemLevel == 1)
+                        // Item "wakes up" and becomes Attuned and Bonded                      
+                        if (itemLevel >= 1)
                         {
                             item.SetProperty(PropertyInt.Bonded, 1);
                             item.SetProperty(PropertyInt.Attuned, 1);
-
-                            var protoFirstLevel = $"Your {name} has awakened gained sentience! It is now symbiotically bonded to you and has modified itself accordingly!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(protoFirstLevel, ChatMessageType.Broadcast));
 
                             if (damageType == 1)
                             {
@@ -699,20 +678,12 @@ namespace ACE.Server.WorldObjects
                             }
                         }
                         // Add cleaving at level 200
-                        if (itemLevel == 200)
-                        {
-                            if (item.IsCleaving == true)
-                            {
-                                item.SetProperty(PropertyInt.Cleaving, 5);
-                            }
-                            else if (item.IsCleaving == false)
+                        if (itemLevel >= 200)
+                        {                            
                                 item.SetProperty(PropertyInt.Cleaving, 3);
-
-                            var proto200thLevel = $"Your {name} has learned how to channel your power into multiple targets!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto200thLevel, ChatMessageType.Broadcast));
                         }
                         // Add spell proc at level 100
-                        if (itemLevel == 100)
+                        if (itemLevel >= 100)
                         {
                             if (damageType == 1) // Slash
                             {
@@ -766,27 +737,23 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 5356);
                             }
-                            var proto100thLevel = $"Your {name} has learned to focus some of the power you channel into it!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto100thLevel, ChatMessageType.Broadcast));
+
                         }
                         // Increase SpellProcRate every 100 levels from level 300 - 500
-                        if (itemLevel == 300)
+                        if (itemLevel >= 300)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
-                            var proto300thLevel = $"Your {name} has learned how to focus more of your power!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto300thLevel, ChatMessageType.Broadcast));
+
                         }
-                        if (itemLevel == 400)
+                        if (itemLevel >= 400)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
-                            var proto400thLevel = $"Your {name} has learned how to focus even more of your power!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto400thLevel, ChatMessageType.Broadcast));
+
                         }
-                        if (itemLevel == 500)
+                        if (itemLevel >= 500)
                         {
                             item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
-                            var proto500thLevel = $"Your {name} has learned how to focus all of the power you can channel into it!";
-                            Session.Network.EnqueueSend(new GameMessageSystemChat(proto500thLevel, ChatMessageType.Broadcast));
+
                         }
 
                     }
