@@ -1078,7 +1078,7 @@ namespace ACE.Server.WorldObjects
             {
                 case MagicSchool.WarMagic:
                     WarMagic(target, spell, caster, isWeaponSpell);
-                    if (caster != null && caster.IsCleaving)
+                    /*if (caster != null && caster.IsCleaving)
                     {
                         var cleave = GetCleaveTarget(targetCreature, caster);
 
@@ -1088,11 +1088,11 @@ namespace ACE.Server.WorldObjects
                             //DamageTarget(cleaveHit, caster);
                             TryProcEquippedItems(this, cleaveHit, false, caster);
                         }
-                    }
+                    }*/
                     break;
                 case MagicSchool.VoidMagic:
                     VoidMagic(target, spell, caster, isWeaponSpell);
-                    if (caster != null && caster.IsCleaving)
+                    /*if (caster != null && caster.IsCleaving)
                     {
                         var cleave = GetCleaveTarget(targetCreature, caster);
 
@@ -1102,7 +1102,7 @@ namespace ACE.Server.WorldObjects
                             //DamageTarget(cleaveHit, caster);
                             TryProcEquippedItems(this, cleaveHit, false, caster);
                         }
-                    }
+                    }*/
                     break;
 
                 case MagicSchool.CreatureEnchantment:

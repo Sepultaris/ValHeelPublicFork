@@ -1349,6 +1349,13 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyInt.NumberOfPets);
             set { if (!value.HasValue) RemoveProperty(PropertyInt.NumberOfPets); else SetProperty(PropertyInt.NumberOfPets, value.Value); }
         }
+
+
+        public bool Ascended
+        {
+            get => GetProperty(PropertyBool.Ascended) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Ascended); else SetProperty(PropertyBool.Ascended, value); }
+        }
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

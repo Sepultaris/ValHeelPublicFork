@@ -191,6 +191,8 @@ namespace ACE.Entity.Enum.Properties
         Empowered                        = 9010,
         [ServerOnly]
         Proto                            = 9011,
+        [ServerOnly]
+        Ascended                         = 9012,
     }
 
     public static class PropertyBoolExtensions

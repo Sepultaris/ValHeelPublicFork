@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common.Extensions;
+using ACE.Database.Models.Shard;
 using ACE.DatLoader;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
@@ -192,8 +193,10 @@ namespace ACE.Server.WorldObjects
         /// Returns the maximum possible character level
         /// </summary>
         public static uint GetMaxLevel()
-        {
-            return 500;
+
+        
+        {                        
+                return 500;
         }
 
         /// <summary>

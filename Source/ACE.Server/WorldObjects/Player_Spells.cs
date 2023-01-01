@@ -678,10 +678,10 @@ namespace ACE.Server.WorldObjects
                             }
                         }
                         // Add cleaving at level 200
-                        if (itemLevel >= 200)
+                        /*if (itemLevel >= 200)
                         {                            
                                 item.SetProperty(PropertyInt.Cleaving, 3);
-                        }
+                        }*/
                         // Add spell proc at level 100
                         if (itemLevel >= 100)
                         {

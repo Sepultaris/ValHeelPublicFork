@@ -233,7 +233,7 @@ namespace ACE.Server.Factories
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 500;
-                var basexp = 2000000000;
+                var basexp = 50000000000;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
@@ -255,7 +255,7 @@ namespace ACE.Server.Factories
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 500;
-                var basexp = 2000000000;
+                var basexp = 50000000000;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
@@ -276,7 +276,7 @@ namespace ACE.Server.Factories
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 500;
-                var basexp = 2000000000;
+                var basexp = 50000000000;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
