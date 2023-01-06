@@ -50,11 +50,13 @@ namespace ACE.Server.WorldObjects
             }
 
             // Cut incoming XP in half once the player hits level 500
-            var newm_amount = m_amount / 2;
+            var newm_amount = m_amount / 4;
             if (Level >= 500)
+            {
                 m_amount = newm_amount;
-
-            GrantXP(m_amount, xpType, shareType);
+                GrantXP(m_amount, xpType, shareType);
+            }                
+            else GrantXP(m_amount, xpType, shareType);
         }
 
         /// <summary>
