@@ -1077,32 +1077,45 @@ namespace ACE.Server.WorldObjects
             switch (spell.School)
             {
                 case MagicSchool.WarMagic:
-                    WarMagic(target, spell, caster, isWeaponSpell);
-                    /*if (caster != null && caster.IsCleaving)
+                    if (caster.IsCleaving)
                     {
-                        var cleave = GetCleaveTarget(targetCreature, caster);
+                        WarMagic(target, spell, caster, isWeaponSpell);
+                        TryProcEquippedItems(this, targetCreature, false, caster);
+                        var cleave = GetMagicCleaveTarget(targetCreature, caster);
 
                         foreach (var cleaveHit in cleave)
                         {
-                            // target procs don't happen for cleaving
-                            //DamageTarget(cleaveHit, caster);
+                            
+                            WarMagic(cleaveHit, spell, caster, isWeaponSpell);
                             TryProcEquippedItems(this, cleaveHit, false, caster);
                         }
-                    }*/
+
+                    }
+
+                    else if (!caster.IsCleaving)
+                        WarMagic(target, spell, caster, isWeaponSpell);
+                    TryProcEquippedItems(this, targetCreature, false, caster);
+
                     break;
                 case MagicSchool.VoidMagic:
-                    VoidMagic(target, spell, caster, isWeaponSpell);
-                    /*if (caster != null && caster.IsCleaving)
-                    {
-                        var cleave = GetCleaveTarget(targetCreature, caster);
+                    if(caster.IsCleaving)
+                    {                        
+                        VoidMagic(target, spell, caster, isWeaponSpell);                        
+                        var cleave = GetMagicCleaveTarget(targetCreature, caster);
 
                         foreach (var cleaveHit in cleave)
                         {
-                            // target procs don't happen for cleaving
-                            //DamageTarget(cleaveHit, caster);
+                            
+                            VoidMagic(cleaveHit, spell, caster, isWeaponSpell);
                             TryProcEquippedItems(this, cleaveHit, false, caster);
                         }
-                    }*/
+                        
+                    }
+                    
+                   else if(!caster.IsCleaving)
+                        VoidMagic(target, spell, caster, isWeaponSpell);
+                    
+
                     break;
 
                 case MagicSchool.CreatureEnchantment:
@@ -1587,6 +1600,53 @@ namespace ACE.Server.WorldObjects
 
             log.Error($"VerifyNonComponentTargetType({spell.Id} - {spell.Name}, {target.Name}) - unexpected NonComponentTargetType {spell.NonComponentTargetType}");
             return false;
+        }
+
+        public List<Creature> GetMagicCleaveTarget(Creature target, WorldObject weapon)
+        {
+            var player = this as Player;
+
+            if (!weapon.IsCleaving) return null;
+
+            // sort visible objects by ascending distance
+            var visible = PhysicsObj.ObjMaint.GetVisibleObjectsValuesWhere(o => o.WeenieObj.WorldObject != null);
+            visible.Sort(DistanceComparator);
+
+            var cleaveTargets = new List<Creature>();
+            var totalCleaves = weapon.CleaveTargets;
+
+            foreach (var obj in visible)
+            {              
+
+                // only cleave creatures
+                var creature = obj.WeenieObj.WorldObject as Creature;
+                if (creature == null || creature.Teleporting || creature.IsDead) continue;
+
+                if (player != null && player.CheckPKStatusVsTarget(creature, null) != null)
+                    continue;
+
+                if (!creature.Attackable && creature.TargetingTactic == TargetingTactic.None || creature.Teleporting)
+                    continue;
+
+                if (creature is CombatPet && (player != null || this is CombatPet))
+                    continue;
+
+                // no objects in cleave range
+                var cylDist = GetCylinderDistance(creature);
+                if (cylDist > MagicCleaveCylRange)
+                    return cleaveTargets;
+
+                // only cleave in front of attacker
+                var angle = GetAngle(creature);
+                if (Math.Abs(angle) > CleaveAngle / 2.0f)
+                    continue;
+
+                // found cleavable object
+                cleaveTargets.Add(creature);
+                if (cleaveTargets.Count == totalCleaves)
+                    break;
+            }
+            return cleaveTargets;
         }
     }
 }

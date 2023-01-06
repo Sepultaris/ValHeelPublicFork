@@ -103,8 +103,11 @@ namespace ACE.Server.WorldObjects
         public static readonly float CleaveRange = 5.0f;
         public static readonly float CleaveRangeSq = CleaveRange * CleaveRange;
         public static readonly float CleaveAngle = 180.0f;
+        public static readonly float MissileCleaveAngle = 90.0f;
 
-        public static readonly float CleaveCylRange = 2.0f;
+        public static readonly float CleaveCylRange = 4.0f;
+        public static readonly float MagicCleaveCylRange = 4.0f;
+        public static readonly float MissileCleaveCylRange = 4.0f;
 
         /// <summary>
         /// Performs a cleaving attack for two-handed weapons
@@ -126,7 +129,7 @@ namespace ACE.Server.WorldObjects
             foreach (var obj in visible)
             {
                 // cleaving skips original target
-                if (obj.ID == target.PhysicsObj.ID)
+                if (obj.ID == target.PhysicsObj.ID || target == null)
                     continue;
 
                 // only cleave creatures

@@ -195,8 +195,8 @@ namespace ACE.Server.WorldObjects
         public static uint GetMaxLevel()
 
         
-        {                        
-                return 500;
+        {          
+                return 999999;
         }
 
         /// <summary>
@@ -283,9 +283,14 @@ namespace ACE.Server.WorldObjects
                 levelA_totalXP = DatManager.PortalDat.XpTable.CharacterLevelXPList[levelA];
                 levelB_totalXP = DatManager.PortalDat.XpTable.CharacterLevelXPList[levelB];
             }
-            else
+            if (Level > 275 && Level < 500)
             {
                 levelA_totalXP = (ulong)TotalXpBeyond - (ulong)Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f)));
+                levelB_totalXP = (ulong)TotalXpBeyond;
+            }
+            if (Level >= 500)
+            {
+                levelA_totalXP = (ulong)TotalXpBeyond - (ulong)Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f))*10);
                 levelB_totalXP = (ulong)TotalXpBeyond;
             }
             //Session.Network.EnqueueSend(new GameMessageSystemChat($"{levelB_totalXP - levelA_totalXP:N0} BETWEEN", ChatMessageType.Broadcast));
@@ -392,7 +397,7 @@ namespace ACE.Server.WorldObjects
             }
 
 
-            if (Level > startingLevel && Level >= 275)
+            if (Level > startingLevel && Level >= 275 && Level < 500)
             {
                 var incrementxp = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f)));
                 var message = (Level == maxLevel) ? $"You have reached the maximum level of {Level}!" : $"You are now level {Level}! You need {incrementxp:N0} to reach {Level + 1}";
@@ -433,6 +438,50 @@ namespace ACE.Server.WorldObjects
 
                 Session.Network.EnqueueSend(new GameMessageSystemChat(message, ChatMessageType.Advancement), currentCredits);
             }
+
+            if (Level > startingLevel && Level >= 500)
+            {
+                var incrementxp = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f))*10);
+                var message = (Level == maxLevel) ? $"You have reached the maximum level of {Level}!" : $"You are now level {Level}! You need {incrementxp:N0} to reach {Level + 1}";
+                //Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {incrementxp:N0} to reach {Level + 1}", ChatMessageType.Advancement));
+                message += (AvailableSkillCredits > 0) ? $"\nYou have {AvailableExperience:#,###0} experience points and {AvailableSkillCredits} skill credits available to raise skills and attributes." : $"\nYou have {AvailableExperience:#,###0} experience points available to raise skills and attributes.";
+
+                var levelUp = new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.Level, Level ?? 1);
+                var currentCredits = new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.AvailableSkillCredits, AvailableSkillCredits ?? 0);
+
+                // 275 and under code.
+                if (Level != maxLevel && !creditEarned && Level <= 275)
+                {
+                    var nextLevelWithCredits = 0;
+
+                    for (int i = (Level ?? 0) + 1; i <= maxLevel; i++)
+                    {
+                        if (xpTable.CharacterLevelSkillCreditList[i] > 0)
+                        {
+                            nextLevelWithCredits = i;
+                            break;
+                        }
+                    }
+                    message += $"\nYou will earn another skill credit at level {nextLevelWithCredits}.";
+                }
+
+                if (Fellowship != null)
+                    Fellowship.OnFellowLevelUp(this);
+
+                if (AllegianceNode != null)
+                    AllegianceNode.OnLevelUp();
+
+                Session.Network.EnqueueSend(levelUp);
+
+                SetMaxVitals();
+
+                // play level up effect
+                PlayParticleEffect(PlayScript.LevelUp, Guid);
+
+                Session.Network.EnqueueSend(new GameMessageSystemChat(message, ChatMessageType.Advancement), currentCredits);
+            }
+
+
         }
         /// <summary>
         /// This function is just meant to catch a player right as they hit level 275 and transfer from using the Vanilla dats from 1-275, to a custom formula.
@@ -448,7 +497,7 @@ namespace ACE.Server.WorldObjects
         /// <returns></returns>
         public long? Catch275(bool maxcheck, int? startingLevel)
         {
-            if (!maxcheck)
+            if (Level < 500)
             {
                 var incrementxp1 = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f))); // allows for a more dynamic increase per level.
 
@@ -476,7 +525,36 @@ namespace ACE.Server.WorldObjects
 
                 return (long)nextLevel;
             }
-            
+
+            if (Level >= 500)
+            {
+                var incrementxp1 = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f))*10); // allows for a more dynamic increase per level.
+
+                if (Level > startingLevel)
+                {
+                    if (!TotalXpBeyond.HasValue || TotalXpBeyond == 0)
+                        TotalXpBeyond = 191226310247 + (long)incrementxp1;
+                    else
+                        TotalXpBeyond += (long)incrementxp1;
+                }
+
+                ///var currentxp = TotalXpBeyond;
+
+                ///var currentremaining = currentxp - TotalExperience;
+
+                /*Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {currentremaining:N0}xp to reach level {Level + 1}. Required total xp is {currentxp:N0}", ChatMessageType.Broadcast));
+                if (GetXPToNextLevel((int)Level) <= 0)
+                    Level++;*/
+
+
+                var nextLevel = TotalXpBeyond;
+                ///Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {incrementxp:N0} to reach {Level + 1}", ChatMessageType.Advancement));
+
+                LastLevel = Level;
+
+                return (long)nextLevel;
+            }
+
             return (long)TotalXpBeyond;
         }
         /// <summary>
