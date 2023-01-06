@@ -13,7 +13,7 @@ namespace ACE.Server.WorldObjects
     /// Creature melee combat for players and monsters
     /// </summary>
     partial class Creature
-    {
+    {   
         /// <summary>
         /// Returns TRUE for DualWieldCombat mode
         /// </summary>
@@ -98,12 +98,14 @@ namespace ACE.Server.WorldObjects
             var dist2 = Location.SquaredDistanceTo(b.WeenieObj.WorldObject.Location);
 
             return dist1.CompareTo(dist2);
+            
         }
+        
 
         public static readonly float CleaveRange = 5.0f;
         public static readonly float CleaveRangeSq = CleaveRange * CleaveRange;
         public static readonly float CleaveAngle = 180.0f;
-        public static readonly float MissileCleaveAngle = 90.0f;
+        public static readonly float MissileCleaveAngle = 180.0f;
 
         public static readonly float CleaveCylRange = 4.0f;
         public static readonly float MagicCleaveCylRange = 4.0f;

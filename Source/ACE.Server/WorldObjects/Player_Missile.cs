@@ -429,7 +429,7 @@ namespace ACE.Server.WorldObjects
             });
             
             // reload animation
-            /*var animSpeed = GetAnimSpeed();
+            var animSpeed = GetAnimSpeed();
             var reloadTime = EnqueueMotionPersist(actionChain, stance, MotionCommand.Reload, animSpeed);
 
             // reset for next projectile
@@ -471,7 +471,7 @@ namespace ACE.Server.WorldObjects
                     OnAttackDone();
             });
 
-            actionChain.EnqueueChain();*/
+            actionChain.EnqueueChain();
 
             if (UnderLifestoneProtection)
                 LifestoneProtectionDispel();

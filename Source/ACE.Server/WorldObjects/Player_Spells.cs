@@ -352,7 +352,7 @@ namespace ACE.Server.WorldObjects
                         if (itemLevel >= 200)
                         {
                            
-                            item.SetProperty(PropertyInt.Cleaving, 3);
+                            item.SetProperty(PropertyInt.Cleaving, 3); 
 
                         }
                         // Add spell proc at level 100
