@@ -301,9 +301,12 @@ namespace ACE.Server.Command.Handlers
                 ChatPacket.SendServerMessage(session, string.Format("Your Luminance Augmentation Critical Damage Reduction Rating has been increased by {0}.", result), ChatMessageType.Broadcast);
                 return;
             }
+
+            CreatureVital maxHealth = new CreatureVital(player, PropertyAttribute2nd.MaxHealth);
+
             if (parameters[0].Equals("vitality"))
             {
-                if (player.Level < 500)
+                if (maxHealth.Ranks < 25000)
                 {
                     for (int j = 0; j < result; j++)
                     {
@@ -349,8 +352,9 @@ namespace ACE.Server.Command.Handlers
                     player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxMana]));
                     player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxStamina]));
                     return;
-                }
-                if (player.Level >= 500)
+                }                                
+
+                if (maxHealth.Ranks >= 25000)
                 {
                     for (int j = 0; j < result; j++)
                     {
@@ -360,7 +364,7 @@ namespace ACE.Server.Command.Handlers
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxStamina]));
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxMana]));
                             ChatPacket.SendServerMessage(session, string.Format("Your Vitality has been increased by {0}.", j), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough Luminance for remaining points, you require 10 million (10,000,000) Luminance per point.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough Luminance for remaining points, you require 500 million (500,000,000) Luminance per point.", ChatMessageType.Broadcast);
                             return;
                         }
                         if (!player.SpendLuminance(500000000L))
@@ -369,7 +373,7 @@ namespace ACE.Server.Command.Handlers
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxStamina]));
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxMana]));
                             ChatPacket.SendServerMessage(session, string.Format("Your Vitality has been increased by {0}.", j), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough Luminance for remaining points, you require 10 million (10,000,000) Luminance per point.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough Luminance for remaining points, you require 500 million (500,000,000) Luminance per point.", ChatMessageType.Broadcast);
                             return;
                         }
                         CreatureVital creatureVital1 = new CreatureVital(player, PropertyAttribute2nd.MaxHealth);
