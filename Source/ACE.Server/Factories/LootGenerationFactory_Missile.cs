@@ -195,9 +195,7 @@ namespace ACE.Server.Factories
                 // increase damage
                 wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 15f);
-                if (cleavingRoll <= 0.1f)
-                    wo.SetProperty(PropertyInt.Cleaving, 3);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 15f);                
 
             }
 

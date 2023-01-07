@@ -84,14 +84,14 @@ namespace ACE.Server.Command.Handlers
                         {
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxHealth]));
                             ChatPacket.SendServerMessage(session, string.Format("Your Maximum Health has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 500 billion(500,000,000,000) XP per point.", ChatMessageType.Broadcast);
                             return;
                         }
                         if (!player.SpendXP(500000000000L))
                         {
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxHealth]));
                             ChatPacket.SendServerMessage(session, string.Format("Your Maximum Health has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 500 billion(500,000,000,000) XP per point.", ChatMessageType.Broadcast);
                             return;
                         }
                         CreatureVital creatureVital = new CreatureVital(player, PropertyAttribute2nd.MaxHealth);
@@ -152,14 +152,14 @@ namespace ACE.Server.Command.Handlers
                         {
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxStamina]));
                             ChatPacket.SendServerMessage(session, string.Format("Your Maximum Stamina has been increased by {0}.", j), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 500 billion(500,000,000,000) XP per point.", ChatMessageType.Broadcast);
                             return;
                         }
                         if (!player.SpendXP(500000000000L))
                         {
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxStamina]));
                             ChatPacket.SendServerMessage(session, string.Format("Your Maximum Stamina has been increased by {0}.", j), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 500 billion(500,000,000,000) XP per point.", ChatMessageType.Broadcast);
                             return;
                         }
                         CreatureVital creatureVital3 = new CreatureVital(player, PropertyAttribute2nd.MaxStamina);
@@ -451,14 +451,14 @@ namespace ACE.Server.Command.Handlers
                         {
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxMana]));
                             ChatPacket.SendServerMessage(session, string.Format("Your Maximum Mana has been increased by {0}.", k), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 500 billion(500,000,000,000) XP per point.", ChatMessageType.Broadcast);
                             return;
                         }
                         if (!player.SpendXP(500000000000L))
                         {
                             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxMana]));
                             ChatPacket.SendServerMessage(session, string.Format("Your Maximum Mana has been increased by {0}.", k), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 500 billion(500,000,000,000) XP per point.", ChatMessageType.Broadcast);
                             return;
                         }
                         CreatureVital creatureVital5 = new CreatureVital(player, PropertyAttribute2nd.MaxMana);
@@ -513,14 +513,14 @@ namespace ACE.Server.Command.Handlers
                     {
                         player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Attributes[result2]));
                         ChatPacket.SendServerMessage(session, string.Format("Your {0} has been increased by {1}.", result2.ToString(), l), ChatMessageType.Broadcast);
-                        ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                        ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 500 billion(500,000,000,000) XP per point.", ChatMessageType.Broadcast);
                         return;
                     }
                     if (!player.SpendXP(500000000000L))
                     {
                         player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Attributes[result2]));
                         ChatPacket.SendServerMessage(session, string.Format("Your {0} has been increased by {1}.", result2.ToString(), l), ChatMessageType.Broadcast);
-                        ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 10 billion(10,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                        ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 500 billion(500,000,000,000) XP per point.", ChatMessageType.Broadcast);
                         player.RaisedStr++;
                         return;
                     }

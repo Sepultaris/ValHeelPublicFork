@@ -17,6 +17,7 @@ using ACE.Server.Network.GameMessages.Messages;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Factories.Tables;
 using MySqlX.XDevAPI.Common;
+using ACE.Common;
 
 namespace ACE.Server.WorldObjects
 {
@@ -756,6 +757,72 @@ namespace ACE.Server.WorldObjects
 
                         }
 
+                    }
+
+                    if (itemtype == 8 && proto == true) // Jewelry
+                    {                             
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded                      
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            if (itemLevel >= 1 && !item.HasProc)
+                            {
+                                var spellProc = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                                if (spellProc <= 0.3f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.10f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4643);
+                                }
+                                else if (spellProc > 0.3f && spellProc < 0.6f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.10f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4644);
+                                }
+                                else if (spellProc >= 0.6f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.10f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4645);
+                                }
+                            }
+                        }
+                       
+                        // Increase to proc rate
+                        if (itemLevel >= 200)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.14f);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 100)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.12f);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 300)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.16);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 400)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.18);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 500)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.20);
+                        }
+
+                        var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);
+                        var name = item.GetProperty(PropertyString.Name);
+                        var bonusmessage = $"Your {name}'s spell proc rate has increased. And is now {procrate} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                     }
                 });
                 actionChain.EnqueueChain();                

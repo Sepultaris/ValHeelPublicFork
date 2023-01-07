@@ -156,7 +156,7 @@ namespace ACE.Server.Factories
             // long description
             wo.LongDesc = GetLongDesc(wo);
 
-            // Empwoered melee weapons T9 only.
+            // Empowered melee weapons T9 only.
 
             var cleavingRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
             var empowered = ThreadSafeRandom.Next(0.0f, 1.0f);

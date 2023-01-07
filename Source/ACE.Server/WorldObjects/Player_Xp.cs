@@ -60,9 +60,13 @@ namespace ACE.Server.WorldObjects
             {
                 m_amount = newm_amount;
                 GrantXP(m_amount, xpType, shareType);
+                GrantItemXP(m_amount * 3);
             }
             if (Level >= 500 && QuestManager.CanSolve("Ascension"))
             {
+                GrantItemXP(m_amount);
+                if (HasVitae && xpType != XpType.Allegiance)
+                    UpdateXpVitae(m_amount);
                 return;
             }
             else GrantXP(m_amount, xpType, shareType);

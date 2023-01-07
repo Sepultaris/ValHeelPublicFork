@@ -79,8 +79,10 @@ namespace ACE.Server.Factories
                 wo.ManaRate = null;
             }
             // Empowered jewelry
-            if (profile.Tier > 8)
+            if (profile.Tier > 8 && profile.TreasureType != 4111)
             {
+                TryRollEquipmentSet(wo, profile, roll);
+                TryMutateGearRating(wo, profile, roll);
                 wo.Empowered = false;
                 var empoweredJewelry = ThreadSafeRandom.Next(1.0f, 0.0f);
                 var oldname = wo.GetProperty(PropertyString.Name);
@@ -98,16 +100,48 @@ namespace ACE.Server.Factories
             // Proto Jewelry
             if (profile.TreasureType == 4111)
             {
-                wo.Empowered = false;
-                var empoweredJewelry = ThreadSafeRandom.Next(1.0f, 0.0f);
+                TryRollEquipmentSet(wo, profile, roll);
+                TryMutateGearRating(wo, profile, roll);
+                wo.Proto = false;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
+                var maxlevel = 500;
+                var basexp = 50000000000;
 
                 wo.SetProperty(PropertyBool.Proto, true);
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 425);                
+                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
 
+                /*if (jewelryProc <= 1.0f)
+                {
+                    var spellProc = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                    if (spellProc <= 0.3f)
+                    {
+                        wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.16f);
+                        wo.SetProperty(PropertyDataId.ProcSpell, 4643);
+                    }                        
+                    else if (spellProc > 0.3f && spellProc < 0.6f)
+                    {
+                        wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.16f);
+                        wo.SetProperty(PropertyDataId.ProcSpell, 4644);
+                    }                        
+                    else if (spellProc >= 0.6f)
+                    {
+                        wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.16f);
+                        wo.SetProperty(PropertyDataId.ProcSpell, 4645);
+                    }
+                        
+                }*/
+                
             }
             // gear rating (t8)
             if (roll != null && profile.Tier >= 8)
