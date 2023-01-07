@@ -5,11 +5,16 @@ using System.Linq;
 using ACE.Common.Extensions;
 using ACE.Database.Models.Shard;
 using ACE.DatLoader;
+using ACE.Entity;
+using ACE.Server;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.Entity;
+using ACE.Server.Network;
+
 
 namespace ACE.Server.WorldObjects
 {
@@ -51,11 +56,15 @@ namespace ACE.Server.WorldObjects
 
             // Cut incoming XP in half once the player hits level 500
             var newm_amount = m_amount / 4;
-            if (Level >= 500)
+            if (Level >= 500 && !QuestManager.CanSolve("Ascension"))
             {
                 m_amount = newm_amount;
                 GrantXP(m_amount, xpType, shareType);
-            }                
+            }
+            if (Level >= 500 && QuestManager.CanSolve("Ascension"))
+            {
+                return;
+            }
             else GrantXP(m_amount, xpType, shareType);
         }
 
@@ -196,14 +205,15 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        
         /// <summary>
         /// Returns the maximum possible character level
         /// </summary>
         public static uint GetMaxLevel()
 
         
-        {          
-                return 999999;
+        {            
+            return 999999;
         }
 
         /// <summary>
@@ -319,7 +329,7 @@ namespace ACE.Server.WorldObjects
 
             var maxLevel = GetMaxLevel();
 
-            if (Level >= maxLevel) return;
+            if (Level >= 500 && QuestManager.CanSolve("Ascension")) return;
 
             var startingLevel = Level;
             bool creditEarned = false;

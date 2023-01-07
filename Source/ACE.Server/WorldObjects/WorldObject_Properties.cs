@@ -3064,5 +3064,6 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyBool.AiAcceptEverything) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.AiAcceptEverything); else SetProperty(PropertyBool.AiAcceptEverything, value); }
         }
+        
     }
 }

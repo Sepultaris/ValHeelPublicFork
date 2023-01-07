@@ -994,6 +994,8 @@ namespace ACE.Server.WorldObjects
 
         public bool IsNPK => PlayerKillerStatus == PlayerKillerStatus.NPK;
 
+        
+
         public bool CheckHouseRestrictions(Player player)
         {
             if (Location.Cell == player.Location.Cell)
