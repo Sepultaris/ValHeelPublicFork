@@ -259,6 +259,11 @@ namespace ACE.Server.Physics.Common
             WorldObject.OnMoveComplete(status);
         }
 
+        public void CombatPetOnMoveComplete(WeenieError status)
+        {
+            WorldObject.CombatPetOnMoveComplete(status);
+        }
+
         public bool CanBypassMoveRestrictions()
         {
             // acclient checks both of these here

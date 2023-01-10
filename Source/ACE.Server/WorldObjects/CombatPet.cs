@@ -1,9 +1,18 @@
 using System;
 using System.Collections.Generic;
 
+using ACE.Common;
+using ACE.DatLoader;
+using ACE.DatLoader.FileTypes;
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Models;
+using ACE.Server.Entity;
+using ACE.Server.Managers;
+using ACE.Server.Physics.Animation;
+using ACE.Entity.Enum.Properties;
+using System.Numerics;
+using log4net;
 
 namespace ACE.Server.WorldObjects
 {
@@ -73,8 +82,10 @@ namespace ACE.Server.WorldObjects
         public override bool FindNextTarget()
         {
             var nearbyMonsters = GetNearbyMonsters();
+
             if (nearbyMonsters.Count == 0)
             {
+
                 //Console.WriteLine($"{Name}.FindNextTarget(): empty");
                 return false;
             }
@@ -82,9 +93,10 @@ namespace ACE.Server.WorldObjects
             // get nearest monster
             var nearest = BuildTargetDistance(nearbyMonsters, true);
 
+
             if (nearest[0].Distance > VisualAwarenessRangeSq)
             {
-                //Console.WriteLine($"{Name}.FindNextTarget(): next object out-of-range (dist: {Math.Round(Math.Sqrt(nearest[0].Distance))})");
+
                 return false;
             }
 
@@ -93,6 +105,7 @@ namespace ACE.Server.WorldObjects
             //Console.WriteLine($"{Name}.FindNextTarget(): {AttackTarget.Name}");
 
             return true;
+
         }
 
         /// <summary>
@@ -120,18 +133,26 @@ namespace ACE.Server.WorldObjects
                 }
 
                 monsters.Add(creature);
+
             }
 
             return monsters;
         }
-
+         
         public override void Sleep()
         {
+
             // pets dont really go to sleep, per say
             // they keep scanning for new targets,
             // which is the reverse of the current ACE jurassic park model
 
             return;  // empty by default
+            
         }
+
+        
     }
-}
+}   
+
+        
+

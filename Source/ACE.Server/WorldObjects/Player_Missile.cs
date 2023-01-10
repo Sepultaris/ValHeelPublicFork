@@ -427,7 +427,22 @@ namespace ACE.Server.WorldObjects
                 UpdateAmmoAfterLaunch(ammo);
                 
             });
-            
+
+            // ammo remaining?
+            if (!ammo.UnlimitedUse && (ammo.StackSize == null || ammo.StackSize <= 1))
+            {
+                actionChain.AddAction(this, () =>
+                {
+                    Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, "You are out of ammunition!"));
+                    SetCombatMode(CombatMode.NonCombat);
+                    Attacking = false;
+                    OnAttackDone();
+                });
+
+                actionChain.EnqueueChain();
+                return;
+            }
+
             // reload animation
             var animSpeed = GetAnimSpeed();
             var reloadTime = EnqueueMotionPersist(actionChain, stance, MotionCommand.Reload, animSpeed);

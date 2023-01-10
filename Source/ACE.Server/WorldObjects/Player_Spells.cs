@@ -432,7 +432,6 @@ namespace ACE.Server.WorldObjects
 
 
                     }
-
                     if (itemtype == 2 && proto == true) // Armor
                     {
 
@@ -456,7 +455,6 @@ namespace ACE.Server.WorldObjects
                         }
 
                     }
-
                     if (itemtype == 1 && proto == true) // MelleeWeapon
                     {
 
@@ -609,7 +607,6 @@ namespace ACE.Server.WorldObjects
 
                         }
                     }
-
                     if (itemtype == 32768 && proto == true) // Caster
                     {
                         var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
@@ -758,7 +755,6 @@ namespace ACE.Server.WorldObjects
                         }
 
                     }
-
                     if (itemtype == 8 && proto == true) // Jewelry
                     {                             
                         // Proto Evolution
@@ -775,48 +771,49 @@ namespace ACE.Server.WorldObjects
                                 if (spellProc <= 0.3f)
                                 {
                                     item.SetProperty(PropertyInt.ItemSpellcraft, 999);
-                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.10f);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
                                     item.SetProperty(PropertyDataId.ProcSpell, 4643);
                                 }
                                 else if (spellProc > 0.3f && spellProc < 0.6f)
                                 {
                                     item.SetProperty(PropertyInt.ItemSpellcraft, 999);
-                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.10f);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
                                     item.SetProperty(PropertyDataId.ProcSpell, 4644);
                                 }
-                                else if (spellProc >= 0.6f)
+                                else if (spellProc >= 0.3f)
                                 {
                                     item.SetProperty(PropertyInt.ItemSpellcraft, 999);
-                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.10f);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
                                     item.SetProperty(PropertyDataId.ProcSpell, 4645);
                                 }
                             }
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
                         }
                        
                         // Increase to proc rate
                         if (itemLevel >= 200)
                         {
-                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.14f);
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.09f);
                         }
                         // Increase to proc rate
                         if (itemLevel >= 100)
                         {
-                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.12f);
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.07f);
                         }
                         // Increase to proc rate
                         if (itemLevel >= 300)
                         {
-                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.16);
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.11);
                         }
                         // Increase to proc rate
                         if (itemLevel >= 400)
                         {
-                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.18);
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.13);
                         }
                         // Increase to proc rate
                         if (itemLevel >= 500)
                         {
-                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.20);
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.15);
                         }
 
                         var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);

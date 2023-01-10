@@ -107,6 +107,7 @@ namespace ACE.Server.Factories
                 var name = $"Proto {oldname}";
                 var maxlevel = 500;
                 var basexp = 50000000000;
+                var jewelryProc = ThreadSafeRandom.Next(0.0f, 1.0f);
 
                 wo.SetProperty(PropertyBool.Proto, true);
                 wo.SetProperty(PropertyString.Name, name);
@@ -117,30 +118,30 @@ namespace ACE.Server.Factories
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
 
-                /*if (jewelryProc <= 1.0f)
+                if (jewelryProc <= 0.3f)
                 {
                     var spellProc = ThreadSafeRandom.Next(0.0f, 1.0f);
 
                     if (spellProc <= 0.3f)
                     {
                         wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
-                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.16f);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
                         wo.SetProperty(PropertyDataId.ProcSpell, 4643);
                     }                        
                     else if (spellProc > 0.3f && spellProc < 0.6f)
                     {
                         wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
-                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.16f);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
                         wo.SetProperty(PropertyDataId.ProcSpell, 4644);
                     }                        
-                    else if (spellProc >= 0.6f)
+                    else if (spellProc >= 0.3f)
                     {
                         wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
-                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.16f);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
                         wo.SetProperty(PropertyDataId.ProcSpell, 4645);
                     }
                         
-                }*/
+                }
                 
             }
             // gear rating (t8)

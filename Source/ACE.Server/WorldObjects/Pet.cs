@@ -13,6 +13,7 @@ using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Managers;
 using ACE.Server.Physics.Animation;
+using ACE.Entity.Enum.Properties;
 
 namespace ACE.Server.WorldObjects
 {
@@ -269,19 +270,43 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public override void OnMoveComplete(WeenieError status)
         {
-            //Console.WriteLine($"{Name}.OnMoveComplete({status})");
-
-            if (!IsPassivePet)
-            {
-                base.OnMoveComplete(status);
-                return;
-            }
+            //Console.WriteLine($"{Name}.OnMoveComplete({status})");            
 
             if (status != WeenieError.None)
                 return;
 
             PhysicsObj.CachedVelocity = Vector3.Zero;
             IsMoving = false;
+
+
+        }
+
+        public List<Creature> PetGetNearbyMonsters()
+        {
+            var monsters = new List<Creature>();
+
+            foreach (var creature in PhysicsObj.ObjMaint.GetVisibleTargetsValuesOfTypeCreature())
+            {
+                // why does this need to be in here?
+                if (creature.IsDead)
+                {
+                    //Console.WriteLine($"{Name}.GetNearbyMonsters(): refusing to add dead creature {creature.Name} ({creature.Guid})");
+                    continue;
+                }
+
+                // combat pets do not aggro monsters belonging to the same faction as the pet owner?
+                if (SameFaction(creature))
+                {
+                    // unless the pet owner or the pet is being retaliated against?
+                    if (!creature.HasRetaliateTarget(P_PetOwner) && !creature.HasRetaliateTarget(this))
+                        continue;
+                }
+
+                monsters.Add(creature);
+
+            }
+
+            return monsters;
         }
 
         public static Dictionary<uint, float> PetRadiusCache = new Dictionary<uint, float>();

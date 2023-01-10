@@ -1,12 +1,27 @@
 using System;
 using System.Diagnostics;
 
+using System.Collections.Generic;
+using System.Numerics;
+
+using log4net;
+
+using ACE.Common;
+using ACE.DatLoader;
+using ACE.DatLoader.FileTypes;
+using ACE.Entity;
 using ACE.Entity.Enum;
+using ACE.Entity.Models;
+using ACE.Server.Entity;
+using ACE.Server.Managers;
+using ACE.Server.Physics.Animation;
+using ACE.Entity.Enum.Properties;
 
 namespace ACE.Server.WorldObjects
 {
-    partial class Creature
-    {
+    partial class Creature      
+    {       
+
         protected const double monsterTickInterval = 0.2;
 
         public double NextMonsterTickTime;
@@ -29,7 +44,7 @@ namespace ACE.Server.WorldObjects
             {
                 pet.Tick(currentUnixTime);
                 return;
-            }
+            }          
 
             NextMonsterTickTime = currentUnixTime + monsterTickInterval;
 
@@ -64,11 +79,11 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            var combatPet = this as CombatPet;
+            var combatPet1 = this as CombatPet;
 
             var creatureTarget = AttackTarget as Creature;
 
-            if (creatureTarget != null && (creatureTarget.IsDead || (combatPet == null && !IsVisibleTarget(creatureTarget))))
+            if (creatureTarget != null && (creatureTarget.IsDead || (combatPet1 == null && !IsVisibleTarget(creatureTarget))))
             {
                 FindNextTarget();
                 return;
@@ -169,8 +184,8 @@ namespace ACE.Server.WorldObjects
             }
 
             // pets drawing aggro
-            if (combatPet != null)
-                combatPet.PetCheckMonsters();
+            if (combatPet1 != null)
+                combatPet1.PetCheckMonsters();
         }
     }
 }

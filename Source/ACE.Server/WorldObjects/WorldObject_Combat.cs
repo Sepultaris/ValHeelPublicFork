@@ -7,6 +7,7 @@ using ACE.Server.Factories;
 using ACE.Server.Entity;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
+using ACE.DatLoader.Entity;
 
 namespace ACE.Server.WorldObjects
 {
@@ -22,7 +23,7 @@ namespace ACE.Server.WorldObjects
             // player attacker restrictions handled in override
             return null;
         }
-
+                
         /// <summary>
         /// Tries to proc any relevant items for the attack
         /// </summary>
@@ -50,29 +51,28 @@ namespace ACE.Server.WorldObjects
                 // handle special case -- missile projectiles from monsters w/ a proc directly on the mob
                 // monster
                 attacker.TryProcItem(attacker, target);
-            }
+            }            
 
             // handle aetheria procs
             if (attacker is Creature wielder)
             {
-                /*var equippedAetheria = wielder.EquippedObjects.Values.Where(i => Aetheria.IsAetheria(i.WeenieClassId) && i.HasProc && i.ProcSpellSelfTargeted == selfTarget);*/
-                var equippedJewelry = wielder.EquippedObjects.Values.Where(l => l.HasProc && l.ProcSpellSelfTargeted == selfTarget);
+                var equippedAetheria = wielder.EquippedObjects.Values.Where(i => Aetheria.IsAetheria(i.WeenieClassId) && i.HasProc && i.ProcSpellSelfTargeted == selfTarget);                                                    
                 // aetheria
-                foreach (var aetheria in equippedJewelry)
+                foreach (var aetheria in equippedAetheria)
                     aetheria.TryProcItem(attacker, target);
+            }
 
-               
-
-
-
-
-
-
-
-
-
-
+            // Handle jewelry procs
+            if (attacker is Creature wielder1)
+            {
+                var equippedJewelry = wielder1.EquippedObjects.Values.Where(l => l.HasProc && l.IsJewelry && l.ProcSpellSelfTargeted == selfTarget);
+                foreach (var jewelry in equippedJewelry)
+                    jewelry.TryProcItem(attacker, target);
             }
         }
+
+        public bool IsJewelry { get => GetProperty(PropertyInt.ItemType) == 8; }
+
+
     }
 }

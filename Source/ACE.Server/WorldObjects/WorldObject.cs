@@ -1031,6 +1031,11 @@ namespace ACE.Server.WorldObjects
             // empty base
         }
 
+        public virtual void CombatPetOnMoveComplete(WeenieError status)
+        {
+            // empty base
+        }
+
         public bool IsTradeNote => ItemType == ItemType.PromissoryNote;
 
         public virtual bool IsAttunedOrContainsAttuned => Attuned >= AttunedStatus.Attuned;

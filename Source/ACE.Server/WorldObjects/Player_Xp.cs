@@ -69,7 +69,11 @@ namespace ACE.Server.WorldObjects
                     UpdateXpVitae(m_amount);
                 return;
             }
-            else GrantXP(m_amount, xpType, shareType);
+            if (Level < 500 && QuestManager.CanSolve("Ascension"))
+            {
+                GrantXP(m_amount, xpType, shareType);
+            }
+                   
         }
 
         /// <summary>

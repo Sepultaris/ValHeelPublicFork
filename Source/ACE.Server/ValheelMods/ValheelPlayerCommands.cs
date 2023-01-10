@@ -13,6 +13,111 @@ namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        [CommandHandler("reputation", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0, "Refunds costs associated with /raise.")]
+        public static void Reputation(Session session, params string[] parameters)
+        {
+            Player player = session.Player;
+
+            if (!player.QuestManager.HasQuestCompletes("Reputation"))
+            {
+                return;
+            }
+
+            var numberOfSolves = player.QuestManager.GetCurrentSolves("Reputation");
+
+            ChatPacket.SendServerMessage(session, $"You currently have {numberOfSolves} reputation.", ChatMessageType.Broadcast);
+
+        }
+
+        [CommandHandler("prestige", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0, "Refunds costs associated with /raise.")]
+        public static void Prestige(Session session, params string[] parameters)
+        {
+            Player player = session.Player;
+
+            if (!player.QuestManager.HasQuest("Prestige") || !player.QuestManager.HasQuest("Reputation"))
+            {
+                return;
+            }
+
+            var prestige = player.QuestManager.GetCurrentSolves("Prestige");
+            var reputation = player.QuestManager.GetCurrentSolves("Reputation");            
+
+            if (prestige <= 9)
+            {
+                if (prestige <= 9 && reputation < 5000)
+                {
+                    ChatPacket.SendServerMessage(session, $"You do not have enough reputation.", ChatMessageType.Broadcast);
+                    return;
+                }
+                player.QuestManager.Decrement("Reputation", 5000);
+                player.QuestManager.Increment("Prestige", 1);
+                ChatPacket.SendServerMessage(session, $"Your prestige has increased to level {prestige}. You have {reputation} remaining", ChatMessageType.Broadcast);
+                return;
+            }
+            if (prestige >= 10 && prestige <= 24)
+            {
+                if (prestige >= 10 && prestige <= 24 && reputation <= 10000)
+                {
+                    ChatPacket.SendServerMessage(session, $"You do not have enough reputation.", ChatMessageType.Broadcast);
+                    return;
+                }
+                player.QuestManager.Decrement("Reputation", 10000);
+                player.QuestManager.Increment("Prestige", 1);
+                ChatPacket.SendServerMessage(session, $"Your prestige has increased to level {prestige}. You have {reputation} remaining", ChatMessageType.Broadcast);
+                return;
+            }
+            if (prestige >= 25 && prestige <= 49)
+            {
+                if (prestige >= 25 && prestige <= 49 && reputation <= 25000)
+                {
+                    ChatPacket.SendServerMessage(session, $"You do not have enough reputation.", ChatMessageType.Broadcast);
+                    return;
+                }
+                player.QuestManager.Decrement("Reputation", 25000);
+                player.QuestManager.Increment("Prestige", 1);
+                ChatPacket.SendServerMessage(session, $"Your prestige has increased to level {prestige}. You have {reputation} remaining", ChatMessageType.Broadcast);
+                return;
+            }
+            if (prestige >= 50 && prestige <= 74 && reputation >= 35000)
+            {
+                if (prestige >= 50 && prestige <= 74 && reputation <= 35000)
+                {
+                    ChatPacket.SendServerMessage(session, $"You do not have enough reputation.", ChatMessageType.Broadcast);
+                    return;
+                }
+                player.QuestManager.Decrement("Reputation", 35000);
+                player.QuestManager.Increment("Prestige", 1);
+                ChatPacket.SendServerMessage(session, $"Your prestige has increased to level {prestige}. You have {reputation} remaining", ChatMessageType.Broadcast);
+                return;
+            }
+            if (prestige >= 75 && prestige <= 99 && reputation >= 50000)
+            {
+                if (prestige >= 75 && prestige <= 99 && reputation <= 50000)
+                {
+                    ChatPacket.SendServerMessage(session, $"You do not have enough reputation.", ChatMessageType.Broadcast);
+                    return;
+                }
+                player.QuestManager.Decrement("Reputation", 50000);
+                player.QuestManager.Increment("Prestige", 1);
+                ChatPacket.SendServerMessage(session, $"Your prestige has increased to level {prestige}. You have {reputation} remaining", ChatMessageType.Broadcast);
+                return;
+            }
+            if (prestige >= 100 && reputation >= 50000)
+            {
+                if (prestige >= 100 && reputation <= 50000)
+                {
+                    ChatPacket.SendServerMessage(session, $"You do not have enough reputation.", ChatMessageType.Broadcast);
+                    return;
+                }
+                player.QuestManager.Decrement("Reputation", 50000);
+                player.QuestManager.Increment("Prestige", 1);
+                ChatPacket.SendServerMessage(session, $"Your prestige has increased to level {prestige}. You have {reputation} remaining", ChatMessageType.Broadcast);
+                return;
+            }
+            else return;            
+
+        }
+
         [CommandHandler("raiserefund", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0, "Refunds costs associated with /raise.")]
         public static void HandleRaiseRefund(Session session, params string[] parameters)
         {
