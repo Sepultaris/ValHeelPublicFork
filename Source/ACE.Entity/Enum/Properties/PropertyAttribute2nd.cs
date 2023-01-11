@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ACE.Entity.Enum.Properties
 {
-    public enum PropertyAttribute2nd : ushort
+    public enum PropertyAttribute2nd : short
     {
         Undef       = 0,
         MaxHealth   = 1,

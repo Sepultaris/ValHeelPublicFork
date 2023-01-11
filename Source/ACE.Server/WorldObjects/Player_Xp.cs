@@ -37,6 +37,9 @@ namespace ACE.Server.WorldObjects
 
             // Quest Point Allegiance Allocation Checks.
             
+            if (xpType == XpType.Allegiance && Level >= 500)            
+                amount = amount / 2;
+            
 
             //additive enlightenment bonus with enchantments.
             var enlightenBonus = 0.25f * Enlightenment; // 25% XP bonus per enlightenment
@@ -55,12 +58,13 @@ namespace ACE.Server.WorldObjects
             }
 
             // Cut incoming XP in half once the player hits level 500
-            var newm_amount = m_amount / 4;
+            var newm_amount = m_amount / 10;
+
             if (Level >= 500 && !QuestManager.CanSolve("Ascension"))
             {
                 m_amount = newm_amount;
                 GrantXP(m_amount, xpType, shareType);
-                GrantItemXP(m_amount * 3);
+                GrantItemXP(m_amount);
             }
             if (Level >= 500 && QuestManager.CanSolve("Ascension"))
             {

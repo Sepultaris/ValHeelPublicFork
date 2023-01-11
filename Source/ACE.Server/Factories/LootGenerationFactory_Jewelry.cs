@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common;
@@ -7,6 +8,7 @@ using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity;
 using ACE.Server.Factories.Entity;
 using ACE.Server.Factories.Tables;
+using ACE.Server.Managers;
 using ACE.Server.WorldObjects;
 
 namespace ACE.Server.Factories
@@ -37,6 +39,27 @@ namespace ACE.Server.Factories
 
             return wo;
         }
+
+        private static readonly List<EquipmentSet> armorSets = new List<EquipmentSet>()
+        {
+            EquipmentSet.Soldiers,
+            EquipmentSet.Adepts,
+            EquipmentSet.Archers,
+            EquipmentSet.Defenders,
+            EquipmentSet.Tinkers,
+            EquipmentSet.Crafters,
+            EquipmentSet.Hearty,
+            EquipmentSet.Dexterous,
+            EquipmentSet.Wise,
+            EquipmentSet.Swift,
+            EquipmentSet.Hardened,
+            EquipmentSet.Reinforced,
+            EquipmentSet.Interlocking,
+            EquipmentSet.Flameproof,
+            EquipmentSet.Acidproof,
+            EquipmentSet.Coldproof,
+            EquipmentSet.Lightningproof,
+        };        
 
         private static void MutateJewelry(WorldObject wo, TreasureDeath profile, bool isMagical, TreasureRoll roll = null)
         {
@@ -98,16 +121,15 @@ namespace ACE.Server.Factories
 
             }
             // Proto Jewelry
-            if (profile.TreasureType == 4111)
-            {
-                TryRollEquipmentSet(wo, profile, roll);
+            if (profile.TreasureType == 4111 && isMagical)
+            {                
                 TryMutateGearRating(wo, profile, roll);
                 wo.Proto = false;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
                 var maxlevel = 500;
                 var basexp = 50000000000;
-                var jewelryProc = ThreadSafeRandom.Next(0.0f, 1.0f);
+                var jewelryProc = ThreadSafeRandom.Next(0.0f, 1.0f);               
 
                 wo.SetProperty(PropertyBool.Proto, true);
                 wo.SetProperty(PropertyString.Name, name);
@@ -142,7 +164,21 @@ namespace ACE.Server.Factories
                     }
                         
                 }
-                
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }                
+
             }
             // gear rating (t8)
             if (roll != null && profile.Tier >= 8)

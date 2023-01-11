@@ -749,10 +749,10 @@ namespace ACE.Server.Factories
 
         }
 
-        private static bool TryRollEquipmentSet(WorldObject wo, TreasureDeath profile, TreasureRoll roll)
+        public static bool TryRollEquipmentSet(WorldObject wo, TreasureDeath profile, TreasureRoll roll)
         {
-            if (roll == null)
-            {
+            if (roll == null && !wo.IsJewelry)
+            {                                
                 if (!PropertyManager.GetBool("equipmentsetid_enabled").Item)
                     return false;
 
@@ -780,7 +780,30 @@ namespace ACE.Server.Factories
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
             }
-            else
+
+            var itemType = wo.GetProperty(PropertyInt.ItemType);
+
+            if (roll != null && itemType == 1)
+            {
+                wo.EquipmentSetId = EquipmentSetChance.Roll(wo, profile, roll);
+            }
+            else if (roll != null && itemType == 2)
+            {
+                wo.EquipmentSetId = EquipmentSetChance.Roll(wo, profile, roll);
+            }
+            else if (roll != null && itemType == 4)
+            {
+                wo.EquipmentSetId = EquipmentSetChance.Roll(wo, profile, roll);
+            }
+            else if (roll != null && itemType == 8)
+            {
+                wo.EquipmentSetId = EquipmentSetChance.Roll(wo, profile, roll);
+            }
+            else if (roll != null && itemType == 100)
+            {
+                wo.EquipmentSetId = EquipmentSetChance.Roll(wo, profile, roll);
+            }
+            else if (roll != null && itemType == 8000)
             {
                 wo.EquipmentSetId = EquipmentSetChance.Roll(wo, profile, roll);
             }
@@ -1282,7 +1305,7 @@ namespace ACE.Server.Factories
 
             else
             {
-                log.Error($"TryMutateGearRating({wo.Name}, {profile.TreasureType}, {roll.ItemType}): unknown item type");
+                /*log.Error($"TryMutateGearRating({wo.Name}, {profile.TreasureType}, {roll.ItemType}): unknown item type");*/
                 return false;
             }
 

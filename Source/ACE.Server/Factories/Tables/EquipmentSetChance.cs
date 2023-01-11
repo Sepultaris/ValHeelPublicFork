@@ -5,6 +5,7 @@ using ACE.Entity.Enum;
 using ACE.Database.Models.World;
 using ACE.Server.Factories.Entity;
 using ACE.Server.WorldObjects;
+using ACE.Entity.Enum.Properties;
 
 namespace ACE.Server.Factories.Tables
 {
@@ -43,12 +44,37 @@ namespace ACE.Server.Factories.Tables
             if (profile.Tier < 6 || !roll.HasArmorLevel(wo))
                 return null;
 
-            if (wo.ClothingPriority == null || (wo.ClothingPriority & (CoverageMask)CoverageMaskHelper.Outerwear) == 0)
+            var canRoll = false;
+
+            if (wo.GetProperty(PropertyInt.ItemType) == 1)
+                canRoll = true;
+
+            if (wo.GetProperty(PropertyInt.ItemType) == 2)
+                canRoll = true;
+
+            if (wo.GetProperty(PropertyInt.ItemType) == 4)
+                canRoll = true;
+
+            if (wo.GetProperty(PropertyInt.ItemType) == 8)
+                canRoll = true;
+
+            if (wo.GetProperty(PropertyInt.ItemType) == 100)
+                canRoll = true;
+
+            if (wo.GetProperty(PropertyInt.ItemType) == 8000)
+                canRoll = true;
+
+            if (canRoll != true)            
                 return null;
+           
+                
+
+            /*if (wo.ClothingPriority == null || (wo.ClothingPriority & (CoverageMask)CoverageMaskHelper.Outerwear) == 0)
+                return null;*/
 
             // loot quality mod?
-            if (!armorSetChance.Roll(profile.LootQualityMod))
-                return null;
+            /*if (!armorSetChance.Roll(profile.LootQualityMod))
+                return null;*/
 
             // each armor set has an even chance of being selected
             var rng = ThreadSafeRandom.Next(0, armorSets.Count - 1);

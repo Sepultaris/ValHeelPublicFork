@@ -1,4 +1,4 @@
-﻿using ACE.Entity.Enum.Properties;
+using ACE.Entity.Enum.Properties;
 
 namespace ACE.Server.DuskfallMods
 {
