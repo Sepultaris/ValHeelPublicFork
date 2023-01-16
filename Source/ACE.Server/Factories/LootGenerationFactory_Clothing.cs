@@ -161,8 +161,7 @@ namespace ACE.Server.Factories
 
             // Proto Clothing
             if (armorType == LootTables.ArmorType.MiscClothing && !wo.HasArmorLevel() && profile.TreasureType == 4111)
-            {
-                TryRollEquipmentSet(wo, profile, roll);
+            {                
                 wo.Empowered = false;                
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
@@ -172,7 +171,19 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.WieldRequirements, 7);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 425);
                 TryMutateGearRating(wo, profile, roll);
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
             }
 
             if (roll == null)

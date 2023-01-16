@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ACE.Common;
 using ACE.Database.Models.World;
 using ACE.Entity.Enum;
@@ -50,6 +51,8 @@ namespace ACE.Server.Factories
 
             return wo;
         }
+
+        
 
         private static void MutateCaster(WorldObject wo, TreasureDeath profile, bool isMagical, int? wieldDifficulty = null, TreasureRoll roll = null)
         {
@@ -238,6 +241,20 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 5f);
                 wo.SetProperty(PropertyBool.Proto, true);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
             }
 
         }

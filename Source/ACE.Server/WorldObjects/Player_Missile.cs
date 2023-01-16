@@ -429,7 +429,7 @@ namespace ACE.Server.WorldObjects
             });
 
             // ammo remaining?
-            if (!ammo.UnlimitedUse && (ammo.StackSize == null || ammo.StackSize <= 1))
+            /*if (!ammo.UnlimitedUse && (ammo.StackSize == null || ammo.StackSize <= 1))
             {
                 actionChain.AddAction(this, () =>
                 {
@@ -484,7 +484,7 @@ namespace ACE.Server.WorldObjects
                 }
                 else
                     OnAttackDone();
-            });
+            });*/
 
             actionChain.EnqueueChain();
 

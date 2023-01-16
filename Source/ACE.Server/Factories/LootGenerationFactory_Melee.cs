@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common;
@@ -68,6 +69,7 @@ namespace ACE.Server.Factories
             return wo;
         }
 
+        
         private static bool MutateMeleeWeapon(WorldObject wo, TreasureDeath profile, bool isMagical, TreasureRoll roll = null)
         {
             if (!(wo is MeleeWeapon))
@@ -250,6 +252,20 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
                 wo.SetProperty(PropertyInt.Cleaving, 3);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
             }
             if (profile.Tier == 9 && isMagical && attacktype > 25 && profile.TreasureType == 4111)
             {
@@ -270,7 +286,21 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);           
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
             }
             if (profile.Tier == 9 && isMagical && profile.TreasureType == 4111)
             {
@@ -291,7 +321,21 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);                
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 25f);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
             }
 
             return true;

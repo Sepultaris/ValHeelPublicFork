@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common;
@@ -37,6 +38,7 @@ namespace ACE.Server.Factories
             return wo;
         }
 
+        
         private static void MutateMissileWeapon(WorldObject wo, TreasureDeath profile, bool isMagical, int? wieldDifficulty = null, TreasureRoll roll = null)
         {
             if (roll == null)
@@ -195,7 +197,21 @@ namespace ACE.Server.Factories
                 // increase damage
                 wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 15f);                
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 15f);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
 
             }
 
