@@ -256,7 +256,42 @@ namespace ACE.Server.Factories
                     wo.Name = $"{equipSetName} {wo.Name}";
                 }
             }
+            if (profile.Tier == 10 && isMagical && hasdamagemod > 0)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 50000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
+                float damagebonus = 2.5f;
+                float newweapondamage = (float)(weapondamage + damagebonus);
 
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 7f);
+                wo.SetProperty(PropertyBool.Arramoran, true);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+            }
         }
 
         private static void MutateCaster_SpellDID(WorldObject wo, TreasureDeath profile)

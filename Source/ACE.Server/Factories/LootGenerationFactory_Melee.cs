@@ -11,6 +11,7 @@ using ACE.Server.Factories.Entity;
 using ACE.Server.Factories.Enum;
 using ACE.Server.Factories.Tables;
 using ACE.Server.WorldObjects;
+using Google.Protobuf.Collections;
 
 namespace ACE.Server.Factories
 {
@@ -336,6 +337,119 @@ namespace ACE.Server.Factories
 
                     wo.Name = $"{equipSetName} {wo.Name}";
                 }
+            }
+
+            if (profile.Tier == 10 && isMagical && wo.IsCleaving)
+            {               
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 50000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var weapondamage = wo.GetProperty(PropertyInt.Damage);
+                var damagebonus = 1250;
+                int newweapondamage = (int)(weapondamage + damagebonus);
+
+                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
+                wo.SetProperty(PropertyInt.Cleaving, 3);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+                
+            }
+            if (profile.Tier == 10 && isMagical && attacktype > 25)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 50000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var weapondamage = wo.GetProperty(PropertyInt.Damage);
+                var damagebonus = 1250;
+                int newweapondamage = (int)(weapondamage + damagebonus);
+
+                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+                
+            }
+            if (profile.Tier == 10 && isMagical)
+            {
+                if (wo.Arramoran == true)
+                    return true;
+
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 50000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var weapondamage = wo.GetProperty(PropertyInt.Damage);
+                var damagebonus = 1900;
+                int newweapondamage = (int)(weapondamage + damagebonus);
+
+                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+                
             }
 
             return true;

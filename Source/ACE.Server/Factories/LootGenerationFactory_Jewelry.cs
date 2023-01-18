@@ -165,6 +165,7 @@ namespace ACE.Server.Factories
                         
                 }
 
+
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
                 if (wo.EquipmentSetId != null)
@@ -178,6 +179,67 @@ namespace ACE.Server.Factories
 
                     wo.Name = $"{equipSetName} {wo.Name}";
                 }                
+
+            }
+
+            if (profile.TreasureType == 4111 && isMagical)
+            {
+                TryMutateGearRating(wo, profile, roll);
+                wo.Proto = false;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var maxlevel = 500;
+                var basexp = 50000000000;
+                var jewelryProc = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.WieldRequirements, 7);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+
+                if (jewelryProc <= 0.3f)
+                {
+                    var spellProc = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                    if (spellProc <= 0.3f)
+                    {
+                        wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
+                        wo.SetProperty(PropertyDataId.ProcSpell, 4643);
+                    }
+                    else if (spellProc > 0.3f && spellProc < 0.6f)
+                    {
+                        wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
+                        wo.SetProperty(PropertyDataId.ProcSpell, 4644);
+                    }
+                    else if (spellProc >= 0.6f)
+                    {
+                        wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                        wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
+                        wo.SetProperty(PropertyDataId.ProcSpell, 4645);
+                    }
+
+                }
+
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
 
             }
             // gear rating (t8)

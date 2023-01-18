@@ -193,6 +193,8 @@ namespace ACE.Entity.Enum.Properties
         Proto                            = 9011,
         [ServerOnly]
         Ascended                         = 9012,
+        [ServerOnly]
+        Arramoran                        = 9013,
     }
 
     public static class PropertyBoolExtensions

@@ -3071,5 +3071,11 @@ namespace ACE.Server.WorldObjects
             set { if (!value) RemoveProperty(PropertyBool.Proto); else SetProperty(PropertyBool.Proto, value); }
         }
 
+        public bool Arramoran
+        {
+            get => GetProperty(PropertyBool.Arramoran) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Arramoran); else SetProperty(PropertyBool.Arramoran, value); }
+        }
+
     }
 }

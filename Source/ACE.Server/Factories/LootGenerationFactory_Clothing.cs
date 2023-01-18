@@ -188,6 +188,32 @@ namespace ACE.Server.Factories
                 }
             }
 
+            if (profile.Tier == 10 && armorType == LootTables.ArmorType.MiscClothing && !wo.HasArmorLevel())
+            {
+                wo.Empowered = false;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+
+                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.WieldRequirements, 7);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                TryMutateGearRating(wo, profile, roll);
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+            }
+
             if (roll == null)
                 AssignArmorLevel(wo, profile.Tier, armorType);
             else
@@ -276,6 +302,42 @@ namespace ACE.Server.Factories
                 wo.ArmorModVsFire = Math.Min((wo.ArmorModVsFire ?? 0) + 4.0f, 4.3f);
                 wo.ArmorModVsCold = Math.Min((wo.ArmorModVsCold ?? 0) + 4.0f, 4.3f);
                 wo.ArmorModVsElectric = Math.Min((wo.ArmorModVsElectric ?? 0) + 4.0f, 4.3f);
+                if (wo.IsShield)
+                {
+                    var hasmagicabsorbtion = ThreadSafeRandom.Next(0.0f, 1.0f);
+                    var absorbtionammount = ThreadSafeRandom.Next(1.10f, 1.15f);
+                    if (hasmagicabsorbtion >= 0f)
+                        wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
+                }
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+            }
+            if (profile.Tier == 10 && wo.HasArmorLevel() && isMagical)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 500;
+                var basexp = 50000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var armorlevel = wo.GetProperty(PropertyInt.ArmorLevel);
+                var armorbonus = 900;
+                int newarmorlevel = (int)(armorlevel + armorbonus);
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
+                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 5.0f, 5.3f);
+                wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 5.0f, 5.3f);
+                wo.ArmorModVsBludgeon = Math.Min((wo.ArmorModVsBludgeon ?? 0) + 5.0f, 5.3f);
+                wo.ArmorModVsAcid = Math.Min((wo.ArmorModVsAcid ?? 0) + 5.0f, 5.3f);
+                wo.ArmorModVsFire = Math.Min((wo.ArmorModVsFire ?? 0) + 5.0f, 5.3f);
+                wo.ArmorModVsCold = Math.Min((wo.ArmorModVsCold ?? 0) + 5.0f, 5.3f);
+                wo.ArmorModVsElectric = Math.Min((wo.ArmorModVsElectric ?? 0) + 5.0f, 5.3f);
                 if (wo.IsShield)
                 {
                     var hasmagicabsorbtion = ThreadSafeRandom.Next(0.0f, 1.0f);
