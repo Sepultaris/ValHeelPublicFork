@@ -2267,7 +2267,7 @@ namespace ACE.Server.Command.Handlers
             if (parameters.Length > 1)
                 int.TryParse(parameters[1], out tier);
 
-            if (tier < 1 || tier > 9)
+            if (tier < 1 || tier > 10)
             {
                 session.Network.EnqueueSend(new GameMessageSystemChat($"Loot Tier must be a number between 1 and 9", ChatMessageType.Broadcast));
                 return;
