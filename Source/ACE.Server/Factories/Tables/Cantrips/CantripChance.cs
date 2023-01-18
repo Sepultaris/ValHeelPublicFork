@@ -77,6 +77,14 @@ namespace ACE.Server.Factories.Tables
             ( 4, 0.010f ),
         };
 
+        private static ChanceTable<int> T10_NumCantrips = new ChanceTable<int>()
+        {
+            ( 1, 0.75f ),
+            ( 2, 0.17f ),
+            ( 3, 0.016f ),
+            ( 4, 0.010f ),
+        };
+
         private static readonly List<ChanceTable<int>> _numCantrips = new List<ChanceTable<int>>()
         {
             T1_NumCantrips,
@@ -88,6 +96,7 @@ namespace ACE.Server.Factories.Tables
             T7_T8_NumCantrips,
             T7_T8_NumCantrips,
             T9_NumCantrips,
+            T10_NumCantrips,
         };
 
         public static int RollNumCantrips(TreasureDeath profile)
@@ -141,6 +150,14 @@ namespace ACE.Server.Factories.Tables
             ( 4, 0.10f ),
         };
 
+        private static ChanceTable<int> T10_CantripLevel = new ChanceTable<int>()
+        {
+            ( 1, 0.02f ),
+            ( 2, 0.46f ),
+            ( 3, 0.42f ),
+            ( 4, 0.10f ),
+        };
+
         private static readonly List<ChanceTable<int>> _cantripLevels = new List<ChanceTable<int>>()
         {
             T1_T2_CantripLevel,
@@ -152,6 +169,7 @@ namespace ACE.Server.Factories.Tables
             T7_T8_CantripLevel,
             T7_T8_CantripLevel,
             T9_CantripLevel,
+            T10_CantripLevel,
         };
 
         public static int RollCantripLevel(TreasureDeath profile)

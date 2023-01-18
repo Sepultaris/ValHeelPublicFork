@@ -59,6 +59,14 @@ namespace ACE.Server.Factories.Tables
             ( 5, 0.02f ),
         };
 
+        private static ChanceTable<int> T10_ItemMaxLevel = new ChanceTable<int>()
+        {
+            ( 2, 0.45f ),
+            ( 3, 0.50f ),
+            ( 4, 0.04f ),
+            ( 5, 0.02f ),
+        };
+
         private static List<ChanceTable<int>> cloakLevels = new List<ChanceTable<int>>()
         {
             T1_ItemMaxLevel,
@@ -70,6 +78,7 @@ namespace ACE.Server.Factories.Tables
             T7_T8_ItemMaxLevel,
             T7_T8_ItemMaxLevel,
             T9_ItemMaxLevel,
+            T10_ItemMaxLevel,
         };
 
         public static int Roll_ItemMaxLevel(TreasureDeath profile)

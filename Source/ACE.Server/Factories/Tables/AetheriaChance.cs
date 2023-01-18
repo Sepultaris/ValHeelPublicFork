@@ -48,6 +48,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             T6_ItemMaxLevel,
             T7_ItemMaxLevel,
             T8_ItemMaxLevel,
+            T8_ItemMaxLevel,
             T8_ItemMaxLevel
         };
 
@@ -56,7 +57,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             if (profile.Tier < 5)
                 return 0;
 
-            var table = itemMaxLevels[profile.Tier - 5];
+            var table = itemMaxLevels[profile.Tier - 6];
 
             return table.Roll(profile.LootQualityMod);
         }

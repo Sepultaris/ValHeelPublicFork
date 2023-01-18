@@ -781,7 +781,8 @@ namespace ACE.Server.Factories
             (400, 3500),    // T6
             (600, 4000),    // T7
             (600, 4500),    // T8
-            (3000, 10000)   // T9
+            (3000, 10000),  // T9
+            (20000, 75000)  // T10
         };
 
         private static int Roll_ItemValue(WorldObject wo, int tier)
@@ -904,7 +905,8 @@ namespace ACE.Server.Factories
             1000,   // T6
             2000,   // T7
             3000,   // T8
-            4000   // T9
+            4000,   // T9
+            10000   // T10
         };
 
         /// <summary>
@@ -1207,7 +1209,8 @@ namespace ACE.Server.Factories
             (250, 5000), // T6
             (250, 5000), // T7
             (250, 5000), // T8
-            (500, 10000)// T9
+            (500, 10000),// T9
+            (500, 10000) // T10
         };
 
         private static void MutateCoins(WorldObject wo, TreasureDeath profile)

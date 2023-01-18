@@ -444,6 +444,21 @@ namespace ACE.Server.Factories
                     else
                         magicMod = 12;
                     break;
+                case 10:
+                    chance = ThreadSafeRandom.Next(1, 1000);
+                    if (chance > 900)
+                        magicMod = 21;
+                    else if (chance > 800)
+                        magicMod = 20;
+                    else if (chance > 700)
+                        magicMod = 19;
+                    else if (chance > 600)
+                        magicMod = 18;
+                    else if (chance > 500)
+                        magicMod = 17;
+                    else
+                        magicMod = 16;
+                    break;
             }
 
             double manaDMod = magicMod / 100.0;

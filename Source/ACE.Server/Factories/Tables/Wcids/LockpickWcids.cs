@@ -54,6 +54,12 @@ namespace ACE.Server.Factories.Tables.Wcids
             ( WeenieClassName.lockpickpeer,     0.75f ),
         };
 
+        private static ChanceTable<WeenieClassName> T10_Chances = new ChanceTable<WeenieClassName>()
+        {
+            ( WeenieClassName.lockpicksuperb,   0.25f ),
+            ( WeenieClassName.lockpickpeer,     0.75f ),
+        };
+
         private static readonly List<ChanceTable<WeenieClassName>> lockpickTiers = new List<ChanceTable<WeenieClassName>>()
         {
             T1_Chances,
@@ -65,6 +71,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             T6_T8_Chances,
             T6_T8_Chances,
             T9_Chances,
+            T10_Chances,
         };
 
         public static WeenieClassName Roll(TreasureDeath profile)

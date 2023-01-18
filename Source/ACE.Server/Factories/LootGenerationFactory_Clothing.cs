@@ -45,6 +45,7 @@ namespace ACE.Server.Factories
                 case 7:
                 case 8:
                 case 9:
+                case 10:
                     maxType = LootTables.ArmorType.OlthoiAlduressaArmor;
                     break;
             }
@@ -122,7 +123,8 @@ namespace ACE.Server.Factories
                     {
                         7 => 150,  // In this instance, used for indicating player level, rather than skill level
                         8 => 180,  // In this instance, used for indicating player level, rather than skill level
-                        _ => 350,
+                        9 => 350,
+                        _ => 500,
                     };
                 }
             }
@@ -696,6 +698,24 @@ namespace ACE.Server.Factories
                             else
                                 armorModValue = ThreadSafeRandom.Next(280, 320);
                             break;
+                        case 10:
+                            if (armorType == LootTables.ArmorType.StuddedLeatherArmor
+                             || armorType == LootTables.ArmorType.Helms
+                             || armorType == LootTables.ArmorType.Shields)
+                                armorModValue = ThreadSafeRandom.Next(189, 216);
+
+                            else if (armorType == LootTables.ArmorType.LeatherArmor
+                                || armorType == LootTables.ArmorType.MiscClothing)
+                                armorModValue = ThreadSafeRandom.Next(161, 184);
+
+                            else if (armorType == LootTables.ArmorType.CovenantArmor || armorType == LootTables.ArmorType.OlthoiArmor)
+                                armorModValue = ThreadSafeRandom.Next(290, 330);
+
+                            else if (armorType == LootTables.ArmorType.SocietyArmor)
+                                armorModValue = ThreadSafeRandom.Next(189, 216);
+                            else
+                                armorModValue = ThreadSafeRandom.Next(280, 320);
+                            break;
                         default:
                             armorModValue = 0;
                             break;
@@ -1110,6 +1130,16 @@ namespace ACE.Server.Factories
                         cloakLevel = 5;
                     break;
                 case 9:  // From data, no chance to get a lvl 1 cloak
+                    if (chance <= 451)
+                        cloakLevel = 2;
+                    else if (chance <= 920)
+                        cloakLevel = 3;
+                    else if (chance <= 975)
+                        cloakLevel = 4;
+                    else
+                        cloakLevel = 5;
+                    break;
+                case 10:  // From data, no chance to get a lvl 1 cloak
                     if (chance <= 451)
                         cloakLevel = 2;
                     else if (chance <= 920)

@@ -100,6 +100,16 @@ namespace ACE.Server.Factories.Tables.Wcids
             ( WeenieClassName.staminaphiltre,  0.25f ),
         };
 
+        private static ChanceTable<WeenieClassName> T10_Chances = new ChanceTable<WeenieClassName>()
+        {
+            ( WeenieClassName.healthtonic,     0.08f ),
+            ( WeenieClassName.manatonic,       0.08f ),
+            ( WeenieClassName.staminatonic,    0.09f ),
+            ( WeenieClassName.healthphiltre,   0.25f ),
+            ( WeenieClassName.manaphiltre,     0.25f ),
+            ( WeenieClassName.staminaphiltre,  0.25f ),
+        };
+
         private static readonly List<ChanceTable<WeenieClassName>> consumeTiers = new List<ChanceTable<WeenieClassName>>()
         {
             T1_Chances,
@@ -111,6 +121,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             T6_T8_Chances,
             T6_T8_Chances,
             T9_Chances,
+            T10_Chances,
         };
 
         public static WeenieClassName Roll(TreasureDeath profile)

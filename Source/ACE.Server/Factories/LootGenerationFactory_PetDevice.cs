@@ -92,8 +92,29 @@ namespace ACE.Server.Factories
 
                 petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
             }
+            if (tier == 10)
+            {
+                var ratingChance = 1.0f;
 
-            
+                // add rng ratings to pet device
+                // linear or biased?
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearDamage = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearDamageResist = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritDamage = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritDamageResist = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCrit = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritResist = GeneratePetDeviceRating(tier);
+
+                petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
+            }
+
+
         }
 
         public static int GeneratePetDeviceRating(int tier)

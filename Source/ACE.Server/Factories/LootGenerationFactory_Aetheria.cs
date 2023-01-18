@@ -90,7 +90,11 @@ namespace ACE.Server.Factories
             {
                 wo.ItemMaxLevel = 5;
             }
-            
+            if (tier == 10)
+            {
+                wo.ItemMaxLevel = 5;
+            }
+
             wo.IconOverlayId = IconOverlay_ItemMaxLevel[wo.ItemMaxLevel.Value - 1];
         }
 
