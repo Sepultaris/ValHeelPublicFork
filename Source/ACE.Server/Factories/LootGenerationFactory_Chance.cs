@@ -86,6 +86,14 @@ namespace ACE.Server.Factories
                             else
                                 wield = 430;
                             break;
+                        case 10:
+                            if (chance < 60)
+                                wield = 400;
+                            else if (chance < 90)
+                                wield = 420;
+                            else
+                                wield = 430;
+                            break;
                     }
                     break;
 

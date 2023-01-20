@@ -978,7 +978,7 @@ namespace ACE.Server.WorldObjects
 
 
                     }
-                    if (itemtype == 2 && item.Arramoran || item.Arramoran && HasArmorLevel()) // Armor
+                    if (itemtype == 2 && item.Arramoran == true || item.Arramoran == true && HasArmorLevel()) // Armor
                     {
 
                         item.ArmorLevel++;

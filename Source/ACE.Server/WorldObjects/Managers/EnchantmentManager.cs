@@ -247,6 +247,28 @@ namespace ACE.Server.WorldObjects.Managers
             entry.StatModKey = spell.StatModKey;
             entry.StatModValue = spell.StatModVal;
 
+            if (spell.IsBeneficial && caster is Player player1 && player1.Level >= 500)
+            {
+                if (spell.School == MagicSchool.LifeMagic)
+                {
+                    var spellBoost = (int)player1.Level / 10;
+                    entry.StatModValue = spell.StatModVal + (spellBoost);
+                    entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
+                }
+                if (spell.School == MagicSchool.CreatureEnchantment)
+                {
+                    var spellBoost = (int)player1.Level / 10;
+                    entry.StatModValue = spell.StatModVal + (spellBoost);
+                    entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
+                }
+                if (spell.School == MagicSchool.ItemEnchantment)
+                {
+                    var spellBoost = (int)player1.Level / 10;
+                    entry.StatModValue = spell.StatModVal + (spellBoost);
+                    entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
+                }
+            }
+
             if (spell.DotDuration != 0)
             {
                 var heartbeatInterval = WorldObject.HeartbeatInterval ?? 5.0f;
