@@ -145,8 +145,8 @@ namespace ACE.Server.Factories
                 var spell = SpellSelectionTable.Roll(spellSelectionCode);
 
                 if (spell != SpellId.Undef)
-                    spells.Add(spell);
-            }
+                    spells.Add(spell);                
+            }            
 
             return RollSpellLevels(wo, profile, spells);
         }
@@ -260,6 +260,76 @@ namespace ACE.Server.Factories
             return itemDifficulty;
         }
 
+        private static readonly List<SpellId> armorSets = new List<SpellId>()
+        {
+            SpellId.AcidBaneRare,
+            SpellId.AcidProtectionRare,
+            SpellId.AlchemyMasteryRare,
+            SpellId.ArcaneEnlightenmentRare,
+            SpellId.ArmorExpertiseRare,
+            SpellId.ArmorRare,
+            SpellId.AxeMasteryRare,
+            SpellId.BladeBaneRare,
+            SpellId.BladeProtectionRare,
+            SpellId.BloodDrinkerRare,
+            SpellId.BludgeonBaneRare,
+            SpellId.BludgeonProtectionRare,
+            SpellId.BowMasteryRare,
+            SpellId.ColdProtectionRare,
+            SpellId.CookingMasteryRare,
+            SpellId.CoordinationRare,
+            SpellId.CreatureEnchantmentMasteryRare,
+            SpellId.CrossbowMasteryRare,
+            SpellId.DaggerMasteryRare,
+            SpellId.DeceptionMasteryRare,
+            SpellId.DefenderRare,
+            SpellId.EnduranceRare,
+            SpellId.FealtyRare,
+            SpellId.FireProtectionRare,
+            SpellId.FlameBaneRare,
+            SpellId.FletchingMasteryRare,
+            SpellId.FocusRare,
+            SpellId.FrostBaneRare,
+            SpellId.HealingMasteryRare,
+            SpellId.HeartSeekerRare,
+            SpellId.HermeticLinkRare,
+            SpellId.ImpenetrabilityRare,
+            SpellId.ImpregnabilityRare,
+            SpellId.InvulnerabilityRare,
+            SpellId.ItemEnchantmentMasteryRare,
+            SpellId.ItemExpertiseRare,
+            SpellId.JumpMasteryRare,
+            SpellId.LeadershipMasteryRare,
+            SpellId.LifeMagicMasteryRare,
+            SpellId.LightningBaneRare,
+            SpellId.LightningProtectionRare,
+            SpellId.LockpickMasteryRare,
+            SpellId.MaceMasteryRare,
+            SpellId.MagicItemExpertiseRare,
+            SpellId.MagicResistanceRare,
+            SpellId.ManaConvertMasteryRare,
+            SpellId.ManaRenewalRare,
+            SpellId.MonsterAttunementRare,
+            SpellId.PersonAttunementRare,
+            SpellId.PiercingBaneRare,
+            SpellId.PiercingProtectionRare,
+            SpellId.QuicknessRare,
+            SpellId.RegenerationRare,
+            SpellId.RejuvenationRare,
+            SpellId.SelfRare,
+            SpellId.SpearMasteryRare,
+            SpellId.SpiritDrinkerRare,
+            SpellId.SprintRare,
+            SpellId.StaffMasteryRare,
+            SpellId.StrengthRare,
+            SpellId.SwiftKillerRare,
+            SpellId.SwordMasteryRare,
+            SpellId.ThrownWeaponMasteryRare,
+            SpellId.UnarmedCombatMasteryRare,
+            SpellId.WarMagicMasteryRare,
+            SpellId.WeaponExpertiseRare,
+        };
+
         private static List<SpellId> RollCantrips(WorldObject wo, TreasureDeath profile, TreasureRoll roll)
         {
             // no cantrips on dinnerware?
@@ -281,6 +351,7 @@ namespace ACE.Server.Factories
 
                 if (cantrip != SpellId.Undef)
                     cantrips.Add(cantrip);
+                
             }
 
             var finalCantrips = new List<SpellId>();
@@ -317,6 +388,21 @@ namespace ACE.Server.Factories
                 if (wo.WieldRequirements2 == WieldRequirement.Level && wo.WieldDifficulty2 < 180)
                     wo.WieldDifficulty2 = 180;
             }
+
+            var prodSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AcidBaneRare, (int)SpellId.WeaponExpertiseRare);
+            var secondProdSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AcidBaneRare, (int)SpellId.WeaponExpertiseRare);
+
+            if (profile.Tier == 10)
+            {
+                var twoprods = ThreadSafeRandom.Next(0.00f, 1.00f);
+
+                finalCantrips.Add(prodSpell);
+
+                if (twoprods <= 0.25)
+                    finalCantrips.Add(secondProdSpell);
+
+            }
+                
 
             return finalCantrips;
         }

@@ -40,7 +40,7 @@ namespace ACE.Server.Factories
             return wo;
         }
 
-        private static readonly List<EquipmentSet> armorSets = new List<EquipmentSet>()
+        /*private static readonly List<EquipmentSet> armorSets = new List<EquipmentSet>()
         {
             EquipmentSet.Soldiers,
             EquipmentSet.Adepts,
@@ -59,7 +59,7 @@ namespace ACE.Server.Factories
             EquipmentSet.Acidproof,
             EquipmentSet.Coldproof,
             EquipmentSet.Lightningproof,
-        };        
+        };*/        
 
         private static void MutateJewelry(WorldObject wo, TreasureDeath profile, bool isMagical, TreasureRoll roll = null)
         {
@@ -102,7 +102,7 @@ namespace ACE.Server.Factories
                 wo.ManaRate = null;
             }
             // Empowered jewelry
-            if (profile.Tier > 8 && profile.TreasureType != 4111)
+            if (profile.Tier == 9 && profile.TreasureType != 4111)
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 TryMutateGearRating(wo, profile, roll);
@@ -182,7 +182,7 @@ namespace ACE.Server.Factories
 
             }
 
-            if (profile.TreasureType == 4111 && isMagical)
+            if (profile.Tier == 10 && isMagical)
             {
                 TryMutateGearRating(wo, profile, roll);
                 wo.Proto = false;
@@ -224,8 +224,15 @@ namespace ACE.Server.Factories
                         wo.SetProperty(PropertyDataId.ProcSpell, 4645);
                     }
 
+
                 }
 
+                wo.GearHealingBoost += (ThreadSafeRandom.Next(5, 15));
+                wo.GearMaxHealth += (ThreadSafeRandom.Next(5, 15));
+                wo.GearCritDamage += (ThreadSafeRandom.Next(5, 15));
+                wo.GearCritDamageResist += (ThreadSafeRandom.Next(5, 15));
+                wo.GearDamage += (ThreadSafeRandom.Next(5, 15));
+                wo.GearDamageResist += (ThreadSafeRandom.Next(5, 15));
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 

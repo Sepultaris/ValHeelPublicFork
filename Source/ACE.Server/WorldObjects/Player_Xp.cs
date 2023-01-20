@@ -61,9 +61,8 @@ namespace ACE.Server.WorldObjects
             var newm_amount = m_amount / 10;
 
             if (Level >= 500 && !QuestManager.CanSolve("Ascension"))
-            {
-                m_amount = newm_amount;
-                GrantXP(m_amount, xpType, shareType);
+            {                
+                GrantXP(newm_amount, xpType, shareType);
                 GrantItemXP(m_amount);
             }
             if (Level >= 500 && QuestManager.CanSolve("Ascension"))
