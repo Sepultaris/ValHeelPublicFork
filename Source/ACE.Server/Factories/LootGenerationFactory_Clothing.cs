@@ -229,7 +229,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyBool.Arramoran, true);
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 600);
                 wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsBludgeon = Math.Min((wo.ArmorModVsBludgeon ?? 0) + 5.0f, 5.3f);
@@ -238,7 +238,8 @@ namespace ACE.Server.Factories
                 wo.ArmorModVsCold = Math.Min((wo.ArmorModVsCold ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsElectric = Math.Min((wo.ArmorModVsElectric ?? 0) + 5.0f, 5.3f);                
                 TryMutateGearRating(wo, profile, roll);
-                
+                TryRollEquipmentSet(wo, profile, roll);
+
             }
 
             if (roll == null)
@@ -285,7 +286,6 @@ namespace ACE.Server.Factories
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
                 wo.SetProperty(PropertyString.Name, name);
-                // increase damage
                 wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
                 wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 4.0f, 4.3f);
                 wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 4.0f, 4.3f);
@@ -320,7 +320,6 @@ namespace ACE.Server.Factories
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
                 wo.SetProperty(PropertyString.Name, name);
-                // increase damage
                 wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
                 wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 4.0f, 4.3f);
                 wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 4.0f, 4.3f);
@@ -354,7 +353,6 @@ namespace ACE.Server.Factories
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
                 wo.SetProperty(PropertyString.Name, name);
-                // increase damage
                 wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
                 wo.SetProperty(PropertyBool.Arramoran, true);
                 wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 5.0f, 5.3f);
@@ -364,6 +362,7 @@ namespace ACE.Server.Factories
                 wo.ArmorModVsFire = Math.Min((wo.ArmorModVsFire ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsCold = Math.Min((wo.ArmorModVsCold ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsElectric = Math.Min((wo.ArmorModVsElectric ?? 0) + 5.0f, 5.3f);
+                wo.ArmorModVsNether = Math.Min((wo.ArmorModVsNether ?? 0) + 5.0f, 5.3f);
                 if (wo.IsShield)
                 {
                     var hasmagicabsorbtion = ThreadSafeRandom.Next(0.0f, 1.0f);
@@ -371,8 +370,8 @@ namespace ACE.Server.Factories
                     if (hasmagicabsorbtion >= 0f)
                         wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
                 }
-                wo.SetProperty(PropertyBool.Proto, true);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 600);
             }
 
             if (profile.Tier >= 8)
@@ -1126,7 +1125,7 @@ namespace ACE.Server.Factories
             wo.Workmanship = WorkmanshipChance.Roll(profile.Tier);
 
             // Empowered cloaks
-            if (wo.GetProperty(PropertyInt.ValidLocations) == 0x8000000)
+            if (wo.GetProperty(PropertyInt.ValidLocations) == 0x8000000 && profile.Tier == 9)
             {
                 wo.Empowered = false;
                 var empoweredCloak = ThreadSafeRandom.Next(1.0f, 0.0f);
@@ -1134,7 +1133,7 @@ namespace ACE.Server.Factories
                 var name = $"Empowered {oldname}";
                 var protoname = $"Proto{oldname}";
 
-                if (empoweredCloak <= 0.25f && profile.Tier >= 9 || profile.TreasureType == 3112)
+                if (empoweredCloak <= 0.25f && profile.Tier == 9 || profile.TreasureType == 3112)
                 {
                     wo.SetProperty(PropertyBool.Empowered, true);
                     wo.SetProperty(PropertyString.Name, name);
@@ -1147,6 +1146,31 @@ namespace ACE.Server.Factories
                     wo.SetProperty(PropertyString.Name, name);
                     wo.SetProperty(PropertyInt.WieldRequirements, 7);
                     wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                }
+
+            }
+
+            if (wo.GetProperty(PropertyInt.ValidLocations) == 0x8000000 && profile.Tier == 10)
+            {                
+                
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var maxlevel = 500;
+                var basexp = 50000000000;
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+
+
+                if (profile.Tier == 10)
+                {
+                    wo.SetProperty(PropertyBool.Arramoran, true);
+                    wo.SetProperty(PropertyString.Name, name);
+                    wo.SetProperty(PropertyInt.WieldRequirements, 7);
+                    wo.SetProperty(PropertyInt.WieldDifficulty, 600);
+                    AssignMagic(wo, profile, roll, true);
                 }
 
             }

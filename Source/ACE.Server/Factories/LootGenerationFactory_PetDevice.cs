@@ -121,11 +121,18 @@ namespace ACE.Server.Factories
         {
             // thanks to morosity for this formula!
             var baseRating = ThreadSafeRandom.Next(1, 10);
+            var t10BaseRating = ThreadSafeRandom.Next(280, 315);
 
             var chance = 0.4f + tier * 0.02f;
             var rng = ThreadSafeRandom.Next(0.0f, 1.0f);
-            if (rng < chance)
+            if (rng < chance && tier < 10)
                 baseRating += ThreadSafeRandom.Next(10, 20);
+            if (tier == 10)
+            {
+                t10BaseRating += ThreadSafeRandom.Next(100, 200);
+                return t10BaseRating;
+            }
+                
 
             return baseRating;
         }

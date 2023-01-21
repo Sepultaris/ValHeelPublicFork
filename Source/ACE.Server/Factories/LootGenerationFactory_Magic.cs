@@ -5,6 +5,7 @@ using System.Linq;
 using ACE.Common;
 using ACE.Database.Models.World;
 using ACE.Entity.Enum;
+using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Factories.Entity;
 using ACE.Server.Factories.Tables;
@@ -47,6 +48,11 @@ namespace ACE.Server.Factories
 
                 wo.ItemSpellcraft = RollSpellcraft(wo);
                 wo.ItemDifficulty = RollItemDifficulty(wo, numEpics, numLegendaries);
+                if (profile.Tier == 10)
+                {
+                    wo.ItemMaxMana = ThreadSafeRandom.Next(10000, 30000);
+                    wo.ItemSpellcraft = ThreadSafeRandom.Next(1000, 2000);
+                }
             }
             else
             {
@@ -520,7 +526,7 @@ namespace ACE.Server.Factories
         {
             var range = itemMaxMana_RandomRange[tier - 1];
 
-            var rng = ThreadSafeRandom.Next(range.min, range.max);
+            var rng = ThreadSafeRandom.Next(range.min, range.max);            
 
             return rng * numSpells;
         }
@@ -536,7 +542,7 @@ namespace ACE.Server.Factories
 
             (int min, int max) range;
 
-            if (roll.IsClothing || roll.IsArmor || roll.IsWeapon || roll.IsDinnerware)
+            if (roll.IsClothing || roll.IsArmor || roll.IsWeapon || roll.IsDinnerware || wo.GetProperty(PropertyInt.ValidLocations) == 0x8000000)
             {
                 range.min = 6;
                 range.max = 15;

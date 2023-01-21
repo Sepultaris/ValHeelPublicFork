@@ -185,7 +185,6 @@ namespace ACE.Server.Factories
             if (profile.Tier == 10 && isMagical)
             {
                 TryMutateGearRating(wo, profile, roll);
-                wo.Proto = false;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var maxlevel = 500;
@@ -195,11 +194,11 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyBool.Arramoran, true);
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 600);
 
                 if (jewelryProc <= 0.3f)
                 {

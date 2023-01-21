@@ -305,6 +305,10 @@ namespace ACE.Server.Factories
             }
             if (profile.Tier == 9 && isMagical && profile.TreasureType == 4111)
             {
+                if (wo.Proto == true)
+                {
+                    return true;
+                }
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 500;
                 var basexp = 50000000000;
@@ -360,6 +364,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
                 wo.SetProperty(PropertyInt.Cleaving, 3);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -396,6 +401,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -435,6 +441,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 

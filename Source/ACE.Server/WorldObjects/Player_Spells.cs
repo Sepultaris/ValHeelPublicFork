@@ -1297,7 +1297,7 @@ namespace ACE.Server.WorldObjects
                         var name = item.GetProperty(PropertyString.Name);
                         var damagebonusupdate = new GameMessagePrivateUpdatePropertyFloat(item, PropertyFloat.ElementalDamageMod, ElementalDamageMod ?? 0);
                         var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
-                        var bonusmessage = $"Your {name}'s Elemental Damage Bonus has increased by 1%. And is now {newweapondamage} !";
+                        var bonusmessage = $"Your {name}'s Elemental Damage Bonus has increased by {increment}. And is now {newweapondamage} !";
                         Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                         Session.Network.EnqueueSend(damagebonusupdate);
                         Session.Network.EnqueueSend(geardamagebonus);
@@ -1574,7 +1574,7 @@ namespace ACE.Server.WorldObjects
                         Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                     }
 
-                    if (item.ArmorType == 1 && item.Arramoran && !item.HasArmorLevel()) // Clothing
+                    if (item.ArmorType == 1 && item.Arramoran && item.HasArmorLevel()) // Clothing
                     {
                         // Proto Evolution
                         // Item "wakes up" and becomes Attuned and Bonded
@@ -1595,9 +1595,121 @@ namespace ACE.Server.WorldObjects
                         }
 
                         // Increase to proc rate
+                        if (itemLevel >= 100)
+                        {
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            item.ArmorModVsPierce += 0.02f;
+                            item.ArmorModVsSlash += 0.02f;
+                            item.ArmorModVsBludgeon += 0.02f;
+                            item.ArmorModVsAcid += 0.02f;
+                            item.ArmorModVsFire += 0.02f;
+                            item.ArmorModVsCold += 0.02f;
+                            item.ArmorModVsElectric += 0.02f;
+                            return;
+                        }
                         if (itemLevel >= 200)
                         {
-                            
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            item.ArmorModVsPierce += 0.02f;
+                            item.ArmorModVsSlash += 0.02f;
+                            item.ArmorModVsBludgeon += 0.02f;
+                            item.ArmorModVsAcid += 0.02f;
+                            item.ArmorModVsFire += 0.02f;
+                            item.ArmorModVsCold += 0.02f;
+                            item.ArmorModVsElectric += 0.02f;
+                            return;
+                        }
+                        if (itemLevel >= 300)
+                        {
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            item.ArmorModVsPierce += 0.02f;
+                            item.ArmorModVsSlash += 0.02f;
+                            item.ArmorModVsBludgeon += 0.02f;
+                            item.ArmorModVsAcid += 0.02f;
+                            item.ArmorModVsFire += 0.02f;
+                            item.ArmorModVsCold += 0.02f;
+                            item.ArmorModVsElectric += 0.02f;
+                            return;
+                        }
+                        if (itemLevel >= 400)
+                        {
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            item.ArmorModVsPierce += 0.02f;
+                            item.ArmorModVsSlash += 0.02f;
+                            item.ArmorModVsBludgeon += 0.02f;
+                            item.ArmorModVsAcid += 0.02f;
+                            item.ArmorModVsFire += 0.02f;
+                            item.ArmorModVsCold += 0.02f;
+                            item.ArmorModVsElectric += 0.02f;
+                            return;
+                        }
+                        if (itemLevel >= 500)
+                        {
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            item.ArmorModVsPierce += 0.02f;
+                            item.ArmorModVsSlash += 0.02f;
+                            item.ArmorModVsBludgeon += 0.02f;
+                            item.ArmorModVsAcid += 0.02f;
+                            item.ArmorModVsFire += 0.02f;
+                            item.ArmorModVsCold += 0.02f;
+                            item.ArmorModVsElectric += 0.02f;
+                            return;
+                        }
+
+                        var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);
+                        var name = item.GetProperty(PropertyString.Name);
+                        var bonusmessage = $"Your {name}'s ratings and defensive bonuses have increased!";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                    }
+                    if (item.ArmorType == 1 && item.Arramoran && !item.HasArmorLevel()) // Clothing
+                    {
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+
+                        var gearHealingBoost = item.GearHealingBoost;
+                        var gearMaxHealth = item.GearMaxHealth;
+                        var gearCritDamage = item.GearCritDamage;
+                        var gearCritDamageResist = item.GearCritDamageResist;
+                        var gearDamage = item.GearDamage;
+                        var gearDamageResist = item.GearDamageResist;
+                        var ratingIncrease = ThreadSafeRandom.Next(5, 15);
+
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                        }
+
+                        // Increase to proc rate
+                        if (itemLevel >= 200)
+                        {
+
                             item.GearHealingBoost += 1;
                             item.GearMaxHealth += 1;
                             item.GearCritDamage += 1;
@@ -1620,7 +1732,7 @@ namespace ACE.Server.WorldObjects
                         // Increase to proc rate
                         if (itemLevel >= 300)
                         {
-                            
+
                             item.GearHealingBoost += 1;
                             item.GearMaxHealth += 1;
                             item.GearCritDamage += 1;
@@ -1632,7 +1744,7 @@ namespace ACE.Server.WorldObjects
                         // Increase to proc rate
                         if (itemLevel >= 400)
                         {
-                            
+
                             item.GearHealingBoost += 1;
                             item.GearMaxHealth += 1;
                             item.GearCritDamage += 1;
@@ -1644,7 +1756,92 @@ namespace ACE.Server.WorldObjects
                         // Increase to proc rate
                         if (itemLevel >= 500)
                         {
-                            
+
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            return;
+                        }
+
+                        var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);
+                        var name = item.GetProperty(PropertyString.Name);
+                        var bonusmessage = $"Your {name}'s ratings have increased!";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                    }
+                    if (item.GetProperty(PropertyInt.ValidLocations) == 0x8000000 && item.Arramoran && !item.HasArmorLevel()) // Cloaks
+                    {
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+
+                        var gearHealingBoost = item.GearHealingBoost;
+                        var gearMaxHealth = item.GearMaxHealth;
+                        var gearCritDamage = item.GearCritDamage;
+                        var gearCritDamageResist = item.GearCritDamageResist;
+                        var gearDamage = item.GearDamage;
+                        var gearDamageResist = item.GearDamageResist;
+                        var ratingIncrease = ThreadSafeRandom.Next(5, 15);
+
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                        }
+
+                        // Increase to proc rate
+                        if (itemLevel >= 200)
+                        {
+
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            return;
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 100)
+                        {
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            return;
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 300)
+                        {
+
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            return;
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 400)
+                        {
+
+                            item.GearHealingBoost += 1;
+                            item.GearMaxHealth += 1;
+                            item.GearCritDamage += 1;
+                            item.GearCritDamageResist += 1;
+                            item.GearDamage += 1;
+                            item.GearDamageResist += 1;
+                            return;
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 500)
+                        {
+
                             item.GearHealingBoost += 1;
                             item.GearMaxHealth += 1;
                             item.GearCritDamage += 1;

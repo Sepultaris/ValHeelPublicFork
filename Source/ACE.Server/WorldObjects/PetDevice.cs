@@ -150,6 +150,11 @@ namespace ACE.Server.WorldObjects
                 return false;
             }
             var success = pet.Init(player, this);
+            var petHealth = pet.Health;
+            var petStamina = pet.Stamina;
+            var petMana = pet.Mana;
+            var petName = pet.Name;
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You summon a {petName} with {petHealth} Max Health, {petStamina} Max Stamina, and {petMana} Max Mana.", ChatMessageType.Broadcast));
             player.NumberOfPets++;
 
             return success;
