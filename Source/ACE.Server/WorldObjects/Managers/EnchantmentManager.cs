@@ -247,7 +247,7 @@ namespace ACE.Server.WorldObjects.Managers
             entry.StatModKey = spell.StatModKey;
             entry.StatModValue = spell.StatModVal;
 
-            if (spell.IsBeneficial && caster is Player player1 && player1.Level >= 500)
+            if (equip == false && spell.IsBeneficial && caster is Player player1 && player1.Level >= 500 && !player1.QuestManager.CanSolve("Ascension"))
             {
                 if (spell.School == MagicSchool.LifeMagic)
                 {
@@ -264,7 +264,7 @@ namespace ACE.Server.WorldObjects.Managers
                 if (spell.School == MagicSchool.ItemEnchantment)
                 {
                     var spellBoost = (int)player1.Level / 10;
-                    entry.StatModValue = spell.StatModVal + (spellBoost);
+                    entry.StatModValue = spell.StatModVal + (spellBoost / 100);
                     entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
                 }
             }
