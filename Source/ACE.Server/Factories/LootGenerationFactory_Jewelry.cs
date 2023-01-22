@@ -156,7 +156,7 @@ namespace ACE.Server.Factories
                         wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
                         wo.SetProperty(PropertyDataId.ProcSpell, 4644);
                     }                        
-                    else if (spellProc >= 0.3f)
+                    else if (spellProc >= 0.6f)
                     {
                         wo.SetProperty(PropertyInt.ItemSpellcraft, 999);
                         wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
@@ -200,7 +200,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 600);
 
-                if (jewelryProc <= 0.3f)
+                if (jewelryProc <= 0.0f)
                 {
                     var spellProc = ThreadSafeRandom.Next(0.0f, 1.0f);
 
@@ -222,8 +222,6 @@ namespace ACE.Server.Factories
                         wo.SetProperty(PropertyFloat.ProcSpellRate, 0.02f);
                         wo.SetProperty(PropertyDataId.ProcSpell, 4645);
                     }
-
-
                 }
 
                 wo.GearHealingBoost += (ThreadSafeRandom.Next(5, 15));

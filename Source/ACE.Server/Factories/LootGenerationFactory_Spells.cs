@@ -58,7 +58,7 @@ namespace ACE.Server.Factories
                 spells.AddRange(cantrips);
 
                 roll.ItemDifficulty += RollCantripDifficulty(cantrips);
-            }
+            }           
 
             return spells;
         }
@@ -260,22 +260,15 @@ namespace ACE.Server.Factories
             return itemDifficulty;
         }
 
-        private static readonly List<SpellId> armorSets = new List<SpellId>()
-        {
-            SpellId.AcidBaneRare,
-            SpellId.AcidProtectionRare,
+        private static readonly List<SpellId> prodSpells = new List<SpellId>()
+        {            
             SpellId.AlchemyMasteryRare,
             SpellId.ArcaneEnlightenmentRare,
             SpellId.ArmorExpertiseRare,
             SpellId.ArmorRare,
             SpellId.AxeMasteryRare,
-            SpellId.BladeBaneRare,
-            SpellId.BladeProtectionRare,
             SpellId.BloodDrinkerRare,
-            SpellId.BludgeonBaneRare,
-            SpellId.BludgeonProtectionRare,
             SpellId.BowMasteryRare,
-            SpellId.ColdProtectionRare,
             SpellId.CookingMasteryRare,
             SpellId.CoordinationRare,
             SpellId.CreatureEnchantmentMasteryRare,
@@ -285,8 +278,6 @@ namespace ACE.Server.Factories
             SpellId.DefenderRare,
             SpellId.EnduranceRare,
             SpellId.FealtyRare,
-            SpellId.FireProtectionRare,
-            SpellId.FlameBaneRare,
             SpellId.FletchingMasteryRare,
             SpellId.FocusRare,
             SpellId.FrostBaneRare,
@@ -301,8 +292,6 @@ namespace ACE.Server.Factories
             SpellId.JumpMasteryRare,
             SpellId.LeadershipMasteryRare,
             SpellId.LifeMagicMasteryRare,
-            SpellId.LightningBaneRare,
-            SpellId.LightningProtectionRare,
             SpellId.LockpickMasteryRare,
             SpellId.MaceMasteryRare,
             SpellId.MagicItemExpertiseRare,
@@ -311,8 +300,6 @@ namespace ACE.Server.Factories
             SpellId.ManaRenewalRare,
             SpellId.MonsterAttunementRare,
             SpellId.PersonAttunementRare,
-            SpellId.PiercingBaneRare,
-            SpellId.PiercingProtectionRare,
             SpellId.QuicknessRare,
             SpellId.RegenerationRare,
             SpellId.RejuvenationRare,
@@ -354,7 +341,7 @@ namespace ACE.Server.Factories
                 
             }
 
-            var finalCantrips = new List<SpellId>();
+            var finalCantrips = new List<SpellId>();           
 
             var hasLegendary = false;
 
@@ -389,21 +376,31 @@ namespace ACE.Server.Factories
                     wo.WieldDifficulty2 = 180;
             }
 
-            var prodSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AcidBaneRare, (int)SpellId.WeaponExpertiseRare);
-            var secondProdSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AcidBaneRare, (int)SpellId.WeaponExpertiseRare);
+            var prodSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
+            var secondProdSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
+            var twoprods = ThreadSafeRandom.Next(0.00f, 1.00f);
 
+            // Tier 10 prod rolls
             if (profile.Tier == 10)
             {
-                var twoprods = ThreadSafeRandom.Next(0.00f, 1.00f);
+                if (prodSpell == SpellId.AcidProtectionRare || prodSpell == SpellId.BludgeonProtectionRare || prodSpell == SpellId.BladeProtectionRare || prodSpell == SpellId.FireProtectionRare || prodSpell == SpellId.ColdProtectionRare || prodSpell == SpellId.LightningProtectionRare || prodSpell == SpellId.PiercingProtectionRare)
+                {
+                    prodSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
+                }
+                if (secondProdSpell == SpellId.AcidProtectionRare || secondProdSpell == SpellId.BludgeonProtectionRare || secondProdSpell == SpellId.BladeProtectionRare || secondProdSpell == SpellId.FireProtectionRare || secondProdSpell == SpellId.ColdProtectionRare || secondProdSpell == SpellId.LightningProtectionRare || secondProdSpell == SpellId.PiercingProtectionRare)
+                {
+                    secondProdSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
+                }              
+                if (prodSpell != SpellId.AcidProtectionRare && prodSpell != SpellId.BludgeonProtectionRare && prodSpell != SpellId.BladeProtectionRare && prodSpell != SpellId.FireProtectionRare && prodSpell != SpellId.ColdProtectionRare && prodSpell != SpellId.LightningProtectionRare && prodSpell != SpellId.PiercingProtectionRare && secondProdSpell != SpellId.AcidProtectionRare && secondProdSpell != SpellId.BludgeonProtectionRare && secondProdSpell != SpellId.BladeProtectionRare && secondProdSpell != SpellId.FireProtectionRare && secondProdSpell != SpellId.ColdProtectionRare && secondProdSpell != SpellId.LightningProtectionRare && secondProdSpell != SpellId.PiercingProtectionRare && prodSpell != SpellId.Undef)
+                {
+                    finalCantrips.Add(prodSpell);
 
-                finalCantrips.Add(prodSpell);
-
-                if (twoprods <= 0.25)
-                    finalCantrips.Add(secondProdSpell);
-
+                    if (twoprods <= 0.25)
+                        finalCantrips.Add(secondProdSpell);                   
+                }
+                if (prodSpell == SpellId.Undef)
+                    RollCantrips(wo, profile, roll);
             }
-                
-
             return finalCantrips;
         }
 
