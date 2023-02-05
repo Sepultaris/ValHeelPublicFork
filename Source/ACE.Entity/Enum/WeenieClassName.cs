@@ -31126,5 +31126,9 @@ namespace ACE.Entity.Enum
         W_BLACKSKULLOFXIKMA_CLASS = 34042,
         W_SPECTRALSKULL_CLASS = 42038,
         W_ANEKSHAYSLAYERSTONE_CLASS = 44636
+
+        
+
+
     }
 }

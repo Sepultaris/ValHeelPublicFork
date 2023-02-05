@@ -55,6 +55,8 @@ namespace ACE.Server.Command.Handlers
                 player.QuestManager.Stamp("PrestigeComplete75");
             if (prestige >= 100)
                 player.QuestManager.Stamp("PrestigeComplete100");
+            if (prestige >= 150)
+                player.QuestManager.Stamp("PrestigeComplete150");
 
             ChatPacket.SendServerMessage(session, string.Format("You are currently Prestige level {0}.", prestige), ChatMessageType.Broadcast);
             return;                     
@@ -375,6 +377,42 @@ namespace ACE.Server.Command.Handlers
                     var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
                     var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
                     player.QuestManager.Stamp("PrestigeComplete100");
+                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
+                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
+                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
+                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
+                    ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newprestige, newreputation), ChatMessageType.Broadcast);
+                    player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
+                    player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
+                    player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
+                    return;
+                }
+                if (prestige >= 150)
+                {
+                    for (int i = 0; i < result; i++)
+                    {
+                        if (reputation < 250000)
+                        {
+                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough reputation, 100000 reputation to increase prestige.", ChatMessageType.Broadcast);
+                            return;
+                        }
+                        if (player.QuestManager.GetCurrentSolves("Reputation") < 250000)
+                        {
+                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough reputation, 100000 reputation to increase prestige.", ChatMessageType.Broadcast);
+                            return;
+                        }
+                        player.QuestManager.Decrement("Reputation", 250000);
+                        player.QuestManager.Increment("Prestige", 1);
+                        player.LumAugDamageRating += 100;
+                        player.LumAugDamageReductionRating += 100;
+                        player.LumAugCritDamageRating += 100;
+                        player.LumAugCritReductionRating += 100;
+                    }
+                    var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
+                    var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
+                    player.QuestManager.Stamp("PrestigeComplete150");
                     player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
                     player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
                     player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));

@@ -373,6 +373,8 @@ namespace ACE.Server.Factories
 
         public static readonly int[] DinnerwareLootMatrix = { 141, 142, 148, 149, 150, 154, 161, 163, 168, 243, 254, 7940 };
 
+        public static readonly int[] MirraMatrix = { 801966, 801967, 801968, 801969, 801970, 801971, 801972, 801973, 801974, 801975, 801976, 801977 };
+
         /*public static readonly int[][] GemCreatureSpellMatrix =
         {
             new int[] { 2, 18, 256, 274, 298, 322, 5099, 418, 467, 557, 581, 605, 629, 653, 678, 702, 726, 750, 774, 798, 824, 850, 874, 898, 922, 946, 970, 982, 1349, 1373, 1397, 1421, 1445, 1715, 1739, 1763, 5779, 5803, 5827, 5851, 5875, 6116, 5411, 3499 },
@@ -1865,6 +1867,13 @@ namespace ACE.Server.Factories
             OlthoiKoujiaArmor,
             OlthoiAlduressaArmor,
             SocietyArmor
+        }
+
+        public enum MirraType
+        {
+            SteelMirra,
+            IronMirra,
+            BluntMirra
         }
 
         public static readonly int[] OverRobes =

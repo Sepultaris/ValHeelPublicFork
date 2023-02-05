@@ -20,15 +20,19 @@ using ACE.Server.Factories;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
+using System.Reflection.Metadata;
+using Renci.SshNet.Messages.Authentication;
+using static ACE.Server.WorldObjects.Player;
+using ACE.Database.Models.Auth;
 
 namespace ACE.Server.Managers
 {
     public partial class RecipeManager
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+       
         public static Recipe GetRecipe(Player player, WorldObject source, WorldObject target)
-        {
+        {         
             // PY16 recipes
             var cookbook = DatabaseManager.World.GetCachedCookbook(source.WeenieClassId, target.WeenieClassId);
             if (cookbook != null)
@@ -36,6 +40,794 @@ namespace ACE.Server.Managers
 
             // if none exists, try finding new recipe
             return GetNewRecipe(player, source, target);
+        }
+
+        public static void HandleMirra(Player player, WorldObject source, WorldObject target)
+        {
+            
+            if (source.WeenieClassId == 801966)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var armorbonus = source.MirraArmorBonus;
+
+                    target.ArmorLevel = target.ArmorLevel + armorbonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    success = false;                   
+                    player.Inventory.TryAdd(player.Guid, source);
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {                        
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {                       
+                        target.IconOverlayId = 0x6006C34; // 1
+                        player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateDataID(target, PropertyDataId.IconOverlay, 0x6006C34));
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                        player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateDataID(target, PropertyDataId.IconOverlay, 0x6006C35));                       
+                    }
+                }
+            }
+            if (source.WeenieClassId == 801967)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var damagebonus = source.MirraWeaponBonus;
+
+                    target.Damage = target.Damage + damagebonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.EnchantUpRed, player.Guid);
+
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 2
+                    }
+                }
+            }
+            if (source.WeenieClassId == 801968)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var resistancebonus = source.MirraResistanceBonus;
+                    var resistance = target.ArmorModVsBludgeon;
+
+                    target.ArmorModVsBludgeon = resistance + resistancebonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                    }
+                }
+            }
+            if (source.WeenieClassId == 801969)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var resistancebonus = source.MirraResistanceBonus;
+                    var resistance = target.ArmorModVsSlash;
+
+                    target.ArmorModVsSlash = resistance + resistancebonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                    }
+                }
+
+            }
+            if (source.WeenieClassId == 801970)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var resistancebonus = source.MirraResistanceBonus;
+                    var resistance = target.ArmorModVsPierce;
+
+                    target.ArmorModVsPierce = resistance + resistancebonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                    }
+                }
+
+            }
+            if (source.WeenieClassId == 801971)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var resistancebonus = source.MirraResistanceBonus;
+                    var resistance = target.ArmorModVsCold;
+
+                    target.ArmorModVsCold = resistance + resistancebonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                    }
+                }
+
+            }
+            if (source.WeenieClassId == 801972)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var resistancebonus = source.MirraResistanceBonus;
+                    var resistance = target.ArmorModVsFire;
+
+                    target.ArmorModVsFire = resistance + resistancebonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                    }
+                }
+
+            }
+            if (source.WeenieClassId == 801973)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var resistancebonus = source.MirraResistanceBonus;
+                    var resistance = target.ArmorModVsAcid;
+
+                    target.ArmorModVsAcid = resistance + resistancebonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                    }
+                }
+
+            }
+            if (source.WeenieClassId == 801974)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var resistancebonus = source.MirraResistanceBonus;
+                    var resistance = target.ArmorModVsElectric;
+
+                    target.ArmorModVsElectric = resistance + resistancebonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                    }
+                }
+
+            }
+            if (source.WeenieClassId == 801975)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var damageModBonus = source.MirraDamageModBonus;
+                    var damageMod = target.ElementalDamageMod;
+
+                    target.ElementalDamageMod = damageMod + damageModBonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                   
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                }
+
+            }
+            if (source.WeenieClassId == 801976)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var damageModBonus = source.MirraDamageModBonus;
+                    var damageMod = target.DamageMod;
+
+                    target.DamageMod = damageMod + damageModBonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                }
+
+            }
+            if (source.WeenieClassId == 801977)
+            {
+                /*recipe = DatabaseManager.World.GetRecipe(300400);*/
+                var success = false;
+
+                if (target.Sockets >= 1)
+                {
+                    var mirraId = source.Guid;
+                    var ratingBonus = source.MirraRatingBonus;
+                    var critMod = target.GearCrit;
+                    var critDamageMod = target.GearCritDamage;
+                    var critDamageModResist = target.GearCritDamageResist;
+                    var critResistMod = target.GearCritResist;
+                    var gearDamageMod = target.GearDamage;
+                    var gearDamageModResist = target.GearDamageResist;
+                    var gearHealingBoost = target.GearHealingBoost;
+                    var gearMaxHealth = target.GearMaxHealth;
+
+                    target.GearCrit = critMod + ratingBonus;
+                    target.GearCritDamage = critDamageMod + ratingBonus;
+                    target.GearCritDamageResist = critDamageModResist + ratingBonus;
+                    target.GearCritResist = critResistMod + ratingBonus;
+                    target.GearDamage = critDamageModResist + ratingBonus;
+                    target.GearDamageResist = gearDamageModResist + ratingBonus;
+                    target.GearHealingBoost = gearHealingBoost + ratingBonus;
+                    target.GearMaxHealth = gearMaxHealth + ratingBonus;
+                    target.Sockets--;
+                    success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
+                    /*return recipe;*/
+                }
+                else if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    /*return null;*/
+                }
+                if (success == true)
+                {
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+
+                    if (target.Sockets == 1)
+                    {
+                        target.IconOverlayId = 0x6006C34; // 1
+                    }
+                    if (target.Sockets == 0)
+                    {
+                        target.IconOverlayId = 0x6006C35; // 2
+                    }
+                }
+
+            }
+
+
         }
 
         public static void UseObjectOnTarget(Player player, WorldObject source, WorldObject target, bool confirmed = false)
@@ -54,10 +846,20 @@ namespace ACE.Server.Managers
                 return;
             }
 
+            if (source.IsMirra)
+            {
+                HandleMirra(player, source, target);               
+            }
+
             var recipe = GetRecipe(player, source, target);
 
             if (recipe == null)
             {
+                if (source.IsMirra)
+                {
+                    player.SendUseDoneEvent();
+                    return;
+                }
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.NameWithMaterial} cannot be used on the {target.NameWithMaterial}.", ChatMessageType.Craft));
                 player.SendUseDoneEvent();
                 return;
@@ -65,7 +867,7 @@ namespace ACE.Server.Managers
 
             // verify requirements
             if (!VerifyRequirements(recipe, player, source, target))
-            {
+            {               
                 player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
                 return;
             }
@@ -74,14 +876,17 @@ namespace ACE.Server.Managers
                 source.WeenieClassId >= (uint)WeenieClassName.W_MATERIALACE36619FOOLPROOFAQUAMARINE && source.WeenieClassId <= (uint)WeenieClassName.W_MATERIALACE36628FOOLPROOFWHITESAPPHIRE ||
                 source.WeenieClassId >= (uint)WeenieClassName.W_MATERIALACE36634FOOLPROOFPERIDOT && source.WeenieClassId <= (uint)WeenieClassName.W_MATERIALACE36636FOOLPROOFZIRCON)
             {
+                
                 HandleTinkering(player, source, target);
                 return;
-            }
+            }         
 
             var percentSuccess = GetRecipeChance(player, source, target, recipe);
 
             if (percentSuccess == null)
+
             {
+              
                 player.SendUseDoneEvent();
                 return;
             }
@@ -90,41 +895,78 @@ namespace ACE.Server.Managers
 
             if (showDialog && !confirmed)
             {
+                
                 ShowDialog(player, source, target, (float)percentSuccess);
                 return;
             }
 
-            ActionChain craftChain = new ActionChain();
-
-            var animTime = 0.0f;
-
-            player.IsBusy = true;
-
-            if (player.CombatMode != CombatMode.NonCombat)
+            if (!source.IsMirra)
             {
-                var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
-                craftChain.AddDelaySeconds(stanceTime);
+                ActionChain craftChain = new ActionChain();
 
-                animTime += stanceTime;
+                var animTime = 0.0f;
+
+                player.IsBusy = true;
+
+                if (player.CombatMode != CombatMode.NonCombat)
+                {
+                    var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                    craftChain.AddDelaySeconds(stanceTime);
+
+                    animTime += stanceTime;
+                }
+
+                animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                craftChain.AddAction(player, () => HandleRecipe(player, source, target, recipe, (float)percentSuccess));
+
+                player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                craftChain.AddAction(player, () =>
+                {
+                    if (!showDialog)
+                        player.SendUseDoneEvent();
+
+                    player.IsBusy = false;
+                });
+
+                craftChain.EnqueueChain();
+
+                player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+            }
+            if (source.IsMirra)
+            {
+                ActionChain craftChain = new ActionChain();
+
+                var animTime = 0.0f;
+
+                player.IsBusy = true;
+
+                if (player.CombatMode != CombatMode.NonCombat)
+                {
+                    var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                    craftChain.AddDelaySeconds(stanceTime);
+
+                    animTime += stanceTime;
+                }
+
+                animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);                
+
+                player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                craftChain.AddAction(player, () =>
+                {
+                    if (!showDialog)
+                        player.SendUseDoneEvent();
+
+                    player.IsBusy = false;
+                });
+
+                craftChain.EnqueueChain();
+
+                player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
             }
 
-            animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
-
-            craftChain.AddAction(player, () => HandleRecipe(player, source, target, recipe, (float)percentSuccess));
-
-            player.EnqueueMotion(craftChain, MotionCommand.Ready);
-
-            craftChain.AddAction(player, () =>
-            {
-                if (!showDialog)
-                    player.SendUseDoneEvent();
-
-                player.IsBusy = false;
-            });
-
-            craftChain.EnqueueChain();
-
-            player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
         }
 
         public static bool HasDifficulty(Recipe recipe)

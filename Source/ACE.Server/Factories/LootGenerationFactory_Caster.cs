@@ -271,6 +271,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.Sockets = 1;
                 wo.SetProperty(PropertyString.Name, name);
                 // increase damage
                 wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);

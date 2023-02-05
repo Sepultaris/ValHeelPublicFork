@@ -60,6 +60,7 @@ namespace ACE.Server.Network.Structure
 
         public ArmorLevel ArmorLevels;
 
+
         // This helps ensure the item will identify properly. Some "items" are technically "Creatures".
         private bool NPCLooksLikeObject;
 
@@ -174,7 +175,7 @@ namespace ACE.Server.Network.Structure
             {
                 if (PropertiesInt.ContainsKey(PropertyInt.EncumbranceVal))
                     PropertiesInt.Remove(PropertyInt.EncumbranceVal);
-            }
+            }                    
 
             if (wo is SlumLord slumLord)
             {                
@@ -550,7 +551,7 @@ namespace ACE.Server.Network.Structure
 
             ArmorProfile = new ArmorProfile(wo);
             ArmorHighlight = ArmorMaskHelper.GetHighlightMask(wo);
-            ArmorColor = ArmorMaskHelper.GetColorMask(wo);
+            ArmorColor = ArmorMaskHelper.GetColorMask(wo);            
 
             AddSpells(SpellBook, wo);
         }
@@ -717,6 +718,7 @@ namespace ACE.Server.Network.Structure
                 Flags |= IdentifyResponseFlags.WeaponEnchantmentBitfield;
             if (ArmorLevels != null)
                 Flags |= IdentifyResponseFlags.ArmorLevels;
+
         }
     }
 
@@ -768,6 +770,7 @@ namespace ACE.Server.Network.Structure
             }
             if (info.Flags.HasFlag(IdentifyResponseFlags.ArmorLevels))
                 writer.Write(info.ArmorLevels);
+
         }
 
         private static readonly PropertyIntComparer PropertyIntComparer = new PropertyIntComparer(16);

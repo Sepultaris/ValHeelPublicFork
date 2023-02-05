@@ -46,6 +46,8 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public bool IsCleaving { get => GetProperty(PropertyInt.Cleaving) != null;  }
 
+        public bool IsMirra { get => GetProperty(PropertyInt.ItemType) == 2304; }
+
         /// <summary>
         /// Returns the number of cleave targets for this weapon
         /// If cleaving weapon, this is PropertyInt.Cleaving - 1

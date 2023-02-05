@@ -131,6 +131,7 @@ namespace ACE.Entity.Enum
 
         // Unknown Id Emotes & Custom Emotes
         Enlightenment = 9001,
+        Pop = 9002
 
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Net.Sockets;
 
 namespace ACE.Entity.Enum.Properties
 {
@@ -655,6 +656,11 @@ namespace ACE.Entity.Enum.Properties
         TotalPrestige = 9037,
         [ServerOnly]
         AvailablePrestige = 9037,
+        [Ephemeral]
+        MirraArmorBonus = 9038,
+        MirraWeaponBonus = 9039,      
+        Sockets = 9041,
+        MirraRaingBonus = 9042
     }
 
     public static class PropertyIntExtensions
@@ -793,6 +799,7 @@ namespace ACE.Entity.Enum.Properties
 
                 case PropertyInt.UseCreatesContractId:
                     return System.Enum.GetName(typeof(ContractId), value);
+              
             }
 
             return null;

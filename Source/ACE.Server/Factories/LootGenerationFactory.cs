@@ -342,6 +342,10 @@ namespace ACE.Server.Factories
                     // TODO: Will likely need some adjustment/fine tuning
                     wo = CreateDinnerware(profile, isMagical);
                     break;
+
+                case TreasureItemType.Mirra:
+                    wo = CreateMirra(profile, isMagical, true);
+                    break;
             }
             return wo;
         }
@@ -372,6 +376,18 @@ namespace ACE.Server.Factories
             {
                 roll.ItemType = TreasureItemType_Orig.Pyreal;
                 MutateCoins(item, profile);
+            }
+            else if (roll.Wcid == WeenieClassName.SteelMirra)
+            {
+                MutateMirra(item, profile);
+            }
+            else if (roll.Wcid == WeenieClassName.IronMirra)
+            {
+                MutateMirra(item, profile);
+            }
+            else if (roll.Wcid == WeenieClassName.BluntMirra)
+            {
+                MutateMirra(item, profile);
             }
             else if (GemMaterialChance.Contains(roll.Wcid))
             {
@@ -454,6 +470,7 @@ namespace ACE.Server.Factories
                 // mundane add-on
                 MutateAetheria_New(item, profile);
             }
+            
             // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
             // it should be safe to return false here, for the 1 caller that currently uses this method
             // since it's not this function's responsibility to determine if an item is a lootgen item,
@@ -933,7 +950,7 @@ namespace ACE.Server.Factories
 
         // new methods
 
-        public static TreasureRoll RollWcid(TreasureDeath treasureDeath, TreasureItemCategory category, TreasureItemType_Orig treasureItemType = TreasureItemType_Orig.Undef)
+        public static TreasureRoll RollWcid(TreasureDeath treasureDeath, TreasureItemCategory category, TreasureItemType_Orig treasureItemType = TreasureItemType_Orig.Undef, TreasureItemType treasureItemType1 = TreasureItemType.Undef)
         {
             if (treasureItemType == TreasureItemType_Orig.Undef)
                 treasureItemType = RollItemType(treasureDeath, category);
@@ -1054,8 +1071,10 @@ namespace ACE.Server.Factories
                 case TreasureItemType_Orig.EncapsulatedSpirit:
 
                     treasureRoll.Wcid = WeenieClassName.ace49485_encapsulatedspirit;
-                    break;
+                    break;               
+
             }
+            
             return treasureRoll;
         }
 
@@ -1191,8 +1210,15 @@ namespace ACE.Server.Factories
                     MutatePetDevice(wo, treasureDeath.Tier);
                     break;
 
-                // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
+                    // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
             }
+            var mirraChance = ThreadSafeRandom.Next(0, 1000);
+
+            if (mirraChance >= 600)
+            {               
+                wo = CreateMirra(treasureDeath, isMagical, true);
+            }
+                    
             return wo;
         }
 

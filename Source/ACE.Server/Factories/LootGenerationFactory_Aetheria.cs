@@ -94,8 +94,7 @@ namespace ACE.Server.Factories
             {
                 wo.ItemMaxLevel = 5;
             }
-
-            wo.IconOverlayId = IconOverlay_ItemMaxLevel[wo.ItemMaxLevel.Value - 1];
+           
         }
 
         private static WorldObject CreateCoalescedMana(TreasureDeath profile)

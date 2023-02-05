@@ -172,7 +172,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 15f);
                 if (cleavingRoll <= 0.1f)
-                    wo.SetProperty(PropertyInt.Cleaving, 3);
+                    wo.SetProperty(PropertyInt.Cleaving, 2);
 
             }
             // Proto Missile Weapons
@@ -231,6 +231,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.Sockets = 1;
                 wo.SetProperty(PropertyString.Name, name);
                 // increase damage
                 wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);

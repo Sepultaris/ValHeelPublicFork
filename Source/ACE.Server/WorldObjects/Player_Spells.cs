@@ -215,7 +215,7 @@ namespace ACE.Server.WorldObjects
                     var proto = item.GetProperty(PropertyBool.Proto);
                     var itemLevel = item.ItemLevel;
 
-                    if (itemtype == 256 && proto == false || itemtype == 256 && proto == null) // MissileWeapon
+                    if (itemtype == 256 && proto == false && !Arramoran || itemtype == 256 && proto == null && !Arramoran) // MissileWeapon
                     {
 
                         item.ElementalDamageBonus++;
@@ -231,7 +231,7 @@ namespace ACE.Server.WorldObjects
 
                     }
 
-                    if (itemtype == 2 && proto == false || itemtype == 2 && proto == null) // Armor
+                    if (itemtype == 2 && proto == false && !Arramoran || itemtype == 2 && proto == null && !Arramoran) // Armor
                     {
 
                         item.ArmorLevel++;
@@ -247,7 +247,7 @@ namespace ACE.Server.WorldObjects
 
                     }
 
-                    if (itemtype == 1 && proto == false || itemtype == 1 && proto == null) // MelleeWeapon
+                    if (itemtype == 1 && proto == false && !Arramoran || itemtype == 1 && proto == null && !Arramoran) // MelleeWeapon
                     {
 
                         item.Damage++;
@@ -263,7 +263,7 @@ namespace ACE.Server.WorldObjects
 
                     }
 
-                    if (itemtype == 32768 && proto == false || itemtype == 32768 && proto == null) // Caster
+                    if (itemtype == 32768 && proto == false && !Arramoran || itemtype == 32768 && proto == null && !Arramoran) // Caster
                     {
                         var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
                         float increment = 0.01f;
@@ -285,7 +285,7 @@ namespace ACE.Server.WorldObjects
                     //Proto Weapons
                     var damageType = item.GetProperty(PropertyInt.DamageType);
 
-                    if (itemtype == 256 && proto == true) // MissileWeapon
+                    if (itemtype == 256 && proto == true && !Arramoran) // MissileWeapon
                     {
 
                         item.ElementalDamageBonus++;
@@ -433,7 +433,7 @@ namespace ACE.Server.WorldObjects
 
 
                     }
-                    if (itemtype == 2 && proto == true) // Armor
+                    if (itemtype == 2 && proto == true && !Arramoran) // Armor
                     {
 
                         item.ArmorLevel++;
@@ -456,7 +456,7 @@ namespace ACE.Server.WorldObjects
                         }
 
                     }
-                    if (itemtype == 1 && proto == true) // MelleeWeapon
+                    if (itemtype == 1 && proto == true && !Arramoran) // MelleeWeapon
                     {
 
                         item.Damage++;
@@ -608,7 +608,7 @@ namespace ACE.Server.WorldObjects
 
                         }
                     }
-                    if (itemtype == 32768 && proto == true) // Caster
+                    if (itemtype == 32768 && proto == true && !Arramoran) // Caster
                     {
                         var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
                         float increment = 0.005f;
@@ -824,7 +824,7 @@ namespace ACE.Server.WorldObjects
                     }
 
                     // T10 Arramoran gear
-                    if (itemtype == 256 && item.Arramoran == true) // MissileWeapon
+                    if (itemtype == 256 && item.Arramoran && Proto == false) // MissileWeapon
                     {
 
                         item.ElementalDamageBonus++;
@@ -978,7 +978,7 @@ namespace ACE.Server.WorldObjects
 
 
                     }
-                    if (itemtype == 2 && item.Arramoran == true || item.Arramoran == true && HasArmorLevel()) // Armor
+                    if (itemtype == 2 && item.Arramoran || item.Arramoran && HasArmorLevel()) // Armor
                     {
 
                         item.ArmorLevel++;
@@ -994,7 +994,7 @@ namespace ACE.Server.WorldObjects
                         var gearCritDamageResist = item.GearCritDamageResist;
                         var gearDamage = item.GearDamage;
                         var gearDamageResist = item.GearDamageResist;
-                        var ratingIncrease = ThreadSafeRandom.Next(1, 5);                        
+                        var ratingIncrease = ThreadSafeRandom.Next(1, 5);                       
                         Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                         Session.Network.EnqueueSend(armorbonusupdate);
                         Session.Network.EnqueueSend(gearvitalitybonus);
@@ -1285,7 +1285,7 @@ namespace ACE.Server.WorldObjects
 
                         }
                     }
-                    if (itemtype == 32768 && item.Arramoran) // Caster
+                    if (itemtype == 32768 && Arramoran == true) // Caster
                     {
                         var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
                         float increment = 0.005f;
@@ -1686,7 +1686,7 @@ namespace ACE.Server.WorldObjects
                         var bonusmessage = $"Your {name}'s ratings and defensive bonuses have increased!";
                         Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                     }
-                    if (item.ArmorType == 1 && item.Arramoran && !item.HasArmorLevel()) // Clothing
+                    if (item.ArmorType == 1 && item.Arramoran && Proto == false && !item.HasArmorLevel()) // Clothing
                     {
                         // Proto Evolution
                         // Item "wakes up" and becomes Attuned and Bonded
@@ -1771,7 +1771,7 @@ namespace ACE.Server.WorldObjects
                         var bonusmessage = $"Your {name}'s ratings have increased!";
                         Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                     }
-                    if (item.GetProperty(PropertyInt.ValidLocations) == 0x8000000 && item.Arramoran && !item.HasArmorLevel()) // Cloaks
+                    if (item.GetProperty(PropertyInt.ValidLocations) == 0x8000000 && item.Arramoran && Proto == false && !item.HasArmorLevel()) // Cloaks
                     {
                         // Proto Evolution
                         // Item "wakes up" and becomes Attuned and Bonded

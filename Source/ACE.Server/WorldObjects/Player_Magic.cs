@@ -1148,7 +1148,7 @@ namespace ACE.Server.WorldObjects
 
                         if (targetPlayer != null)
                             UpdatePKTimers(this, targetPlayer);
-                    }
+                    }                    
                     else
                         Proficiency.OnSuccessUse(this, GetCreatureSkill(Skill.CreatureEnchantment), spell.PowerMod);
 
@@ -1189,7 +1189,7 @@ namespace ACE.Server.WorldObjects
 
                             if (targetPlayer != null)
                                 UpdatePKTimers(this, targetPlayer);
-                        }
+                        }                        
                         else
                             Proficiency.OnSuccessUse(this, GetCreatureSkill(Skill.LifeMagic), spell.PowerMod);
                     }

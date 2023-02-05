@@ -229,7 +229,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyBool.Arramoran, true);
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 600);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 600);              
                 wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsBludgeon = Math.Min((wo.ArmorModVsBludgeon ?? 0) + 5.0f, 5.3f);
@@ -355,6 +355,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
                 wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.SetProperty(PropertyInt.Sockets, 2);
                 wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsBludgeon = Math.Min((wo.ArmorModVsBludgeon ?? 0) + 5.0f, 5.3f);

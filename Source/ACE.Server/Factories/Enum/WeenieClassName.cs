@@ -38815,7 +38815,20 @@ namespace ACE.Server.Factories.Enum
         UmbrisShadowSiphon = 801334,
         PanumbrisShadowSiphon = 801336,
         UmbralShadowSiphon = 801338,
-
+        SteelMirra = 801966,
+        IronMirra = 801967,
+        BluntMirra = 801968,
+        BladedMirra = 801969,
+        PiercingMirra = 801970,
+        FrostMirra = 801971,
+        FireMirra = 801972,
+        CausticMirra = 801973,
+        StaticMirra = 801974,
+        GreenGarnetMirra = 801975,
+        MahoganyMirra = 801976,
+        AlabasterMirra = 801977
 
     }
+
+    
 }

@@ -359,6 +359,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.Sockets = 1;
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
@@ -397,6 +398,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.Sockets = 1;
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
@@ -437,6 +439,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.Sockets = 1;
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);

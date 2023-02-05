@@ -731,6 +731,17 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.PhysicsScriptIntensity); else SetProperty(PropertyFloat.PhysicsScriptIntensity, value.Value); }
         }
 
+        public float? MirraResistanceBonus
+        {
+            get => (float?)GetProperty(PropertyFloat.MirraResistanceBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.MirraResistanceBonus); else SetProperty(PropertyFloat.MirraResistanceBonus, value.Value); }
+        }
+
+        public float? MirraDamageModBonus
+        {
+            get => (float?)GetProperty(PropertyFloat.MirraDamageModBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.MirraDamageModBonus); else SetProperty(PropertyFloat.MirraDamageModBonus, value.Value); }
+        }
 
         public bool GetPhysicsState(PhysicsState state)
         {
@@ -3075,6 +3086,30 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyBool.Arramoran) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.Arramoran); else SetProperty(PropertyBool.Arramoran, value); }
+        }
+
+        public int? MirraArmorBonus
+        {
+            get => GetProperty(PropertyInt.MirraArmorBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MirraArmorBonus); else SetProperty(PropertyInt.MirraArmorBonus, value.Value); }
+        }
+
+        public int? MirraWeaponBonus
+        {
+            get => GetProperty(PropertyInt.MirraWeaponBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MirraWeaponBonus); else SetProperty(PropertyInt.MirraWeaponBonus, value.Value); }
+        }
+
+        public int? MirraRatingBonus
+        {
+            get => GetProperty(PropertyInt.MirraWeaponBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MirraWeaponBonus); else SetProperty(PropertyInt.MirraWeaponBonus, value.Value); }
+        }
+
+        public int? Sockets
+        {
+            get => GetProperty(PropertyInt.Sockets);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.Sockets); else SetProperty(PropertyInt.Sockets, value.Value); }
         }
 
     }

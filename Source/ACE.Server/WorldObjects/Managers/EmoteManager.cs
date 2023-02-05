@@ -12,6 +12,7 @@ using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
+using ACE.Server.Command.Handlers;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Factories;
@@ -1451,6 +1452,13 @@ namespace ACE.Server.WorldObjects.Managers
 
                     PlayerManager.LogBroadcastChat(Channel.AllBroadcast, WorldObject, message);
 
+                    break;
+
+                case EmoteType.Pop:
+                    var msg1 = $"Current world population: {PlayerManager.GetOnlineCount():N0}";
+
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat(msg1, ChatMessageType.Broadcast));
+                    
                     break;
 
                 default:

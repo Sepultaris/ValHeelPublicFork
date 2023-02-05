@@ -21,7 +21,7 @@ namespace ACE.Server.Entity
         // It was not intended to be a quest that every player would undertake or be interested in.
 
         // Requirements:
-        // - Level 275
+        // - Level 1000
         // - Have all luminance auras (crafting aura included) except the 2 skill credit auras. (20 million total luminance)
         // - Have mastery rank in a society
         // - Have 25 unused pack spaces
@@ -76,6 +76,12 @@ namespace ACE.Server.Entity
                 return false;
             }
 
+            if (player.Enlightenment >= 5)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have already reached the maximum enlightenment level!", ChatMessageType.Broadcast));
+                return false;
+            }
+
             return true;
         }
 
@@ -113,10 +119,11 @@ namespace ACE.Server.Entity
 
         public static void RemoveAbility(Player player)
         {
-            //RemoveAetheria(player);
+            RemoveAetheria(player);
             RemoveAttributes(player);
             RemoveSkills(player);
-            RemoveLevel(player);
+            RemoveLuminance(player);
+            RemoveLevel(player);            
         }
 
         public static void RemoveSociety(Player player)
@@ -203,7 +210,7 @@ namespace ACE.Server.Entity
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[attribute]));
             }
 
-            /*// resets stats above max back to base.
+            // resets stats above max back to base.
             player.Strength.StartingValue -= (uint)player.RaisedStr;
             player.Endurance.StartingValue -= (uint)player.RaisedEnd;
             player.Coordination.StartingValue -= (uint)player.RaisedCoord;
@@ -223,7 +230,7 @@ namespace ACE.Server.Entity
             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
             player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
-            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));*/
+            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
 
             player.SendMessage("Your attribute training fades.", ChatMessageType.Broadcast);
         }
@@ -350,7 +357,7 @@ namespace ACE.Server.Entity
             PlayerManager.BroadcastToAll(new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
             PlayerManager.LogBroadcastChat(Channel.AllBroadcast, null, msg);
 
-            player.QuestManager.Erase("Trance1");
+            player.QuestManager.Erase("Trance1");            
             player.LastLevel = 1;
             player.TotalXpBeyond = null;
 

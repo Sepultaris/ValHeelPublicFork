@@ -42,7 +42,7 @@ namespace ACE.Server.WorldObjects
             
 
             //additive enlightenment bonus with enchantments.
-            var enlightenBonus = 0.25f * Enlightenment; // 25% XP bonus per enlightenment
+            var enlightenBonus = 0.03f * Enlightenment; // 3% XP bonus per enlightenment
 
             // should this be passed upstream to fellowship / allegiance?
             var enchantment = GetXPAndLuminanceModifier(xpType) + enlightenBonus;

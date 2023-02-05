@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System;
 
 using Newtonsoft.Json;
 
@@ -8,7 +9,10 @@ using ACE.Database.Models.World;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity;
+using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
+using ACE.Common;
+using static ACE.Server.WorldObjects.Player;
 
 namespace ACE.Server.Managers
 {
@@ -39,6 +43,32 @@ namespace ACE.Server.Managers
         public static Recipe GetNewRecipe(Player player, WorldObject source, WorldObject target)
         {
             Recipe recipe = null;
+
+            /*if (source.WeenieClassId == 801966)
+            {              
+                if (target.Sockets == 0 || target.Sockets == null)
+                {                    
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    player.Inventory.TryAdd(player.Guid, source);
+                    return null;
+                }
+            }*/
+            /*if (source.WeenieClassId == 801967)
+            {
+                if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    return null;
+                }
+            }*/
+            /*if (source.WeenieClassId == 801968)
+            {
+                if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    return null;
+                }
+            }*/
 
             switch ((WeenieClassName)source.WeenieClassId)
             {
@@ -171,7 +201,7 @@ namespace ACE.Server.Managers
 
                     // use mahogany recipe as base
                     recipe = DatabaseManager.World.GetRecipe(3855);
-                    break;
+                    break;                
 
                 case WeenieClassName.W_MATERIALOAK_CLASS:
 
@@ -471,7 +501,7 @@ namespace ACE.Server.Managers
                     recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
                     break;
             }
-
+            
             return recipe;
         }
 
@@ -512,7 +542,7 @@ namespace ACE.Server.Managers
             { WeenieClassName.W_MATERIALCITRINE_CLASS,         4439 },
             { WeenieClassName.W_MATERIALCARNELIAN_CLASS,       4443 },
 
-            //{ WeenieClassName.W_MATERIALSTEEL50_CLASS,         3860 },
+            // { WeenieClassName.W_MATERIALSTEEL50_CLASS,         3860 },
             { WeenieClassName.W_MATERIALSTEEL100_CLASS,        3860 },
             { WeenieClassName.W_MATERIALSTEEL_CLASS,           3860 },
             { WeenieClassName.W_MATERIALSTEELPATHWARDEN_CLASS, 3860 },

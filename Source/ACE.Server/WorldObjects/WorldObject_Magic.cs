@@ -315,14 +315,36 @@ namespace ACE.Server.WorldObjects
                         case DamageType.Mana:
                             boost = spellTarget.UpdateVitalDelta(spellTarget.Mana, tryBoost);
                             srcVital = "mana";
+                            if (player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
+                            {
+                                boost = spellTarget.UpdateVitalDelta(spellTarget.Mana, tryBoost) + (int)(player.Level * 5);
+                                srcVital = "mana";
+                                break;
+                            }
                             break;
                         case DamageType.Stamina:
                             boost = spellTarget.UpdateVitalDelta(spellTarget.Stamina, tryBoost);
                             srcVital = "stamina";
+                            if (player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
+                            {
+                                boost = spellTarget.UpdateVitalDelta(spellTarget.Stamina, tryBoost) + (int)(player.Level * 5);
+                                srcVital = "stamina";
+                                break;
+                            }
                             break;
                         default:   // Health
                             boost = spellTarget.UpdateVitalDelta(spellTarget.Health, tryBoost);
                             srcVital = "health";
+                            if (player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
+                            {
+                                boost = spellTarget.UpdateVitalDelta(spellTarget.Health, tryBoost) + (int)(player.Level * 5);
+                                srcVital = "health";
+                                if (boost >= 0)
+                                    spellTarget.DamageHistory.OnHeal((uint)boost);
+                                else
+                                    spellTarget.DamageHistory.Add(this, DamageType.Health, (uint)-boost);
+                                break;
+                            }
 
                             if (boost >= 0)
                                 spellTarget.DamageHistory.OnHeal((uint)boost);

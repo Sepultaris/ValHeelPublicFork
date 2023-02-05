@@ -216,7 +216,11 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         PCAPRecordeOmegaY              = 8017,
         [ServerOnly]
-        PCAPRecordeOmegaZ              = 8018
+        PCAPRecordeOmegaZ              = 8018,
+        [ServerOnly]
+        MirraResistanceBonus           = 8019,
+        [ServerOnly]
+        MirraDamageModBonus            = 8020
     }
 
     public static class PropertyFloatExtensions

@@ -7,7 +7,7 @@ namespace ACE.Server.Factories.Tables.Wcids
 {
     public class CloakWcids
     {
-        private static readonly List<WeenieClassName> cloakWcids = new List<WeenieClassName>()
+        private static readonly List<WeenieClassName> cloakWcids1 = new List<WeenieClassName>()
         {
             WeenieClassName.ace44840_cloak,
             WeenieClassName.ace44849_chevroncloak,
@@ -25,16 +25,16 @@ namespace ACE.Server.Factories.Tables.Wcids
         public static WeenieClassName Roll()
         {
             // verify: even chance for each cloak?
-            var rng = ThreadSafeRandom.Next(0, cloakWcids.Count - 1);
+            var rng = ThreadSafeRandom.Next(0, cloakWcids1.Count - 1);
 
-            return cloakWcids[rng];
+            return cloakWcids1[rng];
         }
 
         private static readonly HashSet<WeenieClassName> _combined = new HashSet<WeenieClassName>();
 
         static CloakWcids()
         {
-            foreach (var cloakWcid in cloakWcids)
+            foreach (var cloakWcid in cloakWcids1)
                 _combined.Add(cloakWcid);
         }
 
