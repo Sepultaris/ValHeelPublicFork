@@ -96,6 +96,7 @@ namespace ACE.Server.Factories
         private static void MutateArmor(WorldObject wo, TreasureDeath profile, bool isMagical, LootTables.ArmorType armorType, TreasureRoll roll = null)
         {
             wo.Empowered = false;
+            wo.Sockets = 0;
 
             // material type
             var materialType = GetMaterialType(wo, profile.Tier);

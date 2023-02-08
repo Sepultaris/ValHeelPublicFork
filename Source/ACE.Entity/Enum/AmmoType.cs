@@ -14,6 +14,7 @@ namespace ACE.Entity.Enum
         AtlatlCrystal       = 0x20,
         ArrowChorizite      = 0x40,
         BoltChorizite       = 0x80,
-        AtlatlChorizite     = 0x100
+        AtlatlChorizite     = 0x100,
+        GunBladeAmmo        = 0x200
     }
 }

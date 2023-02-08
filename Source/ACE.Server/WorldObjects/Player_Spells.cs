@@ -215,7 +215,7 @@ namespace ACE.Server.WorldObjects
                     var proto = item.GetProperty(PropertyBool.Proto);
                     var itemLevel = item.ItemLevel;
 
-                    if (itemtype == 256 && proto == false && !Arramoran || itemtype == 256 && proto == null && !Arramoran) // MissileWeapon
+                    if (itemtype == 256 && proto == false && item.Arramoran != true || itemtype == 256 && proto == null && item.Arramoran != true) // MissileWeapon
                     {
 
                         item.ElementalDamageBonus++;
@@ -231,7 +231,7 @@ namespace ACE.Server.WorldObjects
 
                     }
 
-                    if (itemtype == 2 && proto == false && !Arramoran || itemtype == 2 && proto == null && !Arramoran) // Armor
+                    if (itemtype == 2 && proto == false && item.Arramoran != true || itemtype == 2 && proto == null && item.Arramoran != true) // Armor
                     {
 
                         item.ArmorLevel++;
@@ -247,7 +247,7 @@ namespace ACE.Server.WorldObjects
 
                     }
 
-                    if (itemtype == 1 && proto == false && !Arramoran || itemtype == 1 && proto == null && !Arramoran) // MelleeWeapon
+                    if (itemtype == 1 && proto == false && item.Arramoran != true || itemtype == 1 && proto == null && item.Arramoran != true) // MelleeWeapon
                     {
 
                         item.Damage++;
@@ -263,7 +263,7 @@ namespace ACE.Server.WorldObjects
 
                     }
 
-                    if (itemtype == 32768 && proto == false && !Arramoran || itemtype == 32768 && proto == null && !Arramoran) // Caster
+                    if (itemtype == 32768 && proto == false && item.Arramoran != true || itemtype == 32768 && proto == null && item.Arramoran != true) // Caster
                     {
                         var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
                         float increment = 0.01f;
@@ -285,7 +285,7 @@ namespace ACE.Server.WorldObjects
                     //Proto Weapons
                     var damageType = item.GetProperty(PropertyInt.DamageType);
 
-                    if (itemtype == 256 && proto == true && !Arramoran) // MissileWeapon
+                    if (itemtype == 256 && proto == true && item.Arramoran != true) // MissileWeapon
                     {
 
                         item.ElementalDamageBonus++;
@@ -608,7 +608,7 @@ namespace ACE.Server.WorldObjects
 
                         }
                     }
-                    if (itemtype == 32768 && proto == true && !Arramoran) // Caster
+                    if (itemtype == 32768 && proto == true && item.Arramoran != true) // Caster
                     {
                         var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
                         float increment = 0.005f;
@@ -824,7 +824,7 @@ namespace ACE.Server.WorldObjects
                     }
 
                     // T10 Arramoran gear
-                    if (itemtype == 256 && item.Arramoran && Proto == false) // MissileWeapon
+                    if (itemtype == 256 && item.Arramoran == true && Proto == false) // MissileWeapon
                     {
 
                         item.ElementalDamageBonus++;
@@ -1285,7 +1285,7 @@ namespace ACE.Server.WorldObjects
 
                         }
                     }
-                    if (itemtype == 32768 && Arramoran == true) // Caster
+                    if (itemtype == 32768 && item.Arramoran == true) // Caster
                     {
                         var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
                         float increment = 0.005f;

@@ -27,7 +27,7 @@ namespace ACE.Server.Physics
 
         public static readonly float MaxElasticity = 0.1f;
 
-        public static readonly float MaxVelocity = 50.0f;
+        public static readonly float MaxVelocity = 500.0f;
 
         public static readonly float MaxVelocitySquared = MaxVelocity * MaxVelocity;
 

@@ -19,6 +19,7 @@ namespace ACE.Entity.Enum
         Useless                    = 0x00000400,
         Gem                        = 0x00000800,
         Mirra                      = 0x00000900,
+        GunBlade                   = 0x00000950,
         SpellComponents            = 0x00001000,
         Writable                   = 0x00002000,
         Key                        = 0x00004000,

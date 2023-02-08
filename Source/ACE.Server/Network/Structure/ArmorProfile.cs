@@ -20,7 +20,6 @@ namespace ACE.Server.Network.Structure
         public float AcidProtection;
         public float NetherProtection;
         public float LightningProtection;
-        public int ArmorSockets;
 
         public ArmorProfile(WorldObject armor)
         {
@@ -32,7 +31,6 @@ namespace ACE.Server.Network.Structure
             AcidProtection = GetArmorMod(armor, DamageType.Acid);
             NetherProtection = GetArmorMod(armor, DamageType.Nether);
             LightningProtection = GetArmorMod(armor, DamageType.Electric);
-            
         }
 
         /// <summary>
@@ -56,7 +54,7 @@ namespace ACE.Server.Network.Structure
             // TODO: this would be a good place to test with client values
             //if (effectiveRL > 2.0f)
                 //effectiveRL = 2.0f;
-            effectiveRL = Math.Clamp(effectiveRL, -10.0f, 10.0f);
+            effectiveRL = Math.Clamp(effectiveRL, -2.0f, 2.0f);
 
             return effectiveRL;
         }

@@ -19,6 +19,9 @@ namespace ACE.Server.Factories
     {
         private static WorldObject CreateMirra(TreasureDeath profile, bool isMagical, bool mutate = true)
         {
+            if (profile.TreasureType != 5000)
+                return null;
+
             var rng = ThreadSafeRandom.Next(0, LootTables.MirraMatrix.Length - 1);
 
             var wcid = (uint)LootTables.MirraMatrix[rng];
@@ -28,6 +31,11 @@ namespace ACE.Server.Factories
             var wo = WorldObjectFactory.CreateNewWorldObject((uint)wcid);
 
             var chance = ThreadSafeRandom.Next(0.00f, 1.00f);
+
+            if(wo == null)
+            {
+                return null;
+            }
 
             if (wo.WeenieClassId == 801966 && chance > 0.25f || wo.WeenieClassId == 801967 && chance > 0.25f || wo.WeenieClassId == 801975 && chance > 0.25f || wo.WeenieClassId == 801976 && chance > 0.25f)
                 return null;
@@ -513,30 +521,30 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraRatingBonus = ThreadSafeRandom.Next(100, 119);
+                    wo.MirraRatingBonus = ThreadSafeRandom.Next(5, 5);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
                 {
-                    wo.MirraRatingBonus = ThreadSafeRandom.Next(120, 139);
+                    wo.MirraRatingBonus = ThreadSafeRandom.Next(10, 10);
                     wo.IconOverlayId = 0x6006C35; // 1
 
                 }
                 if (wo.Level == 3)
                 {
-                    wo.MirraRatingBonus = ThreadSafeRandom.Next(140, 159);
+                    wo.MirraRatingBonus = ThreadSafeRandom.Next(15, 15);
                     wo.IconOverlayId = 0x6006C36; // 1
 
                 }
                 if (wo.Level == 4)
                 {
-                    wo.MirraRatingBonus = ThreadSafeRandom.Next(160, 179);
+                    wo.MirraRatingBonus = ThreadSafeRandom.Next(20, 20);
                     wo.IconOverlayId = 0x6006C37; // 1
 
                 }
                 if (wo.Level == 5)
                 {
-                    wo.MirraRatingBonus = ThreadSafeRandom.Next(180, 200);
+                    wo.MirraRatingBonus = ThreadSafeRandom.Next(25, 25);
                     wo.IconOverlayId = 0x6006C38; // 1
 
                 }

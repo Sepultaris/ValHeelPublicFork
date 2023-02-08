@@ -287,7 +287,7 @@ namespace ACE.Server.Managers
                     player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
 
                     player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
-                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    player.PlayParticleEffect(PlayScript.ShieldUpOrange, player.Guid);
 
                     if (target.Sockets == 1)
                     {
@@ -352,7 +352,7 @@ namespace ACE.Server.Managers
                     player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
 
                     player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
-                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    player.PlayParticleEffect(PlayScript.ShieldUpYellow, player.Guid);
 
                     if (target.Sockets == 1)
                     {
@@ -417,7 +417,7 @@ namespace ACE.Server.Managers
                     player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
 
                     player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
-                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    player.PlayParticleEffect(PlayScript.ShieldUpBlue, player.Guid);
 
                     if (target.Sockets == 1)
                     {
@@ -482,7 +482,7 @@ namespace ACE.Server.Managers
                     player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
 
                     player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
-                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    player.PlayParticleEffect(PlayScript.ShieldUpRed, player.Guid);
 
                     if (target.Sockets == 1)
                     {
@@ -547,7 +547,7 @@ namespace ACE.Server.Managers
                     player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
 
                     player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
-                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    player.PlayParticleEffect(PlayScript.ShieldUpGreen, player.Guid);
 
                     if (target.Sockets == 1)
                     {
@@ -612,7 +612,7 @@ namespace ACE.Server.Managers
                     player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
 
                     player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
-                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    player.PlayParticleEffect(PlayScript.ShieldUpPurple, player.Guid);
 
                     if (target.Sockets == 1)
                     {
@@ -677,7 +677,7 @@ namespace ACE.Server.Managers
                     player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
 
                     player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
-                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    player.PlayParticleEffect(PlayScript.EnchantUpRed, player.Guid);
                    
                     if (target.Sockets == 0)
                     {
@@ -738,7 +738,7 @@ namespace ACE.Server.Managers
                     player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
 
                     player.TryRemoveFromInventoryWithNetworking(source.Guid, out source, RemoveFromInventoryAction.ConsumeItem);
-                    player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
+                    player.PlayParticleEffect(PlayScript.EnchantUpRed, player.Guid);
                     
                     if (target.Sockets == 0)
                     {

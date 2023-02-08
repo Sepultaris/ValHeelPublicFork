@@ -9,6 +9,8 @@ using ACE.Server.Managers;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Physics;
 using ACE.Server.Physics.Animation;
+using ACE.Entity.Enum.Properties;
+using System.Numerics;
 
 namespace ACE.Server.WorldObjects
 {
@@ -141,7 +143,9 @@ namespace ACE.Server.WorldObjects
 
             var attackSequence = ++AttackSequence;
 
-            if (NextRefillTime > DateTime.UtcNow)
+            var weapon = GetEquippedMeleeWeapon();
+
+            if (NextRefillTime > DateTime.UtcNow && weapon.IsGunblade == false)
             {
                 var delayTime = (float)(NextRefillTime - DateTime.UtcNow).TotalSeconds;
 
@@ -159,10 +163,31 @@ namespace ACE.Server.WorldObjects
                 });
                 actionChain.EnqueueChain();
             }
-            else
+            else if (weapon.IsGunblade == false)
                 HandleActionTargetedMeleeAttack_Inner(target, attackSequence);
+            else if (NextRefillTime > DateTime.UtcNow && weapon.IsGunblade == true)
+            {
+                var delayTime = (float)(NextRefillTime - DateTime.UtcNow).TotalSeconds;
+
+                var actionChain = new ActionChain();
+                actionChain.AddDelaySeconds(delayTime);
+                actionChain.AddAction(this, () =>
+                {
+                    if (!creatureTarget.IsAlive)
+                    {
+                        OnAttackDone();
+                        return;
+                    }
+
+                    HandleActionTargetedGunBladeAttack_Inner(target, attackSequence);
+                });
+                actionChain.EnqueueChain();
+            }
+            else if (weapon.IsGunblade == true)
+                HandleActionTargetedGunBladeAttack_Inner(target, attackSequence);
         }
 
+        public static readonly float GunBladeDistance = 80.0f;
         public static readonly float MeleeDistance  = 4.0f;
         public static readonly float StickyDistance = 4.0f;
         public static readonly float RepeatDistance = 16.0f;
@@ -170,6 +195,8 @@ namespace ACE.Server.WorldObjects
         public void HandleActionTargetedMeleeAttack_Inner(WorldObject target, int attackSequence)
         {
             var dist = GetCylinderDistance(target);
+
+            var weapon = GetEquippedMeleeWeapon();           
 
             if (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(target))
             {
@@ -186,8 +213,8 @@ namespace ACE.Server.WorldObjects
                 }
                 else
                     Attack(target, attackSequence);
-            }
-            else
+            }            
+            else 
             {
                 // turn / move to required
                 if (GetCharacterOption(CharacterOption.UseChargeAttack))
@@ -200,16 +227,149 @@ namespace ACE.Server.WorldObjects
                 else
                 {
                     //log.Info($"{Name}.CreateMoveToChain({target.Name})");
-
-                    CreateMoveToChain(target, (success) =>
+                    if (weapon.IsGunblade == false)
                     {
-                        if (success)
-                            Attack(target, attackSequence);
-                        else
-                            OnAttackDone();
-                    });
+                        CreateMoveToChain(target, (success) =>
+                        {
+                            if (success)
+                                Attack(target, attackSequence);
+                            else
+                                OnAttackDone();
+                        });
+                    }
+                    
                 }
             }
+        }
+
+        public void HandleActionTargetedGunBladeAttack_Inner(WorldObject target, int attackSequence)
+        {
+            var dist = GetCylinderDistance(target);
+
+            var weapon = GetEquippedMeleeWeapon();
+
+            var range = weapon.GetProperty(PropertyInt.WeaponRange);
+
+            var ammo = GetEquippedAmmo();
+
+            if (dist <= GunBladeDistance && dist > MeleeDistance && ammo == null)
+                OnAttackDone();
+            else if (dist > GunBladeDistance && dist > MeleeDistance)
+                OnAttackDone();
+
+            else if (dist <= GunBladeDistance && dist > MeleeDistance && ammo != null)
+            {
+                var projectileSpeed = GetGunBladeProjectileSpeed();
+                var aimVelocity = GetAimVelocity(target, projectileSpeed);
+                var aimLevel = GetAimLevel(aimVelocity);
+                var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+                var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+                var angle = GetAngle(target);
+                var baseSpeed = GetAnimSpeed();
+                var animSpeedMod = IsDualWieldAttack ? 1.2f : 1.0f;     // dual wield swing animation 20% faster
+                var animSpeed = baseSpeed * animSpeedMod;
+                var swingAnimation = GetSwingAnimation();
+                var animLength = MotionTable.GetAnimationLength(MotionTableId, CurrentMotionState.Stance, swingAnimation, animSpeed);
+                if (angle > PropertyManager.GetDouble("melee_max_angle").Item)
+                {
+                    var rotateTime = Rotate(target);
+                    var actionChain = new ActionChain();
+
+                    actionChain.AddDelaySeconds(rotateTime);
+                    Rotate(target);
+                    actionChain.AddAction(this, () =>
+                    {
+                        GunBladeAttack(target, attackSequence);
+                        UpdateAmmoAfterLaunch(ammo);
+                    });
+
+                    actionChain.EnqueueChain();
+                }
+                else
+                {
+                    var actionChain = new ActionChain();
+                    
+                    Rotate(target);
+                    actionChain.AddAction(this, () =>
+                    {
+                        GunBladeAttack(target, attackSequence);
+                        UpdateAmmoAfterLaunch(ammo);
+                    });
+
+                    actionChain.EnqueueChain();
+                }
+            }
+            else if (dist <= MeleeDistance && ammo != null)
+            {
+                var projectileSpeed = GetGunBladeProjectileSpeed();
+                var aimVelocity = GetAimVelocity(target, projectileSpeed);
+                var aimLevel = GetAimLevel(aimVelocity);
+                var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+                var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+                var angle = GetAngle(target);
+                if (angle > PropertyManager.GetDouble("melee_max_angle").Item)
+                {
+                    var rotateTime = Rotate(target);
+                    var actionChain = new ActionChain();                    
+
+                    actionChain.AddDelaySeconds(rotateTime);                    
+                    Rotate(target);
+                    actionChain.AddAction(this, () =>
+                    {
+                        Attack(target, attackSequence);
+                    }); 
+                    actionChain.EnqueueChain();
+                    
+                }
+                else
+                {
+                    var actionChain = new ActionChain();
+
+                    Rotate(target);
+                    actionChain.AddAction(this, () =>
+                    {
+                        Attack(target, attackSequence);
+                    });
+                    actionChain.EnqueueChain();
+                    
+                }
+                   
+
+            }
+            else if (dist <= MeleeDistance && ammo == null)
+            {               
+                var angle = GetAngle(target);
+                if (angle > PropertyManager.GetDouble("melee_max_angle").Item)
+                {
+                    var rotateTime = Rotate(target);
+                    var actionChain = new ActionChain();
+
+                    actionChain.AddDelaySeconds(rotateTime);
+                    Rotate(target);
+                    actionChain.AddAction(this, () =>
+                    {
+                        Attack(target, attackSequence);                       
+                    });
+                    actionChain.EnqueueChain();
+                }
+                else
+                {
+                    var actionChain = new ActionChain();
+
+                    Rotate(target);
+                    actionChain.AddAction(this, () =>
+                    {
+                        Attack(target, attackSequence);                        
+                    });
+                    actionChain.EnqueueChain();
+                }
+
+
+            }
+            else OnAttackDone();
+
+            
+            
         }
 
         public void OnAttackDone(WeenieError error = WeenieError.None)
@@ -255,11 +415,12 @@ namespace ACE.Server.WorldObjects
         public void Attack(WorldObject target, int attackSequence, bool subsequent = false)
         {
             //log.Info($"{Name}.Attack({target.Name}, {attackSequence})");
+            var weapon = GetEquippedMeleeWeapon();
 
             if (AttackSequence != attackSequence)
                 return;
 
-            if (CombatMode != CombatMode.Melee || MeleeTarget == null || IsBusy || !IsAlive || suicideInProgress)
+            if (CombatMode != CombatMode.Melee || MeleeTarget == null && !weapon.IsGunblade || IsBusy || !IsAlive || suicideInProgress)
             {
                 OnAttackDone();
                 return;
@@ -289,7 +450,6 @@ namespace ACE.Server.WorldObjects
                 Session.Network.EnqueueSend(new GameEventCombatCommenceAttack(Session));
             }
 
-            var weapon = GetEquippedMeleeWeapon();
             var attackType = GetWeaponAttackType(weapon);
             var numStrikes = GetNumStrikes(attackType);
             var swingTime = animLength / numStrikes / 1.5f;
@@ -312,7 +472,7 @@ namespace ACE.Server.WorldObjects
 
             var prevTime = 0.0f;
             bool targetProc = false;
-
+            
             for (var i = 0; i < numStrikes; i++)
             {
                 // are there animation hooks for damage frames?
@@ -333,13 +493,13 @@ namespace ACE.Server.WorldObjects
                     var damageEvent = DamageTarget(creature, weapon);
 
                     // handle target procs
-                    if (damageEvent != null && damageEvent.HasDamage && !targetProc)
+                    if (damageEvent != null && damageEvent.HasDamage && !targetProc && weapon.IsGunblade == false)
                     {
                         TryProcEquippedItems(this, creature, false, weapon);
                         targetProc = true;
                     }
 
-                    if (weapon != null && weapon.IsCleaving)
+                    if (weapon != null && weapon.IsCleaving && weapon.IsGunblade == false)
                     {
                         var cleave = GetCleaveTarget(creature, weapon);
 
@@ -350,6 +510,61 @@ namespace ACE.Server.WorldObjects
                             TryProcEquippedItems(this, cleaveHit, false, weapon);
                         }
                     }
+
+                    var ammo = GetEquippedAmmo();
+
+                    if (weapon != null && weapon.IsCleaving && weapon.IsGunblade == true)
+                    {
+                        var cleave = GetCleaveTarget(creature, weapon);
+
+                        foreach (var cleaveHit in cleave)
+                        {
+                            // target procs don't happen for cleaving
+                            var ammo1 = GetEquippedAmmo();
+                            var projectileSpeed = GetGunBladeProjectileSpeed();
+                            var aimVelocity = GetAimVelocity(target, projectileSpeed);
+                            var aimLevel = GetAimLevel(aimVelocity);
+                            var localOrigin = GetProjectileSpawnOrigin(ammo1.WeenieClassId, aimLevel);
+                            var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+                            DamageTarget(cleaveHit, weapon);
+                            TryProcEquippedItems(this, cleaveHit, false, weapon);                           
+                            LaunchProjectile(weapon, ammo1, target, origin, orientation, velocity);
+                            UpdateAmmoAfterLaunch(ammo1);
+                        }
+                    }
+                    
+
+                    if (weapon != null && weapon.IsGunblade == true && ammo == null)
+                    {                      
+                        TryProcEquippedItems(this, creature, false, weapon);
+                    }
+
+                    if (weapon != null && weapon.IsGunblade == true && ammo != null)
+                    {
+                        var ammo1 = GetEquippedAmmo();
+                        var projectileSpeed = GetGunBladeProjectileSpeed();
+                        var aimVelocity = GetAimVelocity(target, projectileSpeed);
+                        var aimLevel = GetAimLevel(aimVelocity);
+                        var localOrigin = GetProjectileSpawnOrigin(ammo1.WeenieClassId, aimLevel);
+                        var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+                        TryProcEquippedItems(this, creature, false, weapon);
+                        LaunchProjectile(weapon, ammo1, target, origin, orientation, velocity);
+                        UpdateAmmoAfterLaunch(ammo1);
+                    }
+
+                    /*if (weapon != null && weapon.IsGunblade == true && ammo != null)
+                    {                       
+                        var projectileSpeed = GetProjectileSpeed();
+                        var aimVelocity = GetAimVelocity(target, projectileSpeed);
+                        var aimLevel = GetAimLevel(aimVelocity);
+                        var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+                        var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+                        LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
+                        UpdateAmmoAfterLaunch(ammo);                        
+                    }*/
                 });
 
                 //if (numStrikes == 1 || TwoHandedCombat)
@@ -373,7 +588,7 @@ namespace ACE.Server.WorldObjects
 
                 var dist = GetCylinderDistance(target);
 
-                if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(target)) && !IsBusy && !AttackCancelled)
+                if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) &&  IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon.IsGunblade == true)
                 {
                     // client starts refilling power meter
                     Session.Network.EnqueueSend(new GameEventAttackDone(Session));
@@ -381,6 +596,181 @@ namespace ACE.Server.WorldObjects
                     var nextAttack = new ActionChain();
                     nextAttack.AddDelaySeconds(nextRefillTime);
                     nextAttack.AddAction(this, () => Attack(target, attackSequence, true));
+                    nextAttack.EnqueueChain();
+                }
+
+                else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(target)) && !IsBusy && !AttackCancelled)
+                {
+                    // client starts refilling power meter
+                    Session.Network.EnqueueSend(new GameEventAttackDone(Session));
+
+                    var nextAttack = new ActionChain();
+                    nextAttack.AddDelaySeconds(nextRefillTime);
+                    nextAttack.AddAction(this, () => Attack(target, attackSequence, true));
+                    nextAttack.EnqueueChain();
+                }                
+                else
+                    OnAttackDone();
+            });
+
+            actionChain.EnqueueChain();
+
+            if (UnderLifestoneProtection)
+                LifestoneProtectionDispel();
+        }
+
+        public void GunBladeAttack(WorldObject target, int attackSequence, bool subsequent = false)
+        {
+            //log.Info($"{Name}.Attack({target.Name}, {attackSequence})");
+            var weapon = GetEquippedMeleeWeapon();
+
+            if (AttackSequence != attackSequence)
+                return;
+
+            if (CombatMode != CombatMode.Melee || MeleeTarget == null && !weapon.IsGunblade || IsBusy || !IsAlive || suicideInProgress)
+            {
+                OnAttackDone();
+                return;
+            }
+
+            var creature = target as Creature;
+            if (creature == null || !creature.IsAlive)
+            {
+                OnAttackDone();
+                return;
+            }
+
+            var animLength = DoSwingMotion(target, out var attackFrames);
+            if (animLength == 0)
+            {
+                OnAttackDone();
+                return;
+            }
+
+            // point of no return beyond this point -- cannot be cancelled
+            Attacking = true;
+
+            if (subsequent)
+            {
+                // client shows hourglass, until attack done is received
+                // retail only did this for subsequent attacks w/ repeat attacks on
+                Session.Network.EnqueueSend(new GameEventCombatCommenceAttack(Session));
+            }
+
+            var attackType = GetWeaponAttackType(weapon);
+            var numStrikes = GetNumStrikes(attackType);
+            var swingTime = animLength / numStrikes / 1.5f;
+
+            var actionChain = new ActionChain();
+
+            // stamina usage
+            // TODO: ensure enough stamina for attack
+            var staminaCost = GetAttackStamina(GetPowerRange());
+            UpdateVitalDelta(Stamina, -staminaCost);
+
+            if (numStrikes != attackFrames.Count)
+            {
+                //log.Warn($"{Name}.GetAttackFrames(): MotionTableId: {MotionTableId:X8}, MotionStance: {CurrentMotionState.Stance}, Motion: {GetSwingAnimation()}, AttackFrames.Count({attackFrames.Count}) != NumStrikes({numStrikes})");
+                numStrikes = attackFrames.Count;
+            }
+
+            // handle self-procs
+            TryProcEquippedItems(this, this, true, weapon);
+
+            var prevTime = 0.0f;
+            bool targetProc = false;
+            var ammo = GetEquippedAmmo();
+            var projectileSpeed = GetGunBladeProjectileSpeed();
+            var aimVelocity = GetAimVelocity(target, projectileSpeed);
+            var aimLevel = GetAimLevel(aimVelocity);
+            var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+            var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+            for (var i = 0; i < numStrikes; i++)
+            {
+                // are there animation hooks for damage frames?
+                //if (numStrikes > 1 && !TwoHandedCombat)
+                //actionChain.AddDelaySeconds(swingTime);
+                actionChain.AddDelaySeconds(attackFrames[i].time * animLength - prevTime);
+                prevTime = attackFrames[i].time * animLength;
+
+                actionChain.AddAction(this, () =>
+                {
+                    if (IsDead)
+                    {
+                        Attacking = false;
+                        OnAttackDone();
+                        return;
+                    }
+
+                    // handle target procs                  
+
+                    var ammo = GetEquippedAmmo();
+
+                    if (weapon != null && weapon.IsCleaving && weapon.IsGunblade == true)
+                    {
+                        var cleave = GetCleaveTarget(creature, weapon);
+
+                        foreach (var cleaveHit in cleave)
+                        {
+                            // target procs don't happen for cleaving
+                            DamageTarget(cleaveHit, weapon);
+                            TryProcEquippedItems(this, cleaveHit, false, weapon);
+                            LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
+                            UpdateAmmoAfterLaunch(ammo);
+                        }
+                    }
+
+
+                    if (weapon != null && weapon.IsGunblade == true && ammo == null)
+                    {
+                        TryProcEquippedItems(this, creature, false, weapon);
+                    }
+
+                    if (weapon != null && weapon.IsGunblade == true && ammo != null)
+                    {
+                        TryProcEquippedItems(this, creature, false, weapon);
+                        LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
+                        UpdateAmmoAfterLaunch(ammo);
+                    }
+                });
+            }
+
+            actionChain.AddDelaySeconds(animLength - prevTime);
+
+            actionChain.AddAction(this, () =>
+            {
+                Attacking = false;
+
+                // powerbar refill timing
+                var refillMod = IsDualWieldAttack ? 0.8f : 1.0f;    // dual wield powerbar refills 20% faster
+
+                PowerLevel = AttackQueue.Fetch();
+
+                var nextRefillTime = PowerLevel * refillMod;
+                NextRefillTime = DateTime.UtcNow.AddSeconds(nextRefillTime);
+
+                var dist = GetCylinderDistance(target);
+
+                if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon.IsGunblade == true)
+                {
+                    // client starts refilling power meter
+                    Session.Network.EnqueueSend(new GameEventAttackDone(Session));
+
+                    var nextAttack = new ActionChain();
+                    nextAttack.AddDelaySeconds(nextRefillTime);
+                    nextAttack.AddAction(this, () => GunBladeAttack(target, attackSequence, true));
+                    nextAttack.EnqueueChain();
+                }
+
+                else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled)
+                {
+                    // client starts refilling power meter
+                    Session.Network.EnqueueSend(new GameEventAttackDone(Session));
+
+                    var nextAttack = new ActionChain();
+                    nextAttack.AddDelaySeconds(nextRefillTime);
+                    nextAttack.AddAction(this, () => GunBladeAttack(target, attackSequence, true));
                     nextAttack.EnqueueChain();
                 }
                 else
@@ -410,19 +800,36 @@ namespace ACE.Server.WorldObjects
 
             attackFrames = MotionTable.GetAttackFrames(MotionTableId, CurrentMotionState.Stance, swingAnimation);
             //Console.WriteLine($"Attack frames: {string.Join(",", attackFrames)}");
-
+            var weapon = GetEquippedMeleeWeapon();
             // broadcast player swing animation to clients
-            var motion = new Motion(this, swingAnimation, animSpeed);
-            if (PropertyManager.GetBool("persist_movement").Item)
+            if (weapon.IsGunblade == false)
             {
-                motion.Persist(CurrentMotionState);
-            }
-            motion.MotionState.TurnSpeed = 2.25f;
-            motion.MotionFlags |= MotionFlags.StickToObject;
-            motion.TargetGuid = target.Guid;
-            CurrentMotionState = motion;
+                var motion = new Motion(this, swingAnimation, animSpeed);
+                if (PropertyManager.GetBool("persist_movement").Item)
+                {
+                    motion.Persist(CurrentMotionState);
+                }
+                motion.MotionState.TurnSpeed = 2.25f;
+                motion.MotionFlags |= MotionFlags.StickToObject;
+                motion.TargetGuid = target.Guid;
+                CurrentMotionState = motion;
 
-            EnqueueBroadcastMotion(motion);
+                EnqueueBroadcastMotion(motion);
+            }
+            if (weapon.IsGunblade == true)
+            {
+                var motion = new Motion(this, swingAnimation, animSpeed);
+                if (PropertyManager.GetBool("persist_movement").Item)
+                {
+                    motion.Persist(CurrentMotionState);
+                }
+                motion.MotionState.TurnSpeed = 2.25f;                
+                motion.TargetGuid = target.Guid;
+                CurrentMotionState = motion;
+
+                EnqueueBroadcastMotion(motion);
+            }
+            
 
             if (FastTick)
                 PhysicsObj.stick_to_object(target.Guid.Full);

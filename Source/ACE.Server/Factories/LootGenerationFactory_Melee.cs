@@ -351,10 +351,10 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 1250;
+                var damagebonus = 2750;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
-                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.Arramoran = true;
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
@@ -363,7 +363,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 120f);
                 wo.SetProperty(PropertyInt.Cleaving, 3);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
@@ -390,10 +390,10 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 1250;
+                var damagebonus = 2750;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
-                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.Arramoran = true;
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
@@ -402,7 +402,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 120f);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
@@ -431,10 +431,10 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 1900;
+                var damagebonus = 3100;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
-                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.Arramoran = true;
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
@@ -443,7 +443,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 30f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 120f);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);

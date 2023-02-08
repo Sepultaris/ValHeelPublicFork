@@ -195,6 +195,8 @@ namespace ACE.Entity.Enum.Properties
         Ascended                         = 9012,
         [ServerOnly]
         Arramoran                        = 9013,
+        [ServerOnly]
+        GunBlade                         = 9014,
     }
 
     public static class PropertyBoolExtensions

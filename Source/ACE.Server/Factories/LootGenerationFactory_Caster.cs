@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ACE.Common;
 using ACE.Database.Models.World;
+using ACE.DatLoader.Entity.AnimationHooks;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity;
@@ -277,7 +278,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 7f);
-                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.Arramoran = true;
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);

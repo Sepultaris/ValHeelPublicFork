@@ -223,10 +223,10 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyFloat.DamageMod);
-                float damagebonus = 15.0f;
+                float damagebonus = 13.5f;
                 float newweapondamage = (float)(weapondamage + damagebonus);
 
-                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.Arramoran = true;
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;

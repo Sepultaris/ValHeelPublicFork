@@ -40,7 +40,7 @@ namespace ACE.Server.DuskfallMods
                     //Get resources spent
                     if (!target.TryGetCostToLevel(startLevel, timesLeveled, out long cost))
                     {
-                       // playerMessages.Add($"Failed to get cost for {timesLeveled} levels of {target}.");
+                        playerMessages.Add($"Failed to get cost for {timesLeveled} levels of {target}.");
                         continue;
                     }
 
@@ -51,11 +51,11 @@ namespace ACE.Server.DuskfallMods
                         playerMessages.Add($"Refunding {timesLeveled} levels of {target} for {cost:N0} xp.");
                         //session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, attribute));
                     }                    
-                    else
+                    /*else
                     {
                          player.AvailableLuminance += cost;
                          playerMessages.Add($"Refunding {timesLeveled} levels of {target} for {cost:N0} lum.");
-                    } 
+                    }*/
                     //Finally, set the level to what it should be
                     target.SetLevel(player, startLevel);
                 }
@@ -87,7 +87,7 @@ namespace ACE.Server.DuskfallMods
                     var timesVitalLeveled = vitallevel - startVitalLevel;
 
                     //Check if anything is invested
-                    if (timesVitalLeveled < 1)
+                    if (timesVitalLeveled > 1)
                     {
                         continue;
                     }

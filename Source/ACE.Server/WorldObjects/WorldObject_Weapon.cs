@@ -46,6 +46,8 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public bool IsCleaving { get => GetProperty(PropertyInt.Cleaving) != null;  }
 
+        public bool IsGunblade { get => GetProperty(PropertyBool.GunBlade) != null; }
+
         public bool IsMirra { get => GetProperty(PropertyInt.ItemType) == 2304; }
 
         /// <summary>

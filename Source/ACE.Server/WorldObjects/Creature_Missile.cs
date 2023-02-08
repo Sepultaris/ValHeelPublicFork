@@ -15,11 +15,20 @@ using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Physics;
 using ACE.Server.Physics.Extensions;
+using ACE.Server.Physics.Animation;
 
 namespace ACE.Server.WorldObjects
 {
     partial class Creature
     {
+        public MotionCommand PrevMotionCommand;
+        public static readonly float KickThreshold = 0.75f;
+        private float _powerLevel;
+        public float PowerLevel
+        {
+            get => IsExhausted ? 0.0f : _powerLevel;
+            set => _powerLevel = value;
+        }
         public float ReloadMissileAmmo(ActionChain actionChain = null)
         {
             var weapon = GetEquippedMissileWeapon();
@@ -135,6 +144,67 @@ namespace ACE.Server.WorldObjects
             return proj;
         }
 
+        public WorldObject LaunchGunBladeProjectile(WorldObject weapon, WorldObject ammo, WorldObject target, Vector3 origin, Quaternion orientation, Vector3 velocity)
+        {
+            var player = this as Player;
+
+            if (!velocity.IsValid())
+            {
+                if (player != null)
+                    player.SendWeenieError(WeenieError.YourAttackMisfired);
+
+                return null;
+            }
+
+            var proj = WorldObjectFactory.CreateNewWorldObject(ammo.WeenieClassId);
+
+            var baseSpeed = GetAnimSpeed();
+            var animSpeedMod = IsDualWieldAttack ? 1.2f : 1.0f;     // dual wield swing animation 20% faster
+
+            proj.ProjectileSource = this;
+            proj.ProjectileTarget = target;
+
+            proj.ProjectileLauncher = weapon;
+
+            proj.Location = new Position(Location);
+            proj.Location.Pos = origin;
+            proj.Location.Rotation = orientation;
+
+            SetProjectilePhysicsState(proj, target, velocity);
+
+            var success = LandblockManager.AddObject(proj);
+
+            if (!success || proj.PhysicsObj == null)
+            {
+                if (!proj.HitMsg && player != null)
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat("Your missile attack hit the environment.", ChatMessageType.Broadcast));
+
+                return null;
+            }
+
+            if (!IsProjectileVisible(proj))
+            {
+                proj.OnCollideEnvironment();
+                return null;
+            }
+
+            var pkStatus = player?.PlayerKillerStatus ?? PlayerKillerStatus.Creature;
+
+            proj.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(proj, PropertyInt.PlayerKillerStatus, (int)pkStatus));
+            proj.EnqueueBroadcast(new GameMessageScript(proj.Guid, PlayScript.Launch, 0f));
+
+            // detonate point-blank projectiles immediately
+            /*var radsum = target.PhysicsObj.GetRadius() + proj.PhysicsObj.GetRadius();
+            var dist = Vector3.Distance(origin, dest);
+            if (dist < radsum)
+            {
+                Console.WriteLine($"Point blank");
+                proj.OnCollideObject(target);
+            }*/
+
+            return proj;
+        }
+
         public static readonly float ProjSpawnHeight = 0.8454f;
 
         /// <summary>
@@ -199,10 +269,12 @@ namespace ACE.Server.WorldObjects
 
         // lowest value found in data / for starter bows
         public static readonly float DefaultProjectileSpeed = 20.0f;
+        public static readonly float GunBladeProjectileSpeed = 300.0f;
 
         public float GetProjectileSpeed()
         {
             var missileLauncher = GetEquippedMissileWeapon();
+            var gunBlade = GetEquippedMeleeWeapon();
 
             var maxVelocity = missileLauncher?.MaximumVelocity ?? DefaultProjectileSpeed;
 
@@ -216,12 +288,40 @@ namespace ACE.Server.WorldObjects
             if (this is Player player && player.GetCharacterOption(CharacterOption.UseFastMissiles))
             {
                 maxVelocity *= PropertyManager.GetDouble("fast_missile_modifier").Item;
+            }           
+
+            // hard cap in physics engine
+            maxVelocity = Math.Min(maxVelocity, PhysicsGlobals.MaxVelocity);
+
+            //Console.WriteLine($"MaxVelocity: {maxVelocity}");
+
+
+            return (float)maxVelocity;
+        }
+
+        public float GetGunBladeProjectileSpeed()
+        {
+            var gunBlade = GetEquippedMeleeWeapon();
+
+            var maxVelocity = gunBlade?.MaximumVelocity ?? GunBladeProjectileSpeed;
+
+            if (maxVelocity == 0.0f)
+            {
+                log.Warn($"{Name}.GetMissileSpeed() - {gunBlade.Name} ({gunBlade.Guid}) has speed 0");
+
+                maxVelocity = GunBladeProjectileSpeed;
+            }
+
+            if (this is Player player && player.GetCharacterOption(CharacterOption.UseFastMissiles))
+            {
+                maxVelocity *= PropertyManager.GetDouble("fast_missile_modifier").Item;
             }
 
             // hard cap in physics engine
             maxVelocity = Math.Min(maxVelocity, PhysicsGlobals.MaxVelocity);
 
             //Console.WriteLine($"MaxVelocity: {maxVelocity}");
+
 
             return (float)maxVelocity;
         }

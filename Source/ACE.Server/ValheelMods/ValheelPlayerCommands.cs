@@ -62,7 +62,7 @@ namespace ACE.Server.Command.Handlers
             return;                     
         }
 
-        [CommandHandler("raiserefund", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0, "Refunds costs associated with /raise.")]
+        [CommandHandler("raiserefund", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, 0, "Refunds costs associated with /raise.")]
         public static void HandleRaiseRefund(Session session, params string[] parameters)
         {
             ValheelRaise.RaiseRefundToPlayer(session.Player);

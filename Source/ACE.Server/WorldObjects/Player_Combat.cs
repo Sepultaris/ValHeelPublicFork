@@ -123,6 +123,8 @@ namespace ACE.Server.WorldObjects
 
             // check PK status
             var pkError = CheckPKStatusVsTarget(target, null);
+                   
+
             if (pkError != null)
             {
                 Session.Network.EnqueueSend(new GameEventWeenieErrorWithString(Session, pkError[0], target.Name));
@@ -134,7 +136,7 @@ namespace ACE.Server.WorldObjects
             var damageEvent = DamageEvent.CalculateDamage(this, target, damageSource);
 
             if (damageEvent.HasDamage)
-            {
+            {                
                 OnDamageTarget(target, damageEvent.CombatType, damageEvent.IsCritical);
 
                 if (targetPlayer != null)
@@ -155,7 +157,7 @@ namespace ACE.Server.WorldObjects
             }
 
             if (damageEvent.HasDamage && target.IsAlive)
-            {
+            {                
                 // notify attacker
                 var intDamage = (uint)Math.Round(damageEvent.Damage);
 

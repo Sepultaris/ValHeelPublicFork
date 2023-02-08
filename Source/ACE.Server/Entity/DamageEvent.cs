@@ -339,7 +339,7 @@ namespace ACE.Server.Entity
             ShieldMod = defender.GetShieldMod(attacker, DamageType, Weapon);
 
             // calculate final output damage
-            Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+            Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;           
 
             DamageMitigated = DamageBeforeMitigation - Damage;
             // OP damage
@@ -351,6 +351,8 @@ namespace ACE.Server.Entity
             {
                 Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod / ((int)(defender.OverpowerResist * 0.16f + 1) + ((int)(defender.Level * 0.005f) * 20.1f));
             }
+            if (damageSource.WeenieClassId == 300444)
+                Damage = Damage / 15;
 
             return Damage;
         }
@@ -412,9 +414,10 @@ namespace ACE.Server.Entity
                 BaseDamageMod.DamageBonus += Weapon.Damage ?? 0;
 
             if (DamageSource.ItemType == ItemType.MissileWeapon)
-                BaseDamageMod.ElementalBonus = WorldObject.GetMissileElementalDamageBonus(Weapon, attacker, DamageType);
+                BaseDamageMod.ElementalBonus = WorldObject.GetMissileElementalDamageBonus(Weapon, attacker, DamageType);         
 
             BaseDamage = (float)ThreadSafeRandom.Next(BaseDamageMod.MinDamage, BaseDamageMod.MaxDamage);
+           
         }
 
         /// <summary>
