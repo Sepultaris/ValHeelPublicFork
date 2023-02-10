@@ -76,7 +76,7 @@ namespace ACE.Server.WorldObjects
             var creature = AttackTarget as Creature;
 
             if (creature == null || creature.IsDead || !IsVisibleTarget(creature))
-                FindNextTarget();
+                FindNextTarget();            
         }
 
         public override bool FindNextTarget()
@@ -151,6 +151,7 @@ namespace ACE.Server.WorldObjects
         }
 
         
+
     }
 }   
 

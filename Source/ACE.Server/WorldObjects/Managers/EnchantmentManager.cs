@@ -14,6 +14,7 @@ using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.Structure;
 using ACE.Server.WorldObjects.Entity;
+using Google.Protobuf.WellKnownTypes;
 
 namespace ACE.Server.WorldObjects.Managers
 {
@@ -180,18 +181,21 @@ namespace ACE.Server.WorldObjects.Managers
 
                 // for the same void caster re-casting the same DoT,
                 // should be update the StatModVal here?
+                var timeRemaining = refreshSpell.Duration + refreshSpell.StartTime;
 
                 var duration = spell.Duration;
-                if (caster is Player player && player.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0)
+                if (caster is Player player && player.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && player.QuestManager.CanSolve("Ascension"))
+                {
                     duration *= 1.0f + player.AugmentationIncreasedSpellDuration * 0.2f;
-
-                if (equip == false && spell.IsBeneficial && caster is Player player1 && player1.Level >= 500 && !player1.QuestManager.CanSolve("Ascension"))
+                }
+                    
+                else if (caster is Player player1 && player1.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && !player1.QuestManager.CanSolve("Ascension"))
                 {
                     var spellBoost = (int)player1.Level / 10;
                     duration *= (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);                    
                 }
 
-                var timeRemaining = refreshSpell.Duration + refreshSpell.StartTime;
+                
 
                 if (duration > timeRemaining)
                 {
@@ -225,8 +229,26 @@ namespace ACE.Server.WorldObjects.Managers
             {
                 entry.Duration = spell.Duration;
 
-                if (caster is Player player && player.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0)
+                if (caster is Player player && player.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && player.QuestManager.CanSolve("Ascension"))
                     entry.Duration *= 1.0f + player.AugmentationIncreasedSpellDuration * 0.2f;
+                if (caster is Player player1 && player1.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && !player1.QuestManager.CanSolve("Ascension") && spell.IsBeneficial && spell.School == MagicSchool.LifeMagic)
+                {
+                    var spellBoost = (int)player1.Level / 10;
+                    entry.StatModValue = spell.StatModVal + (spellBoost / 100);
+                    entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
+                }
+                if (caster is Player player2 && player2.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && !player2.QuestManager.CanSolve("Ascension") && spell.IsBeneficial && spell.School == MagicSchool.CreatureEnchantment)
+                {
+                    var spellBoost = (int)player2.Level / 10;
+                    entry.StatModValue = spell.StatModVal + (spellBoost);
+                    entry.Duration = spell.Duration * (1.0f + player2.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
+                }
+                if (caster is Player player3 && player3.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && !player3.QuestManager.CanSolve("Ascension") && spell.IsBeneficial && spell.School == MagicSchool.ItemEnchantment)
+                {
+                    var spellBoost = (int)player3.Level / 10;
+                    entry.StatModValue = spell.StatModVal + (spellBoost / 100);
+                    entry.Duration = spell.Duration * (1.0f + player3.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
+                }
             }
             else
             {
@@ -252,28 +274,6 @@ namespace ACE.Server.WorldObjects.Managers
             entry.StatModType = spell.StatModType;
             entry.StatModKey = spell.StatModKey;
             entry.StatModValue = spell.StatModVal;
-
-            if (equip == false && spell.IsBeneficial && caster is Player player1 && player1.Level >= 500 && !player1.QuestManager.CanSolve("Ascension"))
-            {
-                if (spell.School == MagicSchool.LifeMagic)
-                {
-                    var spellBoost = (int)player1.Level / 10;                    
-                    entry.StatModValue = spell.StatModVal + (spellBoost / 100);
-                    entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
-                }
-                if (spell.School == MagicSchool.CreatureEnchantment)
-                {
-                    var spellBoost = (int)player1.Level / 10;
-                    entry.StatModValue = spell.StatModVal + (spellBoost);
-                    entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
-                }
-                if (spell.School == MagicSchool.ItemEnchantment)
-                {
-                    var spellBoost = (int)player1.Level / 10;
-                    entry.StatModValue = spell.StatModVal + (spellBoost / 100);
-                    entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
-                }
-            }
 
             if (spell.DotDuration != 0)
             {

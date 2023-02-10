@@ -277,7 +277,7 @@ namespace ACE.Server.Factories
                 // increase damage
                 wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 7f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 60f);
                 wo.Arramoran = true;
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 

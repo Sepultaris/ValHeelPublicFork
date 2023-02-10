@@ -623,7 +623,7 @@ namespace ACE.Server.Command.Handlers
 
             if (parameters[0].Equals("vitality"))
             {
-                if (maxHealth.Ranks < 25000)
+                if (maxHealth.Ranks < 10000)
                 {
                     for (int j = 0; j < result; j++)
                     {
@@ -671,7 +671,7 @@ namespace ACE.Server.Command.Handlers
                     return;
                 }                                
 
-                if (maxHealth.Ranks >= 25000)
+                if (maxHealth.Ranks >= 10000)
                 {
                     for (int j = 0; j < result; j++)
                     {

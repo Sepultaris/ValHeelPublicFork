@@ -315,7 +315,7 @@ namespace ACE.Server.WorldObjects
                         case DamageType.Mana:
                             boost = spellTarget.UpdateVitalDelta(spellTarget.Mana, tryBoost);
                             srcVital = "mana";
-                            if (player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
+                            if (player != null && player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
                             {
                                 boost = spellTarget.UpdateVitalDelta(spellTarget.Mana, tryBoost) + (int)(player.Level * 5);
                                 srcVital = "mana";
@@ -325,7 +325,7 @@ namespace ACE.Server.WorldObjects
                         case DamageType.Stamina:
                             boost = spellTarget.UpdateVitalDelta(spellTarget.Stamina, tryBoost);
                             srcVital = "stamina";
-                            if (player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
+                            if (player != null && player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
                             {
                                 boost = spellTarget.UpdateVitalDelta(spellTarget.Stamina, tryBoost) + (int)(player.Level * 5);
                                 srcVital = "stamina";
@@ -335,7 +335,7 @@ namespace ACE.Server.WorldObjects
                         default:   // Health
                             boost = spellTarget.UpdateVitalDelta(spellTarget.Health, tryBoost);
                             srcVital = "health";
-                            if (player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
+                            if (player != null && player.Level >= 500 && spell.IsBeneficial && !player.QuestManager.CanSolve("Ascended"))
                             {
                                 boost = spellTarget.UpdateVitalDelta(spellTarget.Health, tryBoost) + (int)(player.Level * 5);
                                 srcVital = "health";

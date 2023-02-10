@@ -521,16 +521,25 @@ namespace ACE.Server.WorldObjects
                         {
                             // target procs don't happen for cleaving
                             var ammo1 = GetEquippedAmmo();
-                            var projectileSpeed = GetGunBladeProjectileSpeed();
-                            var aimVelocity = GetAimVelocity(target, projectileSpeed);
-                            var aimLevel = GetAimLevel(aimVelocity);
-                            var localOrigin = GetProjectileSpawnOrigin(ammo1.WeenieClassId, aimLevel);
-                            var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+                            if (ammo1 != null)
+                            {
+                                var projectileSpeed = GetGunBladeProjectileSpeed();
+                                var aimVelocity = GetAimVelocity(target, projectileSpeed);
+                                var aimLevel = GetAimLevel(aimVelocity);
+                                var localOrigin = GetProjectileSpawnOrigin(ammo1.WeenieClassId, aimLevel);
+                                var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
 
-                            DamageTarget(cleaveHit, weapon);
-                            TryProcEquippedItems(this, cleaveHit, false, weapon);                           
-                            LaunchProjectile(weapon, ammo1, target, origin, orientation, velocity);
-                            UpdateAmmoAfterLaunch(ammo1);
+                                DamageTarget(cleaveHit, weapon);
+                                TryProcEquippedItems(this, cleaveHit, false, weapon);
+                                LaunchProjectile(weapon, ammo1, target, origin, orientation, velocity);
+                                UpdateAmmoAfterLaunch(ammo1);
+                            }
+                            else
+                            {
+                                DamageTarget(cleaveHit, weapon);
+                                TryProcEquippedItems(this, cleaveHit, false, weapon);
+                            }
+                                                       
                         }
                     }
                     

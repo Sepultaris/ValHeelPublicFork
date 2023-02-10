@@ -253,7 +253,9 @@ namespace ACE.Server.WorldObjects
                     {
                         // target procs don't happen for cleaving
                         /*DamageTarget(cleaveHit, weapon);*/
-                        LaunchCleaveMissile(cleaveHit, attackSequence, stance, subsequent = false);
+                        /*LaunchCleaveMissile(cleaveHit, attackSequence, stance, subsequent = false);*/
+                        LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
+                        UpdateAmmoAfterLaunch(ammo);
                         TryProcEquippedItems(this, cleaveHit, false, weapon);
                     }
                 }
@@ -325,6 +327,7 @@ namespace ACE.Server.WorldObjects
 
         public void LaunchCleaveMissile(WorldObject target, int attackSequence, MotionStance stance, bool subsequent = false)
         {
+            // cleaving skips original target
             if (AttackSequence != attackSequence)
                 return;
 

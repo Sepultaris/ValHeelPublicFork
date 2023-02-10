@@ -488,7 +488,11 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyInt.ImbuedEffect, 16);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
                             }
-
+                            if (damageType == 3)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
                             if (damageType == 4)
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 32);
@@ -1134,6 +1138,11 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyInt.ImbuedEffect, 16);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
                             }
+                            if (damageType == 3)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
 
                             if (damageType == 4)
                             {
@@ -1574,7 +1583,7 @@ namespace ACE.Server.WorldObjects
                         Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
                     }
 
-                    if (item.ArmorType == 1 && item.Arramoran && item.HasArmorLevel()) // Clothing
+                    if (item.ArmorType == 1 && item.Arramoran && item.HasArmorLevel()) // Armor
                     {
                         // Proto Evolution
                         // Item "wakes up" and becomes Attuned and Bonded

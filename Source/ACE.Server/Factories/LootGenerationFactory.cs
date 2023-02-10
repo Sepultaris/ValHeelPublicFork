@@ -1212,9 +1212,9 @@ namespace ACE.Server.Factories
 
                     // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
             }
-            var mirraChance = ThreadSafeRandom.Next(0, 1000);
+            var mirraChance = ThreadSafeRandom.Next(0, 3000);
 
-            if (mirraChance >= 600)
+            if (mirraChance <= 1)
             {               
                 wo = CreateMirra(treasureDeath, isMagical, true);
             }

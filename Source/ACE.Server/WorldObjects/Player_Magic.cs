@@ -1080,7 +1080,6 @@ namespace ACE.Server.WorldObjects
                     if (caster.IsCleaving)
                     {
                         WarMagic(target, spell, caster, isWeaponSpell);
-                        TryProcEquippedItems(this, targetCreature, false, caster);
                         var cleave = GetMagicCleaveTarget(targetCreature, caster);
 
                         foreach (var cleaveHit in cleave)
@@ -1091,10 +1090,8 @@ namespace ACE.Server.WorldObjects
                         }
 
                     }
-
-                    else if (!caster.IsCleaving)
+                    else
                         WarMagic(target, spell, caster, isWeaponSpell);
-                    TryProcEquippedItems(this, targetCreature, false, caster);
 
                     break;
                 case MagicSchool.VoidMagic:
@@ -1110,9 +1107,8 @@ namespace ACE.Server.WorldObjects
                             TryProcEquippedItems(this, cleaveHit, false, caster);
                         }
                         
-                    }
-                    
-                   else if(!caster.IsCleaving)
+                    }                    
+                    else
                         VoidMagic(target, spell, caster, isWeaponSpell);
                     
 
@@ -1616,7 +1612,9 @@ namespace ACE.Server.WorldObjects
             var totalCleaves = weapon.CleaveTargets;
 
             foreach (var obj in visible)
-            {              
+            {
+                if (obj.ID == target.PhysicsObj.ID || target == null)
+                    continue;
 
                 // only cleave creatures
                 var creature = obj.WeenieObj.WorldObject as Creature;

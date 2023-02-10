@@ -351,7 +351,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 2750;
+                var damagebonus = 2000;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
                 wo.Arramoran = true;
@@ -363,7 +363,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 120f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 40f);
                 wo.SetProperty(PropertyInt.Cleaving, 3);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
@@ -390,7 +390,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 2750;
+                var damagebonus = 2000;
                 int newweapondamage = (int)(weapondamage + damagebonus);
 
                 wo.Arramoran = true;
@@ -402,7 +402,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 120f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 60f);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
@@ -431,8 +431,28 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyInt.Damage);
-                var damagebonus = 3100;
-                int newweapondamage = (int)(weapondamage + damagebonus);
+                if (wo.WieldSkillType == 44)
+                {
+                    var damagebonus = 3100;
+                    int newweapondamage = (int)(weapondamage + damagebonus);
+                    wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                    wo.SetProperty(PropertyFloat.CriticalMultiplier, 37f);
+                }
+                if (wo.WieldSkillType == 45)
+                {
+                    var damagebonus = 3050;
+                    int newweapondamage = (int)(weapondamage + damagebonus);
+                    wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                    wo.SetProperty(PropertyFloat.CriticalMultiplier, 35f);
+                }
+                if (wo.WieldSkillType == 46)
+                {
+                    var damagebonus = 3000;
+                    int newweapondamage = (int)(weapondamage + damagebonus);
+                    wo.SetProperty(PropertyInt.Damage, newweapondamage);
+                    wo.SetProperty(PropertyFloat.CriticalMultiplier, 22f);
+                }
+
 
                 wo.Arramoran = true;
                 wo.ItemMaxLevel = maxlevel;
@@ -440,10 +460,8 @@ namespace ACE.Server.Factories
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
                 wo.Sockets = 1;
-                wo.SetProperty(PropertyString.Name, name);
-                wo.SetProperty(PropertyInt.Damage, newweapondamage);
-                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 120f);
+                wo.SetProperty(PropertyString.Name, name);                
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);              
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
