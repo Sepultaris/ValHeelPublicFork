@@ -382,7 +382,7 @@ namespace ACE.Server.Factories
                 }
                 
             }
-            if (profile.Tier == 10 && isMagical && attacktype > 25)
+            /*if (profile.Tier == 10 && isMagical && attacktype > 25)
             {
                 TryRollEquipmentSet(wo, profile, roll);
                 var maxlevel = 500;
@@ -419,7 +419,7 @@ namespace ACE.Server.Factories
                     wo.Name = $"{equipSetName} {wo.Name}";
                 }
                 
-            }
+            }*/
             if (profile.Tier == 10 && isMagical)
             {
                 if (wo.Arramoran == true)

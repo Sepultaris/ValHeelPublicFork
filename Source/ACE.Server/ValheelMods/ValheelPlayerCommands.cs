@@ -351,7 +351,7 @@ namespace ACE.Server.Command.Handlers
                     player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
                     return;
                 }
-                if (prestige >= 100)
+                if (prestige >= 100 && prestige <= 149)
                 {
                     for (int i = 0; i < result; i++)
                     {

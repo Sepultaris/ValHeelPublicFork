@@ -236,7 +236,7 @@ namespace ACE.Server.Factories
                 // increase damage
                 wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 10f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 17f);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);

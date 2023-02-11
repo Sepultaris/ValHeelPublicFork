@@ -206,7 +206,6 @@ namespace ACE.Server.WorldObjects
 
 
                 {
-                    var baseRatingIncrease = 10;
                     var itemtype = item.GetProperty(PropertyInt.ItemType) ?? 0;
 
                     EnqueueBroadcast(new GameMessageScript(Guid, PlayScript.AetheriaLevelUp));
@@ -859,7 +858,11 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyInt.ImbuedEffect, 16);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
                             }
-
+                            if (damageType == 3)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
                             if (damageType == 4)
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 32);
@@ -916,7 +919,12 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 4443);
                             }
-
+                            if (damageType == 3) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
                             if (damageType == 4) // Bludgeon
                             {
                                 item.SetProperty(PropertyInt.ItemSpellcraft, 999);
@@ -1211,14 +1219,18 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 4443);
                             }
-
+                            if (damageType == 3) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
                             if (damageType == 4) // Bludgeon
                             {
                                 item.SetProperty(PropertyInt.ItemSpellcraft, 999);
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 4455);
                             }
-
                             if (damageType == 8) // Cold
                             {
                                 item.SetProperty(PropertyInt.ItemSpellcraft, 999);
@@ -1231,14 +1243,12 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 4439);
                             }
-
                             if (damageType == 32) // Acid
                             {
                                 item.SetProperty(PropertyInt.ItemSpellcraft, 999);
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 4433);
                             }
-
                             if (damageType == 64) // Electric
                             {
                                 item.SetProperty(PropertyInt.ItemSpellcraft, 999);
@@ -1251,7 +1261,6 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 5356);
                             }
-
                             item.GearHealingBoost += (ThreadSafeRandom.Next(5, 15));
                             item.GearMaxHealth += (ThreadSafeRandom.Next(5, 15));
                             item.GearCritDamage += (ThreadSafeRandom.Next(5, 15));

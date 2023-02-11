@@ -265,7 +265,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
-                float damagebonus = 2.5f;
+                float damagebonus = 2.0f;
                 float newweapondamage = (float)(weapondamage + damagebonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -277,7 +277,7 @@ namespace ACE.Server.Factories
                 // increase damage
                 wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 60f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 7f);
                 wo.Arramoran = true;
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 
