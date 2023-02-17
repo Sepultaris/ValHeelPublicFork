@@ -2269,7 +2269,7 @@ namespace ACE.Server.Command.Handlers
 
             if (tier < 1 || tier > 10)
             {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"Loot Tier must be a number between 1 and 9", ChatMessageType.Broadcast));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Loot Tier must be a number between 1 and 10", ChatMessageType.Broadcast));
                 return;
             }
 
@@ -2283,11 +2283,16 @@ namespace ACE.Server.Command.Handlers
             {
                 Tier = tier,
                 LootQualityMod = 0
-            };
+            };            
 
             var success = LootGenerationFactory.MutateItem(wo, profile, true);
 
             session.Player.TryCreateInInventoryWithNetworking(wo);
+
+            if ((int)wo.ItemType == 2304)
+            {
+                LootGenerationFactory.MutateMirra(wo, profile, true);
+            }
         }
 
         [CommandHandler("ciloot", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 1, "Generates randomized loot in player's inventory", "<tier> optional: <# items>")]

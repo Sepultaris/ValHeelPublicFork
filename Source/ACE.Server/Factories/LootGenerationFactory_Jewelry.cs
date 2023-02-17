@@ -39,28 +39,7 @@ namespace ACE.Server.Factories
 
             return wo;
         }
-
-        /*private static readonly List<EquipmentSet> armorSets = new List<EquipmentSet>()
-        {
-            EquipmentSet.Soldiers,
-            EquipmentSet.Adepts,
-            EquipmentSet.Archers,
-            EquipmentSet.Defenders,
-            EquipmentSet.Tinkers,
-            EquipmentSet.Crafters,
-            EquipmentSet.Hearty,
-            EquipmentSet.Dexterous,
-            EquipmentSet.Wise,
-            EquipmentSet.Swift,
-            EquipmentSet.Hardened,
-            EquipmentSet.Reinforced,
-            EquipmentSet.Interlocking,
-            EquipmentSet.Flameproof,
-            EquipmentSet.Acidproof,
-            EquipmentSet.Coldproof,
-            EquipmentSet.Lightningproof,
-        };*/        
-
+              
         private static void MutateJewelry(WorldObject wo, TreasureDeath profile, bool isMagical, TreasureRoll roll = null)
         {
             // material type
@@ -200,7 +179,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 600);
 
-                if (jewelryProc <= 0.0f)
+                if (jewelryProc >= 0.0f)
                 {
                     var spellProc = ThreadSafeRandom.Next(0.0f, 1.0f);
 

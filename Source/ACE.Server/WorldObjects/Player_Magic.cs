@@ -1079,16 +1079,21 @@ namespace ACE.Server.WorldObjects
                 case MagicSchool.WarMagic:
                     if (caster.IsCleaving)
                     {
-                        WarMagic(target, spell, caster, isWeaponSpell);
-                        var cleave = GetMagicCleaveTarget(targetCreature, caster);
-
-                        foreach (var cleaveHit in cleave)
+                        if (target != null)
                         {
-                            
-                            WarMagic(cleaveHit, spell, caster, isWeaponSpell);
-                            TryProcEquippedItems(this, cleaveHit, false, caster);
-                        }
+                            WarMagic(target, spell, caster, isWeaponSpell);
+                            var cleave = GetMagicCleaveTarget(targetCreature, caster);
 
+                            foreach (var cleaveHit in cleave)
+                            {
+
+                                WarMagic(cleaveHit, spell, caster, isWeaponSpell);
+                                TryProcEquippedItems(this, cleaveHit, false, caster);
+                            }
+                            break;
+                        }
+                        else
+                            WarMagic(target, spell, caster, isWeaponSpell);
                     }
                     else
                         WarMagic(target, spell, caster, isWeaponSpell);
@@ -1096,17 +1101,23 @@ namespace ACE.Server.WorldObjects
                     break;
                 case MagicSchool.VoidMagic:
                     if(caster.IsCleaving)
-                    {                        
-                        VoidMagic(target, spell, caster, isWeaponSpell);                        
-                        var cleave = GetMagicCleaveTarget(targetCreature, caster);
-
-                        foreach (var cleaveHit in cleave)
+                    {
+                        if (target != null)
                         {
-                            
-                            VoidMagic(cleaveHit, spell, caster, isWeaponSpell);
-                            TryProcEquippedItems(this, cleaveHit, false, caster);
+                            VoidMagic(target, spell, caster, isWeaponSpell);
+                            var cleave = GetMagicCleaveTarget(targetCreature, caster);
+
+                            foreach (var cleaveHit in cleave)
+                            {
+
+                                VoidMagic(cleaveHit, spell, caster, isWeaponSpell);
+                                TryProcEquippedItems(this, cleaveHit, false, caster);
+                            }
+                            break;
                         }
-                        
+                        else
+                            VoidMagic(target, spell, caster, isWeaponSpell);
+
                     }                    
                     else
                         VoidMagic(target, spell, caster, isWeaponSpell);
@@ -1613,6 +1624,8 @@ namespace ACE.Server.WorldObjects
 
             foreach (var obj in visible)
             {
+                if (target == null)
+                    return null;
                 if (obj.ID == target.PhysicsObj.ID || target == null)
                     continue;
 

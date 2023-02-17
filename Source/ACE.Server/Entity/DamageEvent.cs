@@ -345,14 +345,14 @@ namespace ACE.Server.Entity
             // OP damage
             if (attacker.Overpower != null)
             {
-                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod * ((int)(attacker.Overpower * 0.16f + 1) + ((int)(attacker.Level * 0.005f) * 20.1f));
+                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;/* * ((int)(attacker.Overpower * 0.16f + 1) + ((int)(attacker.Level * 0.005f) * 20.1f));*/
             }
             if (defender.Overpower != null)
             {
-                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod / ((int)(defender.OverpowerResist * 0.16f + 1) + ((int)(defender.Level * 0.005f) * 20.1f));
+                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;/* / ((int)(defender.OverpowerResist * 0.16f + 1) + ((int)(defender.Level * 0.005f) * 20.1f));*/
             }
             if (damageSource.WeenieClassId == 300444)
-                Damage = Damage / 55;
+                Damage = Damage * 30;
 
             return Damage;
         }

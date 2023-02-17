@@ -54,19 +54,18 @@ namespace ACE.Server.Managers
                 {
                     var mirraId = source.Guid;
                     var armorbonus = source.MirraArmorBonus;
+                    var startingArmorLevel = target.GetProperty(PropertyInt.ArmorLevel);
 
-                    target.ArmorLevel = target.ArmorLevel + armorbonus;
+                    target.ArmorLevel = startingArmorLevel + armorbonus;
                     target.Sockets--;
                     success = true;
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
-                    /*return recipe;*/
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));                    
                 }
                 else if (target.Sockets == 0 || target.Sockets == null)
                 {
                     success = false;                   
                     player.Inventory.TryAdd(player.Guid, source);
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
-                    /*return null;*/
                 }
                 if (success == true)
                 {

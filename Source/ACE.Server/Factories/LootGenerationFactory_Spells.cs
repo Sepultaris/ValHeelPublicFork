@@ -383,9 +383,17 @@ namespace ACE.Server.Factories
             // Tier 10 prod rolls
             if (profile.Tier == 10)
             {
-                if (prodSpell == SpellId.AcidProtectionRare || prodSpell == SpellId.BludgeonProtectionRare || prodSpell == SpellId.BladeProtectionRare || prodSpell == SpellId.FireProtectionRare || prodSpell == SpellId.ColdProtectionRare || prodSpell == SpellId.LightningProtectionRare || prodSpell == SpellId.PiercingProtectionRare)
+                if (prodSpell == SpellId.BladeProtectionRare || prodSpell == SpellId.FireProtectionRare || prodSpell == SpellId.ColdProtectionRare || prodSpell == SpellId.LightningProtectionRare || prodSpell == SpellId.PiercingProtectionRare)
                 {
                     prodSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
+                }
+                if ( prodSpell == SpellId.AcidProtectionRare )
+                {
+                    prodSpell = SpellId.TwoHandedMasteryRare;
+                }
+                if (prodSpell == SpellId.BludgeonProtectionRare)
+                {
+                    prodSpell = SpellId.VoidMagicMasteryRare;
                 }
                 if (secondProdSpell == SpellId.AcidProtectionRare || secondProdSpell == SpellId.BludgeonProtectionRare || secondProdSpell == SpellId.BladeProtectionRare || secondProdSpell == SpellId.FireProtectionRare || secondProdSpell == SpellId.ColdProtectionRare || secondProdSpell == SpellId.LightningProtectionRare || secondProdSpell == SpellId.PiercingProtectionRare)
                 {

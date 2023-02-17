@@ -343,7 +343,7 @@ namespace ACE.Server.Factories
                     wo = CreateDinnerware(profile, isMagical);
                     break;
 
-                case TreasureItemType.Mirra:
+                case (TreasureItemType)ItemType.Mirra:
                     wo = CreateMirra(profile, isMagical, true);
                     break;
             }
@@ -376,19 +376,7 @@ namespace ACE.Server.Factories
             {
                 roll.ItemType = TreasureItemType_Orig.Pyreal;
                 MutateCoins(item, profile);
-            }
-            else if (roll.Wcid == WeenieClassName.SteelMirra)
-            {
-                MutateMirra(item, profile);
-            }
-            else if (roll.Wcid == WeenieClassName.IronMirra)
-            {
-                MutateMirra(item, profile);
-            }
-            else if (roll.Wcid == WeenieClassName.BluntMirra)
-            {
-                MutateMirra(item, profile);
-            }
+            }            
             else if (GemMaterialChance.Contains(roll.Wcid))
             {
                 roll.ItemType = TreasureItemType_Orig.Gem;
@@ -645,7 +633,7 @@ namespace ACE.Server.Factories
         /// Assign a random color (Int.PaletteTemplate and Float.Shade) to a World Object based on the material assigned to it.
         /// </summary>
         /// <returns>WorldObject with a random applicable PaletteTemplate and Shade applied, if available</returns>
-        private static void MutateColor(WorldObject wo)
+        public static void MutateColor(WorldObject wo)
         {
             if (wo.MaterialType > 0 && wo.TsysMutationData != null && wo.ClothingBase != null)
             {
@@ -1212,7 +1200,7 @@ namespace ACE.Server.Factories
 
                     // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
             }
-            var mirraChance = ThreadSafeRandom.Next(0, 3000);
+            var mirraChance = ThreadSafeRandom.Next(0, 20000);
 
             if (mirraChance <= 1)
             {               

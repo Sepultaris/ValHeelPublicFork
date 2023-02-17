@@ -163,6 +163,8 @@ namespace ACE.Server.WorldObjects
                 });
                 actionChain.EnqueueChain();
             }
+            else if (weapon == null)
+                HandleActionTargetedMeleeAttack_Inner(target, attackSequence);
             else if (weapon.IsGunblade == false)
                 HandleActionTargetedMeleeAttack_Inner(target, attackSequence);
             else if (NextRefillTime > DateTime.UtcNow && weapon.IsGunblade == true)
@@ -226,18 +228,13 @@ namespace ACE.Server.WorldObjects
                 }
                 else
                 {
-                    //log.Info($"{Name}.CreateMoveToChain({target.Name})");
-                    if (weapon.IsGunblade == false)
+                    CreateMoveToChain(target, (success) =>
                     {
-                        CreateMoveToChain(target, (success) =>
-                        {
-                            if (success)
-                                Attack(target, attackSequence);
-                            else
-                                OnAttackDone();
-                        });
-                    }
-                    
+                        if (success)
+                            Attack(target, attackSequence);
+                        else
+                            OnAttackDone();
+                    });
                 }
             }
         }
@@ -420,7 +417,12 @@ namespace ACE.Server.WorldObjects
             if (AttackSequence != attackSequence)
                 return;
 
-            if (CombatMode != CombatMode.Melee || MeleeTarget == null && !weapon.IsGunblade || IsBusy || !IsAlive || suicideInProgress)
+            if (CombatMode != CombatMode.Melee || MeleeTarget == null && weapon == null || IsBusy || !IsAlive || suicideInProgress)
+            {
+                OnAttackDone();
+                return;
+            }
+            else if (CombatMode != CombatMode.Melee || MeleeTarget == null && !weapon.IsGunblade || IsBusy || !IsAlive || suicideInProgress)
             {
                 OnAttackDone();
                 return;
@@ -493,7 +495,7 @@ namespace ACE.Server.WorldObjects
                     var damageEvent = DamageTarget(creature, weapon);
 
                     // handle target procs
-                    if (damageEvent != null && damageEvent.HasDamage && !targetProc && weapon.IsGunblade == false)
+                    if (damageEvent != null && damageEvent.HasDamage && !targetProc)
                     {
                         TryProcEquippedItems(this, creature, false, weapon);
                         targetProc = true;
@@ -537,17 +539,11 @@ namespace ACE.Server.WorldObjects
                             else
                             {
                                 DamageTarget(cleaveHit, weapon);
-                                TryProcEquippedItems(this, cleaveHit, false, weapon);
+
                             }
                                                        
                         }
-                    }
-                    
-
-                    if (weapon != null && weapon.IsGunblade == true && ammo == null)
-                    {                      
-                        TryProcEquippedItems(this, creature, false, weapon);
-                    }
+                    }                   
 
                     if (weapon != null && weapon.IsGunblade == true && ammo != null)
                     {
@@ -558,7 +554,6 @@ namespace ACE.Server.WorldObjects
                         var localOrigin = GetProjectileSpawnOrigin(ammo1.WeenieClassId, aimLevel);
                         var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
 
-                        TryProcEquippedItems(this, creature, false, weapon);
                         LaunchProjectile(weapon, ammo1, target, origin, orientation, velocity);
                         UpdateAmmoAfterLaunch(ammo1);
                     }
@@ -597,7 +592,17 @@ namespace ACE.Server.WorldObjects
 
                 var dist = GetCylinderDistance(target);
 
-                if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) &&  IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon.IsGunblade == true)
+                if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon == null)
+                {
+                    // client starts refilling power meter
+                    Session.Network.EnqueueSend(new GameEventAttackDone(Session));
+
+                    var nextAttack = new ActionChain();
+                    nextAttack.AddDelaySeconds(nextRefillTime);
+                    nextAttack.AddAction(this, () => Attack(target, attackSequence, true));
+                    nextAttack.EnqueueChain();
+                }
+                else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) &&  IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon.IsGunblade == true)
                 {
                     // client starts refilling power meter
                     Session.Network.EnqueueSend(new GameEventAttackDone(Session));
@@ -687,7 +692,6 @@ namespace ACE.Server.WorldObjects
             TryProcEquippedItems(this, this, true, weapon);
 
             var prevTime = 0.0f;
-            bool targetProc = false;
             var ammo = GetEquippedAmmo();
             var projectileSpeed = GetGunBladeProjectileSpeed();
             var aimVelocity = GetAimVelocity(target, projectileSpeed);
@@ -738,7 +742,6 @@ namespace ACE.Server.WorldObjects
 
                     if (weapon != null && weapon.IsGunblade == true && ammo != null)
                     {
-                        TryProcEquippedItems(this, creature, false, weapon);
                         LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
                         UpdateAmmoAfterLaunch(ammo);
                     }
@@ -811,7 +814,7 @@ namespace ACE.Server.WorldObjects
             //Console.WriteLine($"Attack frames: {string.Join(",", attackFrames)}");
             var weapon = GetEquippedMeleeWeapon();
             // broadcast player swing animation to clients
-            if (weapon.IsGunblade == false)
+            if (weapon == null)
             {
                 var motion = new Motion(this, swingAnimation, animSpeed);
                 if (PropertyManager.GetBool("persist_movement").Item)
@@ -825,7 +828,21 @@ namespace ACE.Server.WorldObjects
 
                 EnqueueBroadcastMotion(motion);
             }
-            if (weapon.IsGunblade == true)
+            else if (weapon.IsGunblade == false)
+            {
+                var motion = new Motion(this, swingAnimation, animSpeed);
+                if (PropertyManager.GetBool("persist_movement").Item)
+                {
+                    motion.Persist(CurrentMotionState);
+                }
+                motion.MotionState.TurnSpeed = 2.25f;
+                motion.MotionFlags |= MotionFlags.StickToObject;
+                motion.TargetGuid = target.Guid;
+                CurrentMotionState = motion;
+
+                EnqueueBroadcastMotion(motion);
+            }
+            else if (weapon.IsGunblade == true)
             {
                 var motion = new Motion(this, swingAnimation, animSpeed);
                 if (PropertyManager.GetBool("persist_movement").Item)

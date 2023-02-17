@@ -142,7 +142,7 @@ namespace ACE.Server.WorldObjects
             if (IsMonster == true)
             {
                 var level = GetProperty(PropertyInt.Level);
-                if (level >= 500)
+                if (level >= 750)
                 {
                     var damageopvalue = ThreadSafeRandom.Next(1, 9) + (level * 1.17);
                     var defenseopvalue = ThreadSafeRandom.Next(1, 9) + (level * 1.17);

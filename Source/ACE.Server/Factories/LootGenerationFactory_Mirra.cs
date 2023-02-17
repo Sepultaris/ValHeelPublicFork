@@ -17,7 +17,7 @@ namespace ACE.Server.Factories
 {
     public static partial class LootGenerationFactory
     {
-        private static WorldObject CreateMirra(TreasureDeath profile, bool isMagical, bool mutate = true)
+        public static WorldObject CreateMirra(TreasureDeath profile, bool isMagical, bool mutate = true)
         {
             if (profile.TreasureType != 5000)
                 return null;
@@ -77,7 +77,7 @@ namespace ACE.Server.Factories
             else return 1; //default
         }
         
-        private static void MutateMirra(WorldObject wo, TreasureDeath profile, bool isMagical = true)
+        public static void MutateMirra(WorldObject wo, TreasureDeath profile, bool isMagical = true)
         {
             if (profile.Tier < 10)
             {
@@ -171,7 +171,7 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.00f, 0.19f);
+                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 0.19f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
@@ -211,7 +211,7 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.00f, 0.19f);
+                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.01f, 0.19f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
@@ -250,7 +250,7 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.00f, 0.19f);
+                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 0.19f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
@@ -289,7 +289,7 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.00f, 0.19f);
+                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 0.19f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
@@ -328,7 +328,7 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.00f, 0.19f);
+                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 0.19f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
@@ -367,7 +367,7 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.00f, 0.19f);
+                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 0.19f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
@@ -406,7 +406,7 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.00f, 0.19f);
+                    wo.MirraResistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 0.19f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)

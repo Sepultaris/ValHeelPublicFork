@@ -62,7 +62,7 @@ namespace ACE.Server.Entity
 
         public static bool VerifyRequirements(Player player)
         {
-            if (player.Level < 1000)
+            if (player.Level < 10000)
             {
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must be level 1000 for enlightenment.", ChatMessageType.Broadcast));
                 player.QuestManager.Erase("Trance1");

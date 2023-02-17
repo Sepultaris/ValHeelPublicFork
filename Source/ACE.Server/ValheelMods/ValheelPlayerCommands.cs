@@ -3,17 +3,40 @@ using ACE.Entity.Enum;
 using ACE.Server.Managers;
 using ACE.Server.Network;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.Factories;
 using ACE.Server.WorldObjects;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.DuskfallMods;
 using ACE.Server.WorldObjects.Entity;
 using log4net.Core;
 using ACE.Entity;
+using Org.BouncyCastle.Bcpg;
+using System.Dynamic;
 
 namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        [CommandHandler("mutatecolor", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, "Randomly muatates the color of the appraised item.")]
+        public static void HandleMutateColor(Session session, params string[] parameters)
+        {
+            var target = CommandHandlerHelper.GetLastAppraisedObject(session);
+            var isArmor = target.GetProperty(PropertyInt.ItemType);
+            string name = target.GetProperty(PropertyString.Name);
+
+            if (target != null && isArmor == 2)
+            {
+                LootGenerationFactory.MutateColor(target);
+                ChatPacket.SendServerMessage(session, $"The color of the {name} has been mutated.", ChatMessageType.Broadcast);
+                return;
+            }                            
+            if (isArmor != 2)
+            {
+                ChatPacket.SendServerMessage(session, $"The target of this command must be a piece of clothing.", ChatMessageType.Broadcast);
+                return;
+            }                
+        }
+
         [CommandHandler("reputation", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0, "Refunds costs associated with /raise.")]
         public static void Reputation(Session session, params string[] parameters)
         {
@@ -394,13 +417,13 @@ namespace ACE.Server.Command.Handlers
                         if (reputation < 250000)
                         {
                             ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 100000 reputation to increase prestige.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough reputation, 250,000 reputation to increase prestige.", ChatMessageType.Broadcast);
                             return;
                         }
                         if (player.QuestManager.GetCurrentSolves("Reputation") < 250000)
                         {
                             ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 100000 reputation to increase prestige.", ChatMessageType.Broadcast);
+                            ChatPacket.SendServerMessage(session, "Not enough reputation, 250,000 reputation to increase prestige.", ChatMessageType.Broadcast);
                             return;
                         }
                         player.QuestManager.Decrement("Reputation", 250000);
