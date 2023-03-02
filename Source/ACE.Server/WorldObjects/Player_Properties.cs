@@ -1336,13 +1336,11 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt.LastLevel); else SetProperty(PropertyInt.LastLevel, value.Value); }
         }
 
-
         public double? LastPortalTeleportTimestamp
         {
             get => GetProperty(PropertyFloat.LastPortalTeleportTimestamp);
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastPortalTeleportTimestamp); else SetProperty(PropertyFloat.LastPortalTeleportTimestamp, value.Value); }
         }
-
 
         public int? NumberOfPets
         {
@@ -1350,11 +1348,16 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt.NumberOfPets); else SetProperty(PropertyInt.NumberOfPets, value.Value); }
         }
 
-
         public bool Ascended
         {
             get => GetProperty(PropertyBool.Ascended) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.Ascended); else SetProperty(PropertyBool.Ascended, value); }
+        }
+
+        public bool PlayerLootMultiplier
+        {
+            get => GetProperty(PropertyBool.SpellComponentsRequired) ?? true;
+            set { if (value) RemoveProperty(PropertyBool.SpellComponentsRequired); else SetProperty(PropertyBool.SpellComponentsRequired, value); }
         }
         /// <summary>
         /// Returns player's augmentation resistance for damage type

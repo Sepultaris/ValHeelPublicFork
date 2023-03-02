@@ -220,8 +220,8 @@ namespace ACE.Server.Factories
             {                
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
-                var maxlevel = 500;
-                var basexp = 50000000000;
+                var maxlevel = 50;
+                var basexp = 10000000000;
 
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
@@ -274,12 +274,12 @@ namespace ACE.Server.Factories
             if (profile.Tier == 9 && empowered <= 0.3f && wo.HasArmorLevel() && isMagical && profile.TreasureType == 3111 || profile.Tier == 9 && wo.HasArmorLevel() && isMagical && profile.TreasureType == 3112)
             {
                 TryRollEquipmentSet(wo, profile, roll);
-                var maxlevel = 150;
-                var basexp = 2000000000;
+                var maxlevel = 10;
+                var basexp = 10000000000;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
                 var armorlevel = wo.GetProperty(PropertyInt.ArmorLevel);
-                var armorbonus = 600;
+                var armorbonus = 60;
                 int newarmorlevel = (int)(armorlevel + armorbonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -308,12 +308,12 @@ namespace ACE.Server.Factories
             if (profile.Tier == 9 && wo.HasArmorLevel() && isMagical && profile.TreasureType == 4111)
             {
                 TryRollEquipmentSet(wo, profile, roll);
-                var maxlevel = 500;
-                var basexp = 50000000000;
+                var maxlevel = 20;
+                var basexp = 10000000000;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
                 var armorlevel = wo.GetProperty(PropertyInt.ArmorLevel);
-                var armorbonus = 600;
+                var armorbonus = 90;
                 int newarmorlevel = (int)(armorlevel + armorbonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -341,12 +341,12 @@ namespace ACE.Server.Factories
             }
             if (profile.Tier == 10 && wo.HasArmorLevel() && isMagical)
             {                
-                var maxlevel = 500;
-                var basexp = 50000000000;
+                var maxlevel = 50;
+                var basexp = 10000000000;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var armorlevel = wo.GetProperty(PropertyInt.ArmorLevel);
-                var armorbonus = 900;
+                var armorbonus = 160;
                 int newarmorlevel = (int)(armorlevel + armorbonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -1157,7 +1157,7 @@ namespace ACE.Server.Factories
                 
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
-                var maxlevel = 500;
+                var maxlevel = 50;
                 var basexp = 50000000000;
 
                 wo.ItemMaxLevel = maxlevel;
@@ -1345,12 +1345,8 @@ namespace ACE.Server.Factories
 
             // shields don't have gear ratings
             /* if (wo.IsShield) return false; */
-
-
             var gearRating = GearRatingChance.Roll(wo, profile, roll);
-            var t9gearRating = gearRating += ThreadSafeRandom.Next(7, 12);
-            var t10gearRating =  gearRating += ThreadSafeRandom.Next(27, 32);
-
+ 
             if (gearRating == 0)
                 return false;
 
@@ -1358,157 +1354,176 @@ namespace ACE.Server.Factories
             var proto = wo.GetProperty(PropertyBool.Proto);
             var rng = ThreadSafeRandom.Next(0, 1);
 
-            if (roll.HasArmorLevel(wo) && profile.Tier <= 8)
+            if(profile.Tier <= 8)
             {
-                // clothing w/ al, and crowns would be included in this group
-                if (rng == 0)
-                    wo.GearCritDamage = gearRating;
+                if (roll.HasArmorLevel(wo) && profile.Tier <= 8)
+                {
+                    // clothing w/ al, and crowns would be included in this group
+                    if (rng == 0)
+                        wo.GearCritDamage = gearRating;
+                    else
+                        wo.GearCritDamageResist = gearRating;
+
+                }
+                else if (roll.IsClothing && profile.Tier <= 8 || roll.IsCloak && profile.Tier <= 8)
+                {
+                    if (rng == 0)
+                        wo.GearDamage = gearRating;
+                    else
+                        wo.GearDamageResist = gearRating;
+
+                }
+                else if (roll.IsJewelry && profile.Tier <= 8)
+                {
+                    if (rng == 0)
+                        wo.GearHealingBoost = gearRating;
+                    else
+                        wo.GearMaxHealth = gearRating;
+
+                }
                 else
-                    wo.GearCritDamageResist = gearRating;
-
+                {
+                    /*log.Error($"TryMutateGearRating({wo.Name}, {profile.TreasureType}, {roll.ItemType}): unknown item type");*/
+                    return false;
+                }
             }
-            else if (roll.IsClothing && profile.Tier <= 8 || roll.IsCloak && profile.Tier <= 8)
+            if(profile.Tier >= 9)
             {
-                if (rng == 0)
-                    wo.GearDamage = gearRating;
+                var t9gearRating = gearRating += ThreadSafeRandom.Next(7, 12);
+                var t10gearRating = gearRating += ThreadSafeRandom.Next(27, 32);
+
+                // T9 empowered ratings
+                if (roll.HasArmorLevel(wo) && profile.Tier == 9 && empowered == true)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+                else if (roll.IsClothing && profile.Tier == 9 && empowered == true || roll.IsCloak && profile.Tier == 9)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+                else if (roll.IsJewelry && profile.Tier == 9 && empowered == true)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+                // T9 Proto Ratings
+                else if (roll.HasArmorLevel(wo) && profile.Tier == 9 && proto == true)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                }
+                else if (roll.IsClothing && profile.Tier == 9 && proto == true || roll.IsCloak && profile.Tier == 9 && proto == true)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                }
+                else if (roll.IsJewelry && profile.Tier == 9 && proto == true)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                }
+                else if (roll.HasArmorLevel(wo) && profile.Tier == 10 && wo.Arramoran == true)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                }
+                else if (roll.IsClothing && profile.Tier == 10 && wo.Arramoran == true || roll.IsCloak && profile.Tier == 10 && wo.Arramoran == true)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                }
+                else if (roll.IsJewelry && profile.Tier == 10 && wo.Arramoran == true)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                }
+
+                // T9 non-empowered ratings
+                else if (roll.HasArmorLevel(wo) && profile.Tier == 9 && empowered == false && proto == false)
+                {
+
+                    wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+                else if (roll.IsClothing && profile.Tier == 9 && empowered == false || roll.IsCloak && profile.Tier == 9 && empowered == false && proto == false)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+                else if (roll.IsJewelry && profile.Tier == 9 && empowered == false && proto == false)
+                {
+
+                    wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+
+                else if (roll.HasArmorLevel(wo) && profile.Tier == 10 && wo.Arramoran == false)
+                {
+
+                    wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+                else if (roll.IsClothing && profile.Tier == 10 && wo.Arramoran == false || roll.IsCloak && profile.Tier == 10 && wo.Arramoran == false)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+                else if (roll.IsJewelry && profile.Tier == 10 && wo.Arramoran == false)
+                {
+
+                    wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
+                }
+
                 else
-                    wo.GearDamageResist = gearRating;
-
+                {
+                    /*log.Error($"TryMutateGearRating({wo.Name}, {profile.TreasureType}, {roll.ItemType}): unknown item type");*/
+                    return false;
+                }
             }
-            else if (roll.IsJewelry && profile.Tier <= 8)
-            {
-                if (rng == 0)
-                    wo.GearHealingBoost = gearRating;
-                else
-                    wo.GearMaxHealth = gearRating;
-
-            }
-            // T9 empowered ratings
-            else if (roll.HasArmorLevel(wo) && profile.Tier == 9 && empowered == true)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-            else if (roll.IsClothing && profile.Tier == 9 && empowered == true || roll.IsCloak && profile.Tier == 9)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-            else if (roll.IsJewelry && profile.Tier == 9 && empowered == true)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-            // T9 Proto Ratings
-            else if (roll.HasArmorLevel(wo) && profile.Tier == 9 && proto == true)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-            }
-            else if (roll.IsClothing && profile.Tier == 9 && proto == true || roll.IsCloak && profile.Tier == 9 && proto == true)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-            }
-            else if (roll.IsJewelry && profile.Tier == 9 && proto == true)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-            }
-            else if (roll.HasArmorLevel(wo) && profile.Tier == 10 && wo.Arramoran == true)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-            }
-            else if (roll.IsClothing && profile.Tier == 10 && wo.Arramoran == true || roll.IsCloak && profile.Tier == 10 && wo.Arramoran == true)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-            }
-            else if (roll.IsJewelry && profile.Tier == 10 && wo.Arramoran == true)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
-            }
-
-            // T9 non-empowered ratings
-            else if (roll.HasArmorLevel(wo) && profile.Tier == 9 && empowered == false && proto == false)
-            {
-
-                wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-            else if (roll.IsClothing && profile.Tier == 9 && empowered == false || roll.IsCloak && profile.Tier == 9 && empowered == false && proto == false)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-            else if (roll.IsJewelry && profile.Tier == 9 && empowered == false && proto == false)
-            {
-
-                wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-
-            else if (roll.HasArmorLevel(wo) && profile.Tier == 10 && wo.Arramoran == false)
-            {
-
-                wo.SetProperty(PropertyInt.GearDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-            else if (roll.IsClothing && profile.Tier == 10 && wo.Arramoran == false || roll.IsCloak && profile.Tier == 10 && wo.Arramoran == false)
-            {
-                wo.SetProperty(PropertyInt.GearHealingBoost, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearMaxHealth, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-            else if (roll.IsJewelry && profile.Tier == 10 && wo.Arramoran == false)
-            {
-
-                wo.SetProperty(PropertyInt.GearCritDamage, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-                wo.SetProperty(PropertyInt.GearCritDamageResist, t9gearRating + (ThreadSafeRandom.Next(-5, 5)));
-            }
-
             else
             {
-                /*log.Error($"TryMutateGearRating({wo.Name}, {profile.TreasureType}, {roll.ItemType}): unknown item type");*/
                 return false;
             }
+            
 
             // ensure wield requirement is level 180?
             SetWieldLevelReq(wo, 180);

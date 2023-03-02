@@ -69,13 +69,13 @@ namespace ACE.Server.WorldObjects
             Faction1Bits = player.Faction1Bits;
 
             return true;
-        }
+        }     
 
         public override void HandleFindTarget()
         {
-            var creature = AttackTarget as Creature;
+            var creature = AttackTarget as Creature;       
 
-            if (creature == null || creature.IsDead || !IsVisibleTarget(creature))
+            if (creature == null && IsMoving == false|| creature.IsDead && IsMoving == false || !IsVisibleTarget(creature) && IsMoving == false)
                 FindNextTarget();            
         }
 
@@ -85,9 +85,9 @@ namespace ACE.Server.WorldObjects
 
             if (nearbyMonsters.Count == 0)
             {
-
-                //Console.WriteLine($"{Name}.FindNextTarget(): empty");
                 return false;
+                //Console.WriteLine($"{Name}.FindNextTarget(): empty");
+                
             }
 
             // get nearest monster
@@ -96,9 +96,8 @@ namespace ACE.Server.WorldObjects
 
             if (nearest[0].Distance > VisualAwarenessRangeSq)
             {
-
                 return false;
-            }
+            }            
 
             AttackTarget = nearest[0].Target;
 
@@ -148,10 +147,9 @@ namespace ACE.Server.WorldObjects
 
             return;  // empty by default
             
-        }
+        }        
 
         
-
     }
 }   
 

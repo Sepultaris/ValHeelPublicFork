@@ -760,6 +760,7 @@ namespace ACE.Server.WorldObjects
             // notify current landblock of player activity
             if (CurrentLandblock != null)
                 CurrentLandblock?.SetActive();
+          
         }
 
         public static readonly float RunFactor = 1.5f;

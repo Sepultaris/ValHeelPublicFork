@@ -178,10 +178,10 @@ namespace ACE.Server.Managers
                 if (target.Sockets >= 1)
                 {
                     var mirraId = source.Guid;
-                    var resistancebonus = source.MirraResistanceBonus;
-                    var resistance = target.ArmorModVsBludgeon;
+                    float resistancebonus = (float)source.MirraResistanceBonus;
+                    double resistance = (double)target.ArmorModVsBludgeon;
 
-                    target.ArmorModVsBludgeon = resistance + resistancebonus;
+                    target.ArmorModVsBludgeon += resistancebonus;
                     target.Sockets--;
                     success = true;
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
@@ -245,7 +245,7 @@ namespace ACE.Server.Managers
                     var resistancebonus = source.MirraResistanceBonus;
                     var resistance = target.ArmorModVsSlash;
 
-                    target.ArmorModVsSlash = resistance + resistancebonus;
+                    target.ArmorModVsSlash += resistancebonus;
                     target.Sockets--;
                     success = true;
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
@@ -310,7 +310,7 @@ namespace ACE.Server.Managers
                     var resistancebonus = source.MirraResistanceBonus;
                     var resistance = target.ArmorModVsPierce;
 
-                    target.ArmorModVsPierce = resistance + resistancebonus;
+                    target.ArmorModVsPierce += resistancebonus;
                     target.Sockets--;
                     success = true;
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
@@ -375,7 +375,7 @@ namespace ACE.Server.Managers
                     var resistancebonus = source.MirraResistanceBonus;
                     var resistance = target.ArmorModVsCold;
 
-                    target.ArmorModVsCold = resistance + resistancebonus;
+                    target.ArmorModVsCold += resistancebonus;
                     target.Sockets--;
                     success = true;
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
@@ -440,7 +440,7 @@ namespace ACE.Server.Managers
                     var resistancebonus = source.MirraResistanceBonus;
                     var resistance = target.ArmorModVsFire;
 
-                    target.ArmorModVsFire = resistance + resistancebonus;
+                    target.ArmorModVsFire += resistancebonus;
                     target.Sockets--;
                     success = true;
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
@@ -505,7 +505,7 @@ namespace ACE.Server.Managers
                     var resistancebonus = source.MirraResistanceBonus;
                     var resistance = target.ArmorModVsAcid;
 
-                    target.ArmorModVsAcid = resistance + resistancebonus;
+                    target.ArmorModVsAcid += resistancebonus;
                     target.Sockets--;
                     success = true;
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));
@@ -570,7 +570,7 @@ namespace ACE.Server.Managers
                     var resistancebonus = source.MirraResistanceBonus;
                     var resistance = target.ArmorModVsElectric;
 
-                    target.ArmorModVsElectric = resistance + resistancebonus;
+                    target.ArmorModVsElectric += resistancebonus;
                     target.Sockets--;
                     success = true;
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));

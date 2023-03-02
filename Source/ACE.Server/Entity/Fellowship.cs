@@ -470,12 +470,12 @@ namespace ACE.Server.Entity
 
             var maxLevelDiff = fellows.Values.Max(f => Math.Abs((leader.Level ?? 1) - (f.Level ?? 1)));
 
-            if (maxLevelDiff <= 5)
+            if (maxLevelDiff <= 50)
             {
                 ShareXP = DesiredShareXP;
                 EvenShare = true;
             }
-            else if (maxLevelDiff <= 10)
+            else if (maxLevelDiff <= 100)
             {
                 ShareXP = DesiredShareXP;
                 EvenShare = false;

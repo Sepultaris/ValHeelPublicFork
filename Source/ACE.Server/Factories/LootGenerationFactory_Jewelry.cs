@@ -106,8 +106,8 @@ namespace ACE.Server.Factories
                 wo.Proto = false;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
-                var maxlevel = 500;
-                var basexp = 50000000000;
+                var maxlevel = 20;
+                var basexp = 10000000000;
                 var jewelryProc = ThreadSafeRandom.Next(0.0f, 1.0f);               
 
                 wo.SetProperty(PropertyBool.Proto, true);
@@ -166,8 +166,8 @@ namespace ACE.Server.Factories
                 TryMutateGearRating(wo, profile, roll);
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
-                var maxlevel = 500;
-                var basexp = 50000000000;
+                var maxlevel = 50;
+                var basexp = 10000000000;
                 var jewelryProc = ThreadSafeRandom.Next(0.0f, 1.0f);
 
                 wo.SetProperty(PropertyBool.Arramoran, true);

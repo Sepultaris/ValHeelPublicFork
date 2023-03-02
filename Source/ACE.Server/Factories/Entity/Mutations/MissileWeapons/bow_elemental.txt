@@ -323,7 +323,7 @@ Bow (MissileWeapons) Mutation #9 (6,996 samples):
 Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
 
     - Chance: 10%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 32
         DamageMod = 3.23
 
         WieldRequirements = RawSkill
@@ -332,7 +332,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         
 
     - Chance: 10%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 34
         DamageMod = 3.25
 
         WieldRequirements = RawSkill
@@ -341,7 +341,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
        
 
     - Chance: 10%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 35
         WieldRequirements = RawSkill
         DamageMod = 3.27
 
@@ -350,7 +350,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         
 
     - Chance: 10%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 36
         DamageMod = 3.3
 
         WieldRequirements = RawSkill
@@ -359,7 +359,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         
 
     - Chance: 15%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 37
         DamageMod = 3.35
 
         WieldRequirements = RawSkill
@@ -368,7 +368,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         
 
     - Chance: 30%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 38
         DamageMod = 3.37
 
         WieldRequirements = RawSkill
@@ -376,7 +376,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WieldDifficulty = 490
 
     - Chance: 15%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 39
         DamageMod = 3.4
 
         WieldRequirements = RawSkill

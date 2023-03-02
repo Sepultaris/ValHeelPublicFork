@@ -3,18 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common.Extensions;
-using ACE.Database.Models.Shard;
 using ACE.DatLoader;
-using ACE.Entity;
-using ACE.Server;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
-using ACE.Server.Entity;
-using ACE.Server.Network;
-
 
 namespace ACE.Server.WorldObjects
 {
@@ -36,13 +30,10 @@ namespace ACE.Server.WorldObjects
             var modifier = PropertyManager.GetDouble("xp_modifier").Item;
 
             // Quest Point Allegiance Allocation Checks.
-            
-            if (xpType == XpType.Allegiance && Level >= 500)            
-                amount = amount / 2;
-            
+
 
             //additive enlightenment bonus with enchantments.
-            var enlightenBonus = 0.03f * Enlightenment; // 3% XP bonus per enlightenment
+            var enlightenBonus = 0.25f * Enlightenment; // 25% XP bonus per enlightenment
 
             // should this be passed upstream to fellowship / allegiance?
             var enchantment = GetXPAndLuminanceModifier(xpType) + enlightenBonus;
@@ -57,26 +48,7 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            // Cut incoming XP in half once the player hits level 500
-            var newm_amount = m_amount / 10;
-
-            if (Level >= 500 && !QuestManager.CanSolve("Ascension"))
-            {                
-                GrantXP(newm_amount, xpType, shareType);
-                GrantItemXP(m_amount);
-            }
-            if (Level >= 500 && QuestManager.CanSolve("Ascension"))
-            {
-                GrantItemXP(m_amount);
-                if (HasVitae && xpType != XpType.Allegiance)
-                    UpdateXpVitae(m_amount);
-                return;
-            }
-            if (Level < 500 && QuestManager.CanSolve("Ascension"))
-            {
-                GrantXP(m_amount, xpType, shareType);
-            }
-                   
+            GrantXP(m_amount, xpType, shareType);
         }
 
         /// <summary>
@@ -87,6 +59,11 @@ namespace ACE.Server.WorldObjects
         /// <param name="shareable">If TRUE, this XP can be shared with fellowship members</param>
         public void GrantXP(long amount, XpType xpType, ShareType shareType = ShareType.All)
         {
+            var godState = Session.Player.GetProperty(PropertyString.GodState);
+            if (godState != null)
+            {
+                return;
+            }
             if (Fellowship != null && Fellowship.ShareXP && shareType.HasFlag(ShareType.Fellowship)/*(xpType == XpType.Emote || xpType == XpType.Fellowship || xpType == XpType.Kill || xpType == XpType.Quest)*/)
             {
                 // this will divy up the XP, and re-call this function
@@ -94,7 +71,7 @@ namespace ACE.Server.WorldObjects
                 Fellowship.SplitXp((ulong)amount, xpType, shareType, this);
                 return;
             }
-
+            
             XPGained = amount;
 
             // Make sure UpdateXpAndLevel is done on this players thread
@@ -216,15 +193,12 @@ namespace ACE.Server.WorldObjects
             }
         }
 
-        
         /// <summary>
         /// Returns the maximum possible character level
         /// </summary>
         public static uint GetMaxLevel()
-
-        
-        {            
-            return 999999;
+        {
+            return 10000;
         }
 
         /// <summary>
@@ -311,14 +285,9 @@ namespace ACE.Server.WorldObjects
                 levelA_totalXP = DatManager.PortalDat.XpTable.CharacterLevelXPList[levelA];
                 levelB_totalXP = DatManager.PortalDat.XpTable.CharacterLevelXPList[levelB];
             }
-            if (Level > 275 && Level < 500)
+            else
             {
-                levelA_totalXP = (ulong)TotalXpBeyond - (ulong)Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f)));
-                levelB_totalXP = (ulong)TotalXpBeyond;
-            }
-            if (Level >= 500)
-            {
-                levelA_totalXP = (ulong)TotalXpBeyond - (ulong)Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f))*10);
+                levelA_totalXP = (ulong)TotalXpBeyond - (ulong)Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.14f)));
                 levelB_totalXP = (ulong)TotalXpBeyond;
             }
             //Session.Network.EnqueueSend(new GameMessageSystemChat($"{levelB_totalXP - levelA_totalXP:N0} BETWEEN", ChatMessageType.Broadcast));
@@ -340,7 +309,7 @@ namespace ACE.Server.WorldObjects
 
             var maxLevel = GetMaxLevel();
 
-            if (Level >= 500 && QuestManager.CanSolve("Ascension")) return;
+            if (Level >= maxLevel) return;
 
             var startingLevel = Level;
             bool creditEarned = false;
@@ -383,10 +352,10 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            
+
             if (Level > startingLevel && Level < 275)
             {
-                var message = (Level == maxLevel) ? $"You have reached the maximum level of {Level}!" : $"You are now level {Level}!";               
+                var message = (Level == maxLevel) ? $"You have reached the maximum level of {Level}!" : $"You are now level {Level}!";
                 message += (AvailableSkillCredits > 0) ? $"\nYou have {AvailableExperience:#,###0} experience points and {AvailableSkillCredits} skill credits available to raise skills and attributes." : $"\nYou have {AvailableExperience:#,###0} experience points available to raise skills and attributes.";
 
                 var levelUp = new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.Level, Level ?? 1);
@@ -425,9 +394,9 @@ namespace ACE.Server.WorldObjects
             }
 
 
-            if (Level > startingLevel && Level >= 275 && Level < 500)
+            if (Level > startingLevel && Level >= 275)
             {
-                var incrementxp = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f)));
+                var incrementxp = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.14f)));
                 var message = (Level == maxLevel) ? $"You have reached the maximum level of {Level}!" : $"You are now level {Level}! You need {incrementxp:N0} to reach {Level + 1}";
                 //Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {incrementxp:N0} to reach {Level + 1}", ChatMessageType.Advancement));
                 message += (AvailableSkillCredits > 0) ? $"\nYou have {AvailableExperience:#,###0} experience points and {AvailableSkillCredits} skill credits available to raise skills and attributes." : $"\nYou have {AvailableExperience:#,###0} experience points available to raise skills and attributes.";
@@ -466,50 +435,6 @@ namespace ACE.Server.WorldObjects
 
                 Session.Network.EnqueueSend(new GameMessageSystemChat(message, ChatMessageType.Advancement), currentCredits);
             }
-
-            if (Level > startingLevel && Level >= 500)
-            {
-                var incrementxp = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f))*10);
-                var message = (Level == maxLevel) ? $"You have reached the maximum level of {Level}!" : $"You are now level {Level}! You need {incrementxp:N0} to reach {Level + 1}";
-                //Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {incrementxp:N0} to reach {Level + 1}", ChatMessageType.Advancement));
-                message += (AvailableSkillCredits > 0) ? $"\nYou have {AvailableExperience:#,###0} experience points and {AvailableSkillCredits} skill credits available to raise skills and attributes." : $"\nYou have {AvailableExperience:#,###0} experience points available to raise skills and attributes.";
-
-                var levelUp = new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.Level, Level ?? 1);
-                var currentCredits = new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.AvailableSkillCredits, AvailableSkillCredits ?? 0);
-
-                // 275 and under code.
-                if (Level != maxLevel && !creditEarned && Level <= 275)
-                {
-                    var nextLevelWithCredits = 0;
-
-                    for (int i = (Level ?? 0) + 1; i <= maxLevel; i++)
-                    {
-                        if (xpTable.CharacterLevelSkillCreditList[i] > 0)
-                        {
-                            nextLevelWithCredits = i;
-                            break;
-                        }
-                    }
-                    message += $"\nYou will earn another skill credit at level {nextLevelWithCredits}.";
-                }
-
-                if (Fellowship != null)
-                    Fellowship.OnFellowLevelUp(this);
-
-                if (AllegianceNode != null)
-                    AllegianceNode.OnLevelUp();
-
-                Session.Network.EnqueueSend(levelUp);
-
-                SetMaxVitals();
-
-                // play level up effect
-                PlayParticleEffect(PlayScript.LevelUp, Guid);
-
-                Session.Network.EnqueueSend(new GameMessageSystemChat(message, ChatMessageType.Advancement), currentCredits);
-            }
-
-
         }
         /// <summary>
         /// This function is just meant to catch a player right as they hit level 275 and transfer from using the Vanilla dats from 1-275, to a custom formula.
@@ -525,38 +450,9 @@ namespace ACE.Server.WorldObjects
         /// <returns></returns>
         public long? Catch275(bool maxcheck, int? startingLevel)
         {
-            if (Level < 500)
+            if (!maxcheck)
             {
-                var incrementxp1 = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f))); // allows for a more dynamic increase per level.
-
-                if (Level > startingLevel)
-                {
-                    if (!TotalXpBeyond.HasValue || TotalXpBeyond == 0)
-                        TotalXpBeyond = 191226310247 + (long)incrementxp1;
-                    else
-                        TotalXpBeyond += (long)incrementxp1;               
-                }
-
-                ///var currentxp = TotalXpBeyond;
-
-                ///var currentremaining = currentxp - TotalExperience;
-
-                /*Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {currentremaining:N0}xp to reach level {Level + 1}. Required total xp is {currentxp:N0}", ChatMessageType.Broadcast));
-                if (GetXPToNextLevel((int)Level) <= 0)
-                    Level++;*/
-                
-
-                var nextLevel = TotalXpBeyond;
-                ///Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {incrementxp:N0} to reach {Level + 1}", ChatMessageType.Advancement));
-
-                LastLevel = Level;
-
-                return (long)nextLevel;
-            }
-
-            if (Level >= 500)
-            {
-                var incrementxp1 = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.25f))*10); // allows for a more dynamic increase per level.
+                var incrementxp1 = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.14f))); // allows for a more dynamic increase per level.
 
                 if (Level > startingLevel)
                 {
@@ -577,9 +473,9 @@ namespace ACE.Server.WorldObjects
 
                 var nextLevel = TotalXpBeyond;
                 ///Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {incrementxp:N0} to reach {Level + 1}", ChatMessageType.Advancement));
-
+                
                 LastLevel = Level;
-
+              
                 return (long)nextLevel;
             }
 

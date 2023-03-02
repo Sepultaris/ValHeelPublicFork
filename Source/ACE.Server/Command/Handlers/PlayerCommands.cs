@@ -32,21 +32,6 @@ namespace ACE.Server.Command.Handlers
             CommandHandlerHelper.WriteOutputInfo(session, $"Current world population: {PlayerManager.GetOnlineCount():N0}", ChatMessageType.Broadcast);
         }
 
-        [CommandHandler("nextlevel", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0)]
-        public static void HandleCheckXp(Session session, params string[] parameters)
-        {
-            if (session.Player.Level >= 275)
-            {
-                var currentxp = session.Player.TotalXpBeyond;
-
-                var currentremaining = currentxp - session.Player.TotalExperience;
-
-                session.Network.EnqueueSend(new GameMessageSystemChat($"{currentremaining:N0} exp to reach level {session.Player.Level + 1}.", ChatMessageType.Broadcast));
-            }
-            else
-                return;
-        }
-
         // quest info (uses GDLe formatting to match plugin expectations)
         [CommandHandler("myquests", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Shows your quest log")]
         public static void HandleQuests(Session session, params string[] parameters)

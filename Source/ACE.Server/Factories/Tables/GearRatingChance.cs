@@ -50,16 +50,7 @@ namespace ACE.Server.Factories.Tables
             else if (roll.IsClothing || roll.IsJewelry  || roll.IsCloak)
             {
                 rating = ClothingJewelryRating;
-            }
-           /* // T9 roll
-            else if (roll.HasArmorLevel(wo) && profile.Tier == 9)
-            {
-                rating = T9_ArmorRating;
-            }
-            else if (roll.IsClothing && profile.Tier == 9 || roll.IsJewelry && profile.Tier == 9 || roll.IsCloak && profile.Tier == 9)
-            {
-                rating = T9_ClothingJewelryRating;
-            } */
+            }          
             else
             {
                 log.Error($"GearRatingChance.Roll({wo.Name}, {profile.TreasureType}, {roll.ItemType}): unknown item type");

@@ -202,12 +202,12 @@ namespace ACE.Server.Factories
             if (profile.Tier == 9 && empowered <= 0.5f && isMagical && hasdamagemod > 0 && profile.TreasureType == 3111 || profile.Tier == 9 && isMagical && hasdamagemod > 0 && profile.TreasureType == 3112)
             {
                 TryRollEquipmentSet(wo, profile, roll);
-                var maxlevel = 150;
-                var basexp = 2000000000;                
+                var maxlevel = 10;
+                var basexp = 10000000000;                
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Empowered {oldname}";
                 var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
-                float damagebonus = 1.5f;
+                float damagebonus = 0.1f;
                 float newweapondamage = (float)(weapondamage + damagebonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -217,19 +217,19 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 // increase damage
                 wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
-                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 5f);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.3f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.2f);
                 wo.SetProperty(PropertyBool.Empowered, true);
             }
             if (profile.Tier == 9 && isMagical && hasdamagemod > 0 && profile.TreasureType == 4111)
             {
                 TryRollEquipmentSet(wo, profile, roll);
-                var maxlevel = 500;
-                var basexp = 50000000000;
+                var maxlevel = 20;
+                var basexp = 10000000000;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Proto {oldname}";
                 var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
-                float damagebonus = 1.5f;
+                float damagebonus = 0.3f;
                 float newweapondamage = (float)(weapondamage + damagebonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -239,8 +239,8 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 // increase damage
                 wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
-                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 5f);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
                 wo.SetProperty(PropertyBool.Proto, true);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
@@ -260,12 +260,12 @@ namespace ACE.Server.Factories
             if (profile.Tier == 10 && isMagical && hasdamagemod > 0)
             {
                 TryRollEquipmentSet(wo, profile, roll);
-                var maxlevel = 500;
-                var basexp = 50000000000;
+                var maxlevel = 50;
+                var basexp = 10000000000;
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
-                float damagebonus = 2.0f;
+                float damagebonus = 0.6f;
                 float newweapondamage = (float)(weapondamage + damagebonus);
 
                 wo.ItemMaxLevel = maxlevel;
@@ -276,8 +276,8 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyString.Name, name);
                 // increase damage
                 wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
-                wo.SetProperty(PropertyFloat.CriticalFrequency, 1f);
-                wo.SetProperty(PropertyFloat.CriticalMultiplier, 7f);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.3f);
                 wo.Arramoran = true;
                 wo.SetProperty(PropertyInt.WieldDifficulty, 700);
 

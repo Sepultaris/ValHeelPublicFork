@@ -352,7 +352,7 @@ namespace ACE.Server.Entity
                 Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;/* / ((int)(defender.OverpowerResist * 0.16f + 1) + ((int)(defender.Level * 0.005f) * 20.1f));*/
             }
             if (damageSource.WeenieClassId == 300444)
-                Damage = Damage * 30;
+                Damage = Damage * 20;
 
             return Damage;
         }

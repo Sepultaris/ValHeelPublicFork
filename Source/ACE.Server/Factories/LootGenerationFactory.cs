@@ -585,7 +585,7 @@ namespace ACE.Server.Factories
         ///
         /// This was a temporary function to give some color to loot until further work was put in for "proper" color handling. Leave it here as an option for future potential use (perhaps config option?)
         /// </summary>
-        private static WorldObject RandomizeColorTotallyRandom(WorldObject wo)
+        public static WorldObject RandomizeColorTotallyRandom(WorldObject wo)
         {
             // Make sure the item has a ClothingBase...otherwise we can't properly randomize the colors.
             if (wo.ClothingBase != null)

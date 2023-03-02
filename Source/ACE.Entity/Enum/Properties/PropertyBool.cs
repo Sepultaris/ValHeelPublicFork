@@ -197,6 +197,8 @@ namespace ACE.Entity.Enum.Properties
         Arramoran                        = 9013,
         [ServerOnly]
         GunBlade                         = 9014,
+        [ServerOnly]
+        PlayerLootMultiplier             = 9015
     }
 
     public static class PropertyBoolExtensions

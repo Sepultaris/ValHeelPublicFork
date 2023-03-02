@@ -7,6 +7,7 @@ using ACE.Common;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
+using ACE.Server.Command.Handlers;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Factories;
@@ -96,6 +97,41 @@ namespace ACE.Server.WorldObjects
             GagsTick();
 
             PhysicsObj.ObjMaint.DestroyObjects();
+
+            if (IsOnPKLandblock)
+            {
+                Player player = Session.Player;
+                var session = Session;
+                var pkStatus = player.PlayerKillerStatus;
+
+                if (pkStatus == PlayerKillerStatus.NPK)
+                {                   
+                    player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
+                    player.PlayerKillerStatus = PlayerKillerStatus.PK;
+                    session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
+                    CommandHandlerHelper.WriteOutputInfo(session, $"WARNING:You have entered a Player Killer area: {session.Player.PlayerKillerStatus.ToString()}", ChatMessageType.Broadcast);
+                    LandblockManager.DoEnvironChange(EnvironChangeType.BellSound);
+                    ApplyVisualEffects(PlayScript.VisionDownBlack);
+                    ApplyVisualEffects(PlayScript.BaelZharonSmite);
+                }                            
+            }
+            else if (!IsOnPKLandblock)
+            {
+                Player player = Session.Player;
+                var session = Session;
+                var pkStatus = player.PlayerKillerStatus;
+
+                if (pkStatus == PlayerKillerStatus.PK && !PKTimerActive)
+                {                    
+                    player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
+                    player.PlayerKillerStatus = PlayerKillerStatus.NPK;
+                    session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
+                    CommandHandlerHelper.WriteOutputInfo(session, $"WARNING:You have exited a Player Killer area: {session.Player.PlayerKillerStatus.ToString()}", ChatMessageType.Broadcast);
+                    LandblockManager.DoEnvironChange(EnvironChangeType.BellSound);
+                    ApplyVisualEffects(PlayScript.VisionUpWhite);
+                    ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
+                }               
+            }
 
             // Check if we're due for our periodic SavePlayer
             if (LastRequestedDatabaseSave == DateTime.MinValue)

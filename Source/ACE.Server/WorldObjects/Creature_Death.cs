@@ -459,9 +459,14 @@ namespace ACE.Server.WorldObjects
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have retained all your items. You do not need to recover your corpse!", ChatMessageType.Broadcast));
             }
             else
-            {
+            {                
                 corpse.IsMonster = true;
+                if (killer.IsPlayer)
                 GenerateTreasure(killer, corpse);
+                if (IsOnLootMultiplierLandblock)
+                {
+                    GenerateTreasure(killer, corpse);
+                }
 
                 if (killer != null && killer.IsPlayer)
                 {
@@ -607,6 +612,8 @@ namespace ACE.Server.WorldObjects
         }
 
         public bool IsOnNoDeathXPLandblock => Location != null ? NoDeathXP_Landblocks.Contains(Location.LandblockId.Landblock) : false;
+        public bool IsOnLootMultiplierLandblock => Location != null ? LootMultiplier_Landblocks.Contains(Location.LandblockId.Landblock) : false;
+        public bool IsOnPKLandblock => Location != null ? PKLandblock_Landblocks.Contains(Location.LandblockId.Landblock) : false;
 
         /// <summary>
         /// A list of landblocks the player gains no xp from creature kills
@@ -625,6 +632,16 @@ namespace ACE.Server.WorldObjects
             0x5964,     // Gauntlet Arena One (Radiant Blood)
             0x5965,     // Gauntlet Arena Two (Radiant Blood)
             0x596B,     // Gauntlet Staging Area (All Societies)
+        };
+
+        public static HashSet<ushort> LootMultiplier_Landblocks = new HashSet<ushort>()
+        {
+            
+        };
+
+        public static HashSet<ushort> PKLandblock_Landblocks = new HashSet<ushort>()
+        {
+            
         };
     }
 }
