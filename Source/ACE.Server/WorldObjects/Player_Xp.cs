@@ -287,7 +287,7 @@ namespace ACE.Server.WorldObjects
             }
             else
             {
-                levelA_totalXP = (ulong)TotalXpBeyond - (ulong)Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.14f)));
+                levelA_totalXP = (ulong)TotalXpBeyond - 5000000000;
                 levelB_totalXP = (ulong)TotalXpBeyond;
             }
             //Session.Network.EnqueueSend(new GameMessageSystemChat($"{levelB_totalXP - levelA_totalXP:N0} BETWEEN", ChatMessageType.Broadcast));
@@ -396,7 +396,7 @@ namespace ACE.Server.WorldObjects
 
             if (Level > startingLevel && Level >= 275)
             {
-                var incrementxp = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.14f)));
+                var incrementxp = 5000000000;
                 var message = (Level == maxLevel) ? $"You have reached the maximum level of {Level}!" : $"You are now level {Level}! You need {incrementxp:N0} to reach {Level + 1}";
                 //Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {incrementxp:N0} to reach {Level + 1}", ChatMessageType.Advancement));
                 message += (AvailableSkillCredits > 0) ? $"\nYou have {AvailableExperience:#,###0} experience points and {AvailableSkillCredits} skill credits available to raise skills and attributes." : $"\nYou have {AvailableExperience:#,###0} experience points available to raise skills and attributes.";
@@ -452,7 +452,7 @@ namespace ACE.Server.WorldObjects
         {
             if (!maxcheck)
             {
-                var incrementxp1 = Math.Round(191226310247UL / 56UL * (double)(1.10f + ((Level - 275) * 0.14f))); // allows for a more dynamic increase per level.
+                var incrementxp1 = 5000000000; // allows for a more dynamic increase per level.
 
                 if (Level > startingLevel)
                 {
