@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace ACE.Entity.Enum.Properties
 {
@@ -198,7 +199,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         GunBlade                         = 9014,
         [ServerOnly]
-        PlayerLootMultiplier             = 9015
+        PlayerLootMultiplier             = 9015,
+        [ServerOnly]
+        SpeedRunning                     = 9016
     }
 
     public static class PropertyBoolExtensions

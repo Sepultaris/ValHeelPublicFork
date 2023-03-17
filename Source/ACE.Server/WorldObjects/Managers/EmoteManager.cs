@@ -363,6 +363,16 @@ namespace ACE.Server.WorldObjects.Managers
                     }
                     break;
 
+                case EmoteType.ForceLogOff:
+
+                    if(player != null)
+                    {
+                        var session = player.Session;
+
+                        session.LogOffPlayer();
+                    }
+                    break;
+
                 case EmoteType.Generate:
 
                     if (WorldObject.IsGenerator)

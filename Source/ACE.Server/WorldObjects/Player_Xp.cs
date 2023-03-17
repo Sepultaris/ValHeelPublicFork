@@ -59,11 +59,6 @@ namespace ACE.Server.WorldObjects
         /// <param name="shareable">If TRUE, this XP can be shared with fellowship members</param>
         public void GrantXP(long amount, XpType xpType, ShareType shareType = ShareType.All)
         {
-            var godState = Session.Player.GetProperty(PropertyString.GodState);
-            if (godState != null)
-            {
-                return;
-            }
             if (Fellowship != null && Fellowship.ShareXP && shareType.HasFlag(ShareType.Fellowship)/*(xpType == XpType.Emote || xpType == XpType.Fellowship || xpType == XpType.Kill || xpType == XpType.Quest)*/)
             {
                 // this will divy up the XP, and re-call this function
@@ -71,7 +66,7 @@ namespace ACE.Server.WorldObjects
                 Fellowship.SplitXp((ulong)amount, xpType, shareType, this);
                 return;
             }
-            
+
             XPGained = amount;
 
             // Make sure UpdateXpAndLevel is done on this players thread
@@ -287,7 +282,7 @@ namespace ACE.Server.WorldObjects
             }
             else
             {
-                levelA_totalXP = (ulong)TotalXpBeyond - 5000000000;
+                levelA_totalXP = (ulong)TotalXpBeyond - 10000000000;
                 levelB_totalXP = (ulong)TotalXpBeyond;
             }
             //Session.Network.EnqueueSend(new GameMessageSystemChat($"{levelB_totalXP - levelA_totalXP:N0} BETWEEN", ChatMessageType.Broadcast));
@@ -396,7 +391,7 @@ namespace ACE.Server.WorldObjects
 
             if (Level > startingLevel && Level >= 275)
             {
-                var incrementxp = 5000000000;
+                var incrementxp = 10000000000;
                 var message = (Level == maxLevel) ? $"You have reached the maximum level of {Level}!" : $"You are now level {Level}! You need {incrementxp:N0} to reach {Level + 1}";
                 //Session.Network.EnqueueSend(new GameMessageSystemChat($"You need {incrementxp:N0} to reach {Level + 1}", ChatMessageType.Advancement));
                 message += (AvailableSkillCredits > 0) ? $"\nYou have {AvailableExperience:#,###0} experience points and {AvailableSkillCredits} skill credits available to raise skills and attributes." : $"\nYou have {AvailableExperience:#,###0} experience points available to raise skills and attributes.";
@@ -452,7 +447,7 @@ namespace ACE.Server.WorldObjects
         {
             if (!maxcheck)
             {
-                var incrementxp1 = 5000000000; // allows for a more dynamic increase per level.
+                var incrementxp1 = 10000000000; // allows for a more dynamic increase per level.
 
                 if (Level > startingLevel)
                 {

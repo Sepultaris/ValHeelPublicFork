@@ -513,25 +513,25 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         Damage += 80
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 80
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 81
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 82
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
 Unarmed (LightWeapons, FinesseWeapons) Mutation #10:
 

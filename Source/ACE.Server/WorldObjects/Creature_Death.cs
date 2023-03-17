@@ -615,6 +615,8 @@ namespace ACE.Server.WorldObjects
         public bool IsOnLootMultiplierLandblock => Location != null ? LootMultiplier_Landblocks.Contains(Location.LandblockId.Landblock) : false;
         public bool IsOnPKLandblock => Location != null ? PKLandblock_Landblocks.Contains(Location.LandblockId.Landblock) : false;
 
+        public bool IsOnSpeedRunLandblock => Location != null ? SpeedRunLandblock_Landblocks.Contains(Location.LandblockId.Landblock) : false;
+
         /// <summary>
         /// A list of landblocks the player gains no xp from creature kills
         /// </summary>
@@ -642,6 +644,11 @@ namespace ACE.Server.WorldObjects
         public static HashSet<ushort> PKLandblock_Landblocks = new HashSet<ushort>()
         {
             
+        };
+
+        public static HashSet<ushort> SpeedRunLandblock_Landblocks = new HashSet<ushort>()
+        {
+            0x9204,
         };
     }
 }

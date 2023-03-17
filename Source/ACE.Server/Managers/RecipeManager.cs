@@ -14,6 +14,7 @@ using ACE.DatLoader.FileTypes;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
+using ACE.Server.Command.Handlers;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Factories;
@@ -24,6 +25,7 @@ using System.Reflection.Metadata;
 using Renci.SshNet.Messages.Authentication;
 using static ACE.Server.WorldObjects.Player;
 using ACE.Database.Models.Auth;
+using ACE.Server.Network;
 
 namespace ACE.Server.Managers
 {
@@ -825,8 +827,7 @@ namespace ACE.Server.Managers
                 }
 
             }
-
-
+           
         }
 
         public static void UseObjectOnTarget(Player player, WorldObject source, WorldObject target, bool confirmed = false)
@@ -848,6 +849,108 @@ namespace ACE.Server.Managers
             if (source.IsMirra)
             {
                 HandleMirra(player, source, target);               
+            }
+
+            if (source.WeenieClassId == 802150)
+            {
+                var session = player.Session;
+                var itemType = target.GetProperty(PropertyInt.ItemType);
+                string name = target.GetProperty(PropertyString.Name);
+
+                if (target != null && itemType == 2)
+                {
+                    LootGenerationFactory.RandomizeColorTotallyRandom(target);
+                    ChatPacket.SendServerMessage(session, $"The color of the {name} has been randomized.", ChatMessageType.Broadcast);
+
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.SendUseDoneEvent();
+
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryConsumeFromInventoryWithNetworking(source);
+
+                    return;
+                }
+                if (itemType != 2)
+                {
+                    ChatPacket.SendServerMessage(session, $"The target must be an armor piece.", ChatMessageType.Broadcast);
+                    return;
+                }
+            }
+
+            if (source.WeenieClassId == 802151)
+            {
+                var session = player.Session;
+                var itemType = target.GetProperty(PropertyInt.ItemType);
+                string name = target.GetProperty(PropertyString.Name);
+
+                if (target != null && itemType == 2)
+                {
+                    LootGenerationFactory.MutateColor(target);
+                    ChatPacket.SendServerMessage(session, $"The color of the {name} has been mutated.", ChatMessageType.Broadcast);
+
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.SendUseDoneEvent();
+
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryConsumeFromInventoryWithNetworking(source);
+
+                    return;
+                }
+                if (itemType != 2)
+                {
+                    ChatPacket.SendServerMessage(session, $"The target must be an armor piece.", ChatMessageType.Broadcast);
+                    return;
+                }
             }
 
             var recipe = GetRecipe(player, source, target);
@@ -897,7 +1000,7 @@ namespace ACE.Server.Managers
                 
                 ShowDialog(player, source, target, (float)percentSuccess);
                 return;
-            }
+            }          
 
             if (!source.IsMirra)
             {

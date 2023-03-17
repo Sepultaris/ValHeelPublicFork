@@ -549,25 +549,25 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         Damage += 87
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 88
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 89
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 90
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
 MaceJitte (FinesseWeapons) Mutation #8 (86 samples): #10:
 

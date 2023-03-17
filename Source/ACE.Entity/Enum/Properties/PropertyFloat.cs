@@ -220,7 +220,15 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         MirraResistanceBonus           = 8019,
         [ServerOnly]
-        MirraDamageModBonus            = 8020
+        MirraDamageModBonus            = 8020,
+        [ServerOnly]
+        SpeedrunStartTime              = 8021,
+        [ServerOnly]
+        SpeedrunEndTime                = 8022,
+        [ServerOnly]
+        BestTime                       = 8023,
+        [ServerOnly]
+        LastTime                       = 8024
     }
 
     public static class PropertyFloatExtensions

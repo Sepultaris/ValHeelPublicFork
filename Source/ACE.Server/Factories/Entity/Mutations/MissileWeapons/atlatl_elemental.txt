@@ -320,52 +320,52 @@ Atlatl (MissileWeapons) Mutation #9 (6,996 samples):
 Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
 
     - Chance: 10%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 35
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 390
         DamageMod = 3.23
 
     - Chance: 10%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 36
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 390
         DamageMod = 3.25
 
     - Chance: 10%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 37
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 390
         DamageMod = 3.27
 
     - Chance: 10%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 38
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 390
         DamageMod = 3.3
 
     - Chance: 15%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 39
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 390
         DamageMod = 3.35
 
     - Chance: 30%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 40
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 390
         DamageMod = 3.37
 
     - Chance: 15%:
-        ElementalDamageBonus = 150
+        ElementalDamageBonus = 41
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 390
         DamageMod = 3.4
 
     - Chance 100%:

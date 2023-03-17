@@ -27,12 +27,21 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
 
     - Chance: 34%:
         ElementalDamageMod = 1.22
+        WieldRequirements = Level
+        WieldDifficulty = 350
+        WieldSkillType = 1
         
 
     - Chance: 33%:
         ElementalDamageMod = 1.23
+        WieldRequirements = Level
+        WieldDifficulty = 350
+        WieldSkillType = 1
         
 
     - Chance: 33%:
         ElementalDamageMod = 1.24
+        WieldRequirements = Level
+        WieldDifficulty = 350
+        WieldSkillType = 1
         

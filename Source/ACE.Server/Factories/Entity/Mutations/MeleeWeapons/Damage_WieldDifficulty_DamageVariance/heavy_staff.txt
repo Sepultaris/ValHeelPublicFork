@@ -639,25 +639,25 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         Damage += 96
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 97
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 98
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
     - Chance: 25%:
         Damage += 99
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
-        WieldDifficulty = 490
+        WieldDifficulty = 440
 
 Staff (HeavyWeapons) Mutation #10:
 

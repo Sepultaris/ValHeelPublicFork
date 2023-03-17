@@ -3112,5 +3112,41 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt.Sockets); else SetProperty(PropertyInt.Sockets, value.Value); }
         }
 
+        //Speedrunning
+        public double? LastTime
+        {
+            get => GetProperty(PropertyFloat.LastTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastTime); else SetProperty(PropertyFloat.LastTime, value.Value); }
+        }
+
+        public double? BestTime
+        {
+            get => GetProperty(PropertyFloat.BestTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.BestTime); else SetProperty(PropertyFloat.BestTime, value.Value); }
+        }
+
+        public string SpeedRunTime
+        {
+            get => GetProperty(PropertyString.SpeedRunTime);
+            set { if (value == null) RemoveProperty(PropertyString.SpeedRunTime); else SetProperty(PropertyString.SpeedRunTime, value); }
+        }
+
+        public bool SpeedRunning
+        {
+            get => GetProperty(PropertyBool.SpeedRunning) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.SpeedRunning); else SetProperty(PropertyBool.SpeedRunning, value); }
+        }
+
+        public double? SpeedrunStartTime
+        {
+            get => GetProperty(PropertyFloat.SpeedrunStartTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.SpeedrunStartTime); else SetProperty(PropertyFloat.SpeedrunStartTime, value.Value); }
+        }
+
+        public double? SpeedrunEndTime
+        {
+            get => GetProperty(PropertyFloat.SpeedrunEndTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.SpeedrunEndTime); else SetProperty(PropertyFloat.SpeedrunEndTime, value.Value); }
+        }
     }
 }

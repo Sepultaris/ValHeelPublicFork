@@ -242,6 +242,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
                 wo.SetProperty(PropertyBool.Proto, true);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 400);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -279,7 +280,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.3f);
                 wo.Arramoran = true;
-                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 415);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 

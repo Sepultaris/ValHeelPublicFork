@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -12,12 +13,14 @@ using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Factories;
 using ACE.Server.Managers;
+using ACE.Server.Network;
 using ACE.Server.Network.Enum;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Network.Sequence;
 using ACE.Server.Network.Structure;
 using ACE.Server.Physics;
 using ACE.Server.Physics.Common;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ACE.Server.WorldObjects
 {
@@ -75,6 +78,8 @@ namespace ACE.Server.WorldObjects
                 else if (houseRentWarnTimestamp == 0)
                     houseRentWarnTimestamp = Time.GetFutureUnixTime(houseRentWarnInterval);
             }
+
+            
         }
 
         private static readonly TimeSpan MaximumTeleportTime = TimeSpan.FromMinutes(5);
@@ -98,14 +103,16 @@ namespace ACE.Server.WorldObjects
 
             PhysicsObj.ObjMaint.DestroyObjects();
 
+            Player player = Session.Player;
+
+            var session = Session;
+
             if (IsOnPKLandblock)
             {
-                Player player = Session.Player;
-                var session = Session;
                 var pkStatus = player.PlayerKillerStatus;
 
                 if (pkStatus == PlayerKillerStatus.NPK)
-                {                   
+                {
                     player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
                     player.PlayerKillerStatus = PlayerKillerStatus.PK;
                     session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
@@ -113,16 +120,14 @@ namespace ACE.Server.WorldObjects
                     LandblockManager.DoEnvironChange(EnvironChangeType.BellSound);
                     ApplyVisualEffects(PlayScript.VisionDownBlack);
                     ApplyVisualEffects(PlayScript.BaelZharonSmite);
-                }                            
+                }
             }
             else if (!IsOnPKLandblock)
             {
-                Player player = Session.Player;
-                var session = Session;
                 var pkStatus = player.PlayerKillerStatus;
 
                 if (pkStatus == PlayerKillerStatus.PK && !PKTimerActive)
-                {                    
+                {
                     player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
                     player.PlayerKillerStatus = PlayerKillerStatus.NPK;
                     session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
@@ -130,7 +135,22 @@ namespace ACE.Server.WorldObjects
                     LandblockManager.DoEnvironChange(EnvironChangeType.BellSound);
                     ApplyVisualEffects(PlayScript.VisionUpWhite);
                     ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
-                }               
+                }
+            }
+
+            if (IsOnSpeedRunLandblock)
+            {               
+                if (player.SpeedRunning == false)
+                {
+                    HandleSpeedRun(player, currentUnixTime);
+                }
+            }
+            else
+            {
+                if (player.SpeedRunning == true)
+                {
+                    HandleSpeedRun(player, currentUnixTime);
+                }
             }
 
             // Check if we're due for our periodic SavePlayer
@@ -151,6 +171,50 @@ namespace ACE.Server.WorldObjects
             base.Heartbeat(currentUnixTime);
         }
 
+        public static void HandleSpeedRun(Player player, double? currentUnixTime)
+        {
+            if (player.SpeedRunning == false)
+            {
+                if (player.LastTime == null)
+                {
+                    player.LastTime = 0;
+                }
+                if (player.BestTime == null)
+                {
+                    player.BestTime = 999999999999;
+                }
+                player.SpeedrunStartTime = currentUnixTime;
+                player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
+                player.ApplyVisualEffects(PlayScript.VisionUpWhite);
+                player.ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
+                player.SpeedRunning = true;
+                CommandHandlerHelper.WriteOutputInfo(player.Session, $"Let the games begin! Good Luck!", ChatMessageType.Broadcast);
+            }
+            if (player.SpeedRunning == true && !player.IsOnSpeedRunLandblock)
+            {
+                player.SpeedrunEndTime = currentUnixTime;
+                var milTime = (double)(player.SpeedrunEndTime - player.SpeedrunStartTime);
+                                               
+                player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
+                player.ApplyVisualEffects(PlayScript.VisionUpWhite);
+                player.ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
+                var span = new TimeSpan(0, 0, (int)milTime); //Or TimeSpan.FromSeconds(seconds);
+                var formatedTime = string.Format("{0}:{1:00}", (int)span.TotalMinutes, span.Seconds);                
+
+                if (milTime < player.BestTime)
+                {
+                    player.BestTime = milTime;
+                    CommandHandlerHelper.WriteOutputInfo(player.Session, $"New Record!!!", ChatMessageType.Broadcast);
+                    player.ApplyVisualEffects(PlayScript.WeddingBliss);
+                }
+
+                CommandHandlerHelper.WriteOutputInfo(player.Session, $"Your completion time is: {formatedTime}", ChatMessageType.Broadcast);
+                player.SpeedRunning = false;
+                player.SpeedRunTime = $"0";
+                player.LastTime = milTime;
+            }
+        }
+        
         public static float MaxSpeed = 50;
         public static float MaxSpeedSq = MaxSpeed * MaxSpeed;
 

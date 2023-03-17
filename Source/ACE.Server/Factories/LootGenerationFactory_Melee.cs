@@ -281,6 +281,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
                 wo.SetProperty(PropertyInt.Cleaving, 3);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 450);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -316,6 +317,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 450);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -355,6 +357,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 450);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -394,6 +397,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 450);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -432,7 +436,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.3f);
                 wo.SetProperty(PropertyInt.Cleaving, 3);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 480);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -536,7 +540,7 @@ namespace ACE.Server.Factories
                 wo.Sockets = 1;
                 wo.SetProperty(PropertyString.Name, name);                
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);              
-                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 480);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 

@@ -181,28 +181,18 @@ namespace ACE.Server.WorldObjects.Managers
 
                 // for the same void caster re-casting the same DoT,
                 // should be update the StatModVal here?
-                var timeRemaining = refreshSpell.Duration + refreshSpell.StartTime;
 
                 var duration = spell.Duration;
-                /*if (caster is Player player && player.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && player.QuestManager.CanSolve("Ascension"))
+                if (caster is Player player && player.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0)
                 {
-                    duration *= 1.0f + player.AugmentationIncreasedSpellDuration * 0.2f;
+                    var spellBoost = (double)player.Level / 10;
+                    duration *= 1.0f + player.AugmentationIncreasedSpellDuration * 0.2f * (spellBoost / 10);
                 }
                     
-                if (caster is Player player1 && player1.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0)
-                {
-                    var spellBoost = (int)player1.Level / 10;
-                    duration *= (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);                    
-                }*/               
 
-                if (duration > timeRemaining && caster is Player player)
-                {
-                    var spellBoost = (int)caster.Level / 10;
+                var timeRemaining = refreshSpell.Duration + refreshSpell.StartTime;
 
-                    refreshSpell.StartTime = 0;
-                    refreshSpell.Duration = duration *= (1.0f + player.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
-                }
-                else
+                if (duration > timeRemaining)
                 {
                     refreshSpell.StartTime = 0;
                     refreshSpell.Duration = duration;
@@ -228,32 +218,21 @@ namespace ACE.Server.WorldObjects.Managers
             entry.EnchantmentCategory = (uint)spell.MetaSpellType;
             entry.SpellId = (int)spell.Id;
             entry.SpellCategory = spell.Category;
-            entry.PowerLevel = spell.Power;
+            entry.PowerLevel = spell.Power;          
 
             if (caster is Creature)
             {
                 entry.Duration = spell.Duration;
 
                 if (caster is Player player && player.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0)
-                    entry.Duration *= 1.0f + player.AugmentationIncreasedSpellDuration * 0.2f;
-                if (caster is Player player1 && player1.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && spell.IsBeneficial && spell.School == MagicSchool.LifeMagic)
                 {
-                    var spellBoost = (int)player1.Level / 10;
-                    entry.Duration = spell.Duration * (1.0f + player1.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
-                }
-                if (caster is Player player2 && player2.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && spell.IsBeneficial && spell.School == MagicSchool.CreatureEnchantment)
-                {
-                    var spellBoost = (int)player2.Level / 10;
-                    entry.Duration = spell.Duration * (1.0f + player2.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
-                }
-                if (caster is Player player3 && player3.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && spell.IsBeneficial && spell.School == MagicSchool.ItemEnchantment)
-                {
-                    var spellBoost = (int)player3.Level / 10;
-                    entry.Duration = spell.Duration * (1.0f + player3.AugmentationIncreasedSpellDuration * 0.2f) * (spellBoost / 10);
-                }
+                    var spellBoost = (double)player.Level / 10;
+
+                    entry.Duration *= 1.0f + player.AugmentationIncreasedSpellDuration * 0.2f * (spellBoost / 10);
+                }                
             }
             else
-            {               
+            {
                 if (!equip)
                 {
                     entry.Duration = spell.Duration;
@@ -270,28 +249,11 @@ namespace ACE.Server.WorldObjects.Managers
                 entry.CasterObjectId = WorldObject.Guid.Full;
             else
                 entry.CasterObjectId = caster.Guid.Full;
-
             entry.DegradeModifier = spell.DegradeModifier;
             entry.DegradeLimit = spell.DegradeLimit;
             entry.StatModType = spell.StatModType;
             entry.StatModKey = spell.StatModKey;
             entry.StatModValue = spell.StatModVal;
-
-            if (caster is Player player4 && player4.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && spell.IsBeneficial && spell.School == MagicSchool.LifeMagic)
-            {
-                var spellBoost = (int)player4.Level / 10;
-                entry.StatModValue = spell.StatModVal + (spellBoost / 100);
-            }
-            if (caster is Player player5 && player5.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && spell.IsBeneficial && spell.School == MagicSchool.CreatureEnchantment)
-            {
-                var spellBoost = (int)player5.Level / 10;
-                entry.StatModValue = spell.StatModVal + (spellBoost);
-            }
-            if (caster is Player player6 && player6.AugmentationIncreasedSpellDuration > 0 && spell.DotDuration == 0 && spell.IsBeneficial && spell.School == MagicSchool.ItemEnchantment)
-            {
-                var spellBoost = (int)player6.Level / 10;
-                entry.StatModValue = spell.StatModVal + (spellBoost / 100);
-            }
 
             if (spell.DotDuration != 0)
             {
@@ -317,7 +279,7 @@ namespace ACE.Server.WorldObjects.Managers
                 entry.HasSpellSetId = true;
                 entry.SpellSetId = (EquipmentSet)caster.EquipmentSetId;
             }
-
+         
             return entry;
         }
 
