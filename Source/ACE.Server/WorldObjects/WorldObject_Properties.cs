@@ -3113,17 +3113,17 @@ namespace ACE.Server.WorldObjects
         }
 
         //Speedrunning
-        public double? LastTime
+        public int? LastTime
         {
-            get => GetProperty(PropertyFloat.LastTime);
-            set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastTime); else SetProperty(PropertyFloat.LastTime, value.Value); }
+            get => GetProperty(PropertyInt.LastTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.LastTime); else SetProperty(PropertyInt.LastTime, value.Value); }
         }
 
-        public double? BestTime
+        /*public int? BestTime
         {
-            get => GetProperty(PropertyFloat.BestTime);
-            set { if (!value.HasValue) RemoveProperty(PropertyFloat.BestTime); else SetProperty(PropertyFloat.BestTime, value.Value); }
-        }
+            get => GetProperty(PropertyInt.BestTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.BestTime); else SetProperty(PropertyInt.BestTime, value.Value); }
+        }*/
 
         public string SpeedRunTime
         {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 
 using ACE.Common;
+using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
@@ -144,6 +145,10 @@ namespace ACE.Server.WorldObjects
                 {
                     HandleSpeedRun(player, currentUnixTime);
                 }
+                if (player.SpeedRunning == true)
+                {
+                    HandleSpeedRun(player, currentUnixTime);
+                }
             }
             else
             {
@@ -181,7 +186,7 @@ namespace ACE.Server.WorldObjects
                 }
                 if (player.BestTime == null)
                 {
-                    player.BestTime = 999999999999;
+                    player.BestTime = 0;
                 }
                 player.SpeedrunStartTime = currentUnixTime;
                 player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
@@ -190,7 +195,67 @@ namespace ACE.Server.WorldObjects
                 player.SpeedRunning = true;
                 CommandHandlerHelper.WriteOutputInfo(player.Session, $"Let the games begin! Good Luck!", ChatMessageType.Broadcast);
             }
-            if (player.SpeedRunning == true && !player.IsOnSpeedRunLandblock)
+            if (player.SpeedRunning == true && player.IsOnSpeedRunLandblock)
+            {
+                player.SpeedrunEndTime = currentUnixTime;
+                var milTime = (double)(player.SpeedrunEndTime - player.SpeedrunStartTime);
+
+                if(milTime >= 1200)
+                {
+                    if (player.Location.LandblockId.Landblock == 0x9204)
+                    {
+                        player.HandleActionTeleToLifestone();
+                        player.LastTime = 0;
+                        player.SpeedRunning = false;
+                        CommandHandlerHelper.WriteOutputInfo(player.Session, $"Times Up!!! You've been disqualified!", ChatMessageType.Broadcast);
+                        EventManager.StopEvent("SR135Active", player, null);
+                        player.QuestManager.Erase("PrimordialMatronKilled");
+                        player.QuestManager.Erase("PartOneDone");
+                        player.QuestManager.Erase("PartTwoDone");
+                        player.QuestManager.Erase("haroldinggemtimer");
+                        player.QuestManager.Erase("GotTheGem");
+                        player.QuestManager.Erase("RoomCleared");
+                        player.QuestManager.Erase("SRRatKilled");
+                        player.QuestManager.Erase("SRRatKilled2");
+                        player.QuestManager.Erase("wildmushroompickup");
+                    }
+                    if (player.Location.LandblockId.Landblock == 0x9203)
+                    {
+                        player.HandleActionTeleToLifestone();
+                        player.LastTime = 0;
+                        player.SpeedRunning = false;
+                        CommandHandlerHelper.WriteOutputInfo(player.Session, $"Times Up!!! You've been disqualified!", ChatMessageType.Broadcast);
+                        EventManager.StopEvent("SR200Active", player, null);
+                        player.QuestManager.Erase("PrimordialMatronKilled");
+                        player.QuestManager.Erase("PartOneDone");
+                        player.QuestManager.Erase("PartTwoDone");
+                        player.QuestManager.Erase("haroldinggemtimer");
+                        player.QuestManager.Erase("GotTheGem");
+                        player.QuestManager.Erase("RoomCleared");
+                        player.QuestManager.Erase("SRRatKilled");
+                        player.QuestManager.Erase("SRRatKilled2");
+                        player.QuestManager.Erase("wildmushroompickup");
+                    }
+                    if (player.Location.LandblockId.Landblock == 0x9202)
+                    {
+                        player.HandleActionTeleToLifestone();
+                        player.LastTime = 0;
+                        player.SpeedRunning = false;
+                        CommandHandlerHelper.WriteOutputInfo(player.Session, $"Times Up!!! You've been disqualified!", ChatMessageType.Broadcast);
+                        EventManager.StopEvent("SR300Active", player, null);
+                        player.QuestManager.Erase("PrimordialMatronKilled");
+                        player.QuestManager.Erase("PartOneDone");
+                        player.QuestManager.Erase("PartTwoDone");
+                        player.QuestManager.Erase("haroldinggemtimer");
+                        player.QuestManager.Erase("GotTheGem");
+                        player.QuestManager.Erase("RoomCleared");
+                        player.QuestManager.Erase("SRRatKilled");
+                        player.QuestManager.Erase("SRRatKilled2");
+                        player.QuestManager.Erase("wildmushroompickup");
+                    }
+                }
+            }
+            if (player.SpeedRunning == true && !player.IsOnSpeedRunLandblock && player.QuestManager.HasQuest("PrimordialMatronKilled"))
             {
                 player.SpeedrunEndTime = currentUnixTime;
                 var milTime = (double)(player.SpeedrunEndTime - player.SpeedrunStartTime);
@@ -203,15 +268,37 @@ namespace ACE.Server.WorldObjects
 
                 if (milTime < player.BestTime)
                 {
-                    player.BestTime = milTime;
+                    player.BestTime = (int)milTime;
                     CommandHandlerHelper.WriteOutputInfo(player.Session, $"New Record!!!", ChatMessageType.Broadcast);
                     player.ApplyVisualEffects(PlayScript.WeddingBliss);
                 }
+                else if (milTime > player.BestTime)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(player.Session, $"Your completion time is: {formatedTime}", ChatMessageType.Broadcast);
+                    player.SpeedRunning = false;
+                    player.SpeedRunTime = $"0";
+                    player.LastTime = (int)milTime;
 
-                CommandHandlerHelper.WriteOutputInfo(player.Session, $"Your completion time is: {formatedTime}", ChatMessageType.Broadcast);
-                player.SpeedRunning = false;
-                player.SpeedRunTime = $"0";
-                player.LastTime = milTime;
+                    if (player.BestTime == 0)
+                    {
+                        player.BestTime = player.LastTime;
+                    }
+                }                
+            }
+            if (player.SpeedRunning == true && !player.IsOnSpeedRunLandblock && !player.QuestManager.HasQuest("PrimordialMatronKilled"))
+            {               
+                    player.LastTime = 0;
+                    player.SpeedRunning = false;
+                    CommandHandlerHelper.WriteOutputInfo(player.Session, $"You've been disqualified!", ChatMessageType.Broadcast);
+                    player.QuestManager.Erase("PrimordialMatronKilled");
+                    player.QuestManager.Erase("PartOneDone");
+                    player.QuestManager.Erase("PartTwoDone");
+                    player.QuestManager.Erase("haroldinggemtimer");
+                    player.QuestManager.Erase("GotTheGem");
+                    player.QuestManager.Erase("RoomCleared");
+                    player.QuestManager.Erase("SRRatKilled");
+                    player.QuestManager.Erase("SRRatKilled2");
+                    player.QuestManager.Erase("wildmushroompickup");
             }
         }
         

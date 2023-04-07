@@ -13,11 +13,743 @@ using ACE.Entity;
 using Org.BouncyCastle.Bcpg;
 using System.Dynamic;
 using ACE.DatLoader;
+using ACE.Common;
+using ACE.Server.Entity.Actions;
 
 namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        /*[CommandHandler("besttimes", AccessLevel.Player, CommandHandlerFlag.None, 0, "Show current world population", "")]
+        public static void HandleBestTimes(Session session, params string[] parameters)
+        {
+            ShardDatabase shardDatabase = new ShardDatabase();
+            var times = shardDatabase.GetListofBestTimes();
+            var timestring = string.Join(" , ", times);
+            CommandHandlerHelper.WriteOutputInfo(session, $"{timestring}", ChatMessageType.Broadcast);
+        }*/
+
+        [CommandHandler("bank", AccessLevel.Player, CommandHandlerFlag.None,
+            "Handles all Bank operations.",
+            "")]
+        public static void HandleBank(Session session, params string[] parameters)
+        {
+
+            if (parameters.Length == 0)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] To use The Bank of ValHeel you must input one of the commands listed below into the chatbox. When you first use any command correctly, you will receive a bank account number.", ChatMessageType.System));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You may access your account number at any time to give to others so that they may send you pyreals or luminance.", ChatMessageType.System));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] How to use The Bank of ValHeel!", ChatMessageType.System));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank account - Shows your account number and account balances.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank send ACCOUNT# pyreals ### - Attempts to send an amount of pyreals to another account number.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank send ACCOUNT# ashcoin ### - Attempts to send an amount of AshCoin to another account number.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank send ACCOUNT# luminance ### - Attempts to send an amount of luminance to another account number.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit all - Attempts to deposit all pyreals, MMD's(converts to pyreals), luminance, AC Notes, and AshCoin from your character into your bank.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit pyreals ### - Attempts to deposit the specified amount of pyreals into your pyreal bank.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit ashcoin ### - Attempts to deposit the specified amount of AshCoin into your pyreal bank.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit luminance ### - Attempts to deposit the specified amount of luminance into your luminance bank.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank withdraw luminance ### - Attempts to withdraw the specified amount of luminance from your bank to your character.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank withdraw pyreals ### - Attempts to withdraw the specified amount of pyreals from your bank to your inventory. ", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank withdraw ashcoin ### - Attempts to withdraw the specified amount of Ashcoin from your bank to your inventory. ", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+            }
+            else
+            {
+                if (session.Player.BankAccountNumber == null)
+                {
+                    session.Player.BankedLuminance = 0;
+                    session.Player.BankedPyreals = 0;
+                    session.Player.BankedAshcoin = 0;
+
+                    var bankAccountCreation = new ActionChain();
+                    bankAccountCreation.AddDelaySeconds(2);
+
+                    bankAccountCreation.AddAction(WorldManager.ActionQueue, () =>
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Looks like you don't have an account, don't worry here in Dereth we give everyone a free checking account for all your needs!", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Creating your personal bank account number...", ChatMessageType.Broadcast));
+                        Player_Bank.GenerateAccountNumber(session.Player);
+                    });
+
+                    bankAccountCreation.EnqueueChain();
+                }
+                else
+                {
+                    if (parameters[0].Equals("account", StringComparison.OrdinalIgnoreCase))
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Number: {session.Player.BankAccountNumber}", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                        return;
+                    }
+
+                    if (parameters[0].Equals("send", StringComparison.OrdinalIgnoreCase))
+                    {
+                        bool accountFound = false;
+                        long amountSent = 0;
+                        int.TryParse(parameters[1], out int account);
+                        Int64.TryParse(parameters[3], out long amt);
+
+                        if (parameters.Length < 3)
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] ERROR: Expected more parameters. Please make sure you have all the required fields for the /bank send command.", ChatMessageType.Help));
+                            return;
+                        }
+
+                        if (parameters[2].Equals("pyreals", StringComparison.OrdinalIgnoreCase))
+                        {
+
+                            var players = PlayerManager.GetAllPlayers();
+
+                            foreach (var player in players)
+                            {
+                                if (account == session.Player.BankAccountNumber)
+                                    continue;
+
+                                if (account == player.BankAccountNumber)
+                                {
+                                    if (amt > session.Player.BankedPyreals)
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pyreals in your bank to send {player.Name} that amount.", ChatMessageType.Help));
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        amountSent += amt;
+                                        accountFound = true;
+                                        session.Player.BankedPyreals -= amt;
+                                        player.BankedPyreals += amt;
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You sent {player.Name} {amt:N0} Pyreals.", ChatMessageType.x1B));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Your New Account Balance: {session.Player.BankedPyreals:N0} Pyreals", ChatMessageType.x1B));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+
+                                        var isOnline = PlayerManager.GetOnlinePlayer(player.Guid.Full);
+
+                                        if (isOnline != null)
+                                            isOnline.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK TRANSACTION] {session.Player.Name} sent you {amountSent:N0} Pyreals", ChatMessageType.x1B));
+
+                                        break;
+                                    }
+                                }
+                                else
+                                    accountFound = false;
+                            }
+
+                            if (!accountFound)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] ERROR: Account number {account} does not exist.", ChatMessageType.Help));
+                                return;
+                            }
+                        }
+                        if (parameters[2].Equals("ashcoin", StringComparison.OrdinalIgnoreCase))
+                        {
+
+                            var players = PlayerManager.GetAllPlayers();
+
+                            foreach (var player in players)
+                            {
+                                if (account == session.Player.BankAccountNumber)
+                                    continue;
+
+                                if (account == player.BankAccountNumber)
+                                {
+                                    if (amt > session.Player.BankedAshcoin)
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough AshCoin in your bank to send {player.Name} that amount.", ChatMessageType.Help));
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        amountSent += amt;
+                                        accountFound = true;
+                                        session.Player.BankedAshcoin -= amt;
+                                        player.BankedAshcoin += amt;
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You sent {player.Name} {amt:N0} AshCoin.", ChatMessageType.x1B));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Your New Account Balance: {session.Player.BankedAshcoin:N0} AshCoin", ChatMessageType.x1B));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+
+                                        var isOnline = PlayerManager.GetOnlinePlayer(player.Guid.Full);
+
+                                        if (isOnline != null)
+                                            isOnline.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK TRANSACTION] {session.Player.Name} sent you {amountSent:N0} AshCoin", ChatMessageType.x1B));
+
+                                        break;
+                                    }
+                                }
+                                else
+                                    accountFound = false;
+                            }
+
+                            if (!accountFound)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] ERROR: Account number {account} does not exist.", ChatMessageType.Help));
+                                return;
+                            }
+                        }
+                        else if (parameters[2].Equals("luminance", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var players = PlayerManager.GetAllPlayers();
+
+                            foreach (var player in players)
+                            {
+                                if (account == session.Player.BankAccountNumber)
+                                    continue;
+
+                                if (account == player.BankAccountNumber)
+                                {
+                                    if (amt > session.Player.BankedLuminance)
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough luminance in your bank to send {player.Name} that amount.", ChatMessageType.Help));
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        amountSent += amt;
+                                        accountFound = true;
+                                        session.Player.BankedLuminance -= amt;
+                                        player.BankedLuminance += amt;
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You sent {player.Name} {amt:N0} Luminance.", ChatMessageType.x1B));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Your New Account Balance: {session.Player.BankedLuminance:N0} Luminanace", ChatMessageType.x1B));
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+
+                                        var isOnline = PlayerManager.GetOnlinePlayer(player.Guid.Full);
+
+                                        if (isOnline != null)
+                                            isOnline.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK TRANSACTION] {session.Player.Name} sent you {amountSent:N0} Luminance", ChatMessageType.x1B));
+
+                                        break;
+                                    }
+                                }
+                                else
+                                    accountFound = false;
+                            }
+
+                            if (!accountFound)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] ERROR: Account Number {account} does not exist.", ChatMessageType.Help));
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] ERROR: Please specify whether you are sending luminance or pyreals.", ChatMessageType.x1B));
+                            return;
+                        }
+                    }
+
+
+                    if (parameters[0].Equals("deposit", StringComparison.OrdinalIgnoreCase))
+                    {
+
+                        if (parameters[1].Equals("all", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (session.Player.BankCommandTimer.HasValue)
+                            {
+                                if (Time.GetUnixTime() >= session.Player.BankCommandTimer)
+                                {
+                                    session.Player.RemoveProperty(PropertyFloat.BankCommandTimer);
+                                }
+                                else
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have used this command too recently.", ChatMessageType.Help));
+                                    return;
+                                }
+                            }
+
+                            session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Attempting to Deposit your Pyreals, Luminance, and AshCoin into your bank...", ChatMessageType.Broadcast));
+
+                            var bankAccountDeposit = new ActionChain();
+                            bankAccountDeposit.AddDelaySeconds(1);
+
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Contacting your local Bank of Dereth representative...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Giving security details...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
+                                Player_Bank.Deposit(session.Player, 0, true, false, false, false);
+                            });
+
+                            bankAccountDeposit.EnqueueChain();
+                            return;
+                        }
+
+                        if (parameters[1].Equals("pyreals", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (session.Player.BankCommandTimer.HasValue)
+                            {
+                                if (Time.GetUnixTime() >= session.Player.BankCommandTimer)
+                                {
+                                    session.Player.RemoveProperty(PropertyFloat.BankCommandTimer);
+                                }
+                                else
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have used this command too recently.", ChatMessageType.Help));
+                                    return;
+                                }
+                            }
+
+                            Int64.TryParse(parameters[2], out long amt);
+
+                            if (amt <= 0)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You did not enter a valid amount to deposit.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            var pyreals = session.Player.GetInventoryItemsOfWCID(273);
+                            long availablePyreals = 0;
+
+                            foreach (var item in pyreals)
+                                availablePyreals += (long)item.StackSize;
+
+                            if (amt > availablePyreals)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pyreals in your inventory to deposit that amount.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Attempting to Deposit {amt:N0} Pyreals into your bank...", ChatMessageType.Broadcast));
+
+                            var bankAccountDeposit = new ActionChain();
+                            bankAccountDeposit.AddDelaySeconds(1);
+
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Contacting your local Bank of Dereth representative...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Giving security details...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
+                                Player_Bank.Deposit(session.Player, amt, false, true, false, false);
+                            });
+
+                            bankAccountDeposit.EnqueueChain();
+                            return;
+                        }
+
+                        if (parameters[1].Equals("ashcoin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (session.Player.BankCommandTimer.HasValue)
+                            {
+                                if (Time.GetUnixTime() >= session.Player.BankCommandTimer)
+                                {
+                                    session.Player.RemoveProperty(PropertyFloat.BankCommandTimer);
+                                }
+                                else
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have used this command too recently.", ChatMessageType.Help));
+                                    return;
+                                }
+                            }
+
+                            Int64.TryParse(parameters[2], out long amt);
+
+                            if (amt <= 0)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You did not enter a valid amount to deposit.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            var ashcoin = session.Player.GetInventoryItemsOfWCID(801690);
+                            long availableAshCoin = 0;
+
+                            foreach (var item in ashcoin)
+                                availableAshCoin += (long)item.StackSize;
+
+                            if (amt > availableAshCoin)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough AshCoin in your inventory to deposit that amount.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Attempting to Deposit {amt:N0} Ashcoin into your bank...", ChatMessageType.Broadcast));
+
+                            var bankAccountDeposit = new ActionChain();
+                            bankAccountDeposit.AddDelaySeconds(1);
+
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Contacting your local Bank of Dereth representative...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Giving security details...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
+                                Player_Bank.Deposit(session.Player, amt, false, false, true, false);
+                            });
+
+                            bankAccountDeposit.EnqueueChain();
+                            return;
+                        }
+
+                        if (parameters[1].Equals("luminance", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (session.Player.BankCommandTimer.HasValue)
+                            {
+                                if (Time.GetUnixTime() >= session.Player.BankCommandTimer)
+                                {
+                                    session.Player.RemoveProperty(PropertyFloat.BankCommandTimer);
+                                }
+                                else
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have used this command too recently.", ChatMessageType.Help));
+                                    return;
+                                }
+                            }
+
+                            Int64.TryParse(parameters[2], out long amt);
+
+                            if (amt <= 0)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You did not enter a valid amount to deposit.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            var available = session.Player.AvailableLuminance ?? 0;
+                            var maximum = session.Player.MaximumLuminance ?? 0;
+                            var remaining = maximum - available;
+
+                            if (amt > available)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough Luminance to deposit that amount.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Attempting to Deposit {amt:N0} Luminance into your bank...", ChatMessageType.Broadcast));
+
+                            var bankAccountDeposit = new ActionChain();
+                            bankAccountDeposit.AddDelaySeconds(1);
+
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Contacting your local Bank of Dereth representative...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Giving security details...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
+                                Player_Bank.Deposit(session.Player, amt, false, false, false, true);
+                            });
+
+                            bankAccountDeposit.EnqueueChain();
+                            return;
+                        }
+                    }
+
+                    if (parameters[0].Equals("withdraw", StringComparison.OrdinalIgnoreCase) && (parameters[1].Equals("luminance", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyreals", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("ashcoin", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        if (session.Player.BankCommandTimer.HasValue)
+                        {
+                            if (Time.GetUnixTime() >= session.Player.BankCommandTimer)
+                            {
+                                session.Player.RemoveProperty(PropertyFloat.BankCommandTimer);
+                            }
+                            else
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have used this command too recently.", ChatMessageType.Help));
+                                return;
+                            }
+                        }
+
+                        Int64.TryParse(parameters[2], out long amt);
+
+                        if (amt <= 0)
+                        {
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You did not enter a valid amount to withdraw.", ChatMessageType.Broadcast));
+                            return;
+                        }
+
+                        if (parameters[1].Equals("pyreals", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (amt > session.Player.BankedPyreals)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pyreals to withdraw that amount from your bank. You have {session.Player.BankedPyreals:N0} Pyreals in your bank.", ChatMessageType.Help));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You requested {amt:N0}.", ChatMessageType.Broadcast));
+                                return;
+                            }
+                            else
+                            {
+                                session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                                long amountWithdrawn = 0;
+
+
+                                if (amt >= 250000)
+                                {
+                                    var mmd = WorldObjectFactory.CreateNewWorldObject(20630);
+                                    var mmds = amt / 250000f;
+                                    mmd.SetStackSize((int)mmds);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(mmd))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    amt -= (long)mmds * 250000;
+                                    amountWithdrawn += (long)mmds * 250000;
+                                    session.Player.TryCreateInInventoryWithNetworking(mmd);
+                                    session.Player.BankedPyreals -= (long)mmds * 250000;
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew {Math.Floor(mmds)} MMDS.", ChatMessageType.Broadcast));
+                                }
+
+                                for (var i = amt; i >= 25000; i -= 25000)
+                                {
+                                    var pyreals = WorldObjectFactory.CreateNewWorldObject(273);
+                                    pyreals.SetStackSize(25000);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(pyreals))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        break;
+                                    }
+
+                                    amt -= 25000;
+
+
+                                    session.Player.TryCreateInInventoryWithNetworking(pyreals);
+
+                                    session.Player.BankedPyreals -= pyreals.StackSize;
+                                    amountWithdrawn += 25000;
+                                }
+
+                                if (amt < 25000 && amt > 0)
+                                {
+                                    var pyreals = WorldObjectFactory.CreateNewWorldObject(273);
+                                    pyreals.SetStackSize((int)amt);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(pyreals))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    session.Player.TryCreateInInventoryWithNetworking(pyreals);
+
+                                    session.Player.BankedPyreals -= amt;
+                                    amountWithdrawn += amt;
+                                }
+
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some pyreals from your bank account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                            }
+                        }
+
+                        if (parameters[1].Equals("ashcoin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (amt > session.Player.BankedAshcoin)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough AshCoin to withdraw that amount from your bank. You have {session.Player.BankedPyreals:N0} Pyreals in your bank.", ChatMessageType.Help));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You requested {amt:N0}.", ChatMessageType.Broadcast));
+                                return;
+                            }
+                            else
+                            {
+                                session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                                long amountWithdrawn = 0;
+
+
+                                if (amt >= 50000)
+                                {
+                                    var fiftykAC = WorldObjectFactory.CreateNewWorldObject(801910);
+                                    var mmds = amt / 50000f;
+                                    fiftykAC.SetStackSize((int)mmds);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(fiftykAC))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    amt -= (long)mmds * 50000;
+                                    amountWithdrawn += (long)mmds * 50000;
+                                    session.Player.TryCreateInInventoryWithNetworking(fiftykAC);
+                                    session.Player.BankedAshcoin -= (long)mmds * 50000;
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew {Math.Floor(mmds)} 50k AC Notes.", ChatMessageType.Broadcast));
+                                }
+
+                                if (amt >= 10000 && amt < 50000)
+                                {
+                                    var tenkAC = WorldObjectFactory.CreateNewWorldObject(801909);
+                                    var mmds = amt / 10000f;
+                                    tenkAC.SetStackSize((int)mmds);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(tenkAC))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    amt -= (long)mmds * 10000;
+                                    amountWithdrawn += (long)mmds * 10000;
+                                    session.Player.TryCreateInInventoryWithNetworking(tenkAC);
+                                    session.Player.BankedAshcoin -= (long)mmds * 10000;
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew {Math.Floor(mmds)} 10k AC Notes.", ChatMessageType.Broadcast));
+                                }
+
+                                if (amt >= 5000 && amt < 10000)
+                                {
+                                    var fivekAC = WorldObjectFactory.CreateNewWorldObject(801908);
+                                    var mmds = amt / 5000f;
+                                    fivekAC.SetStackSize((int)mmds);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(fivekAC))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    amt -= (long)mmds * 5000;
+                                    amountWithdrawn += (long)mmds * 5000;
+                                    session.Player.TryCreateInInventoryWithNetworking(fivekAC);
+                                    session.Player.BankedAshcoin -= (long)mmds * 5000;
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew {Math.Floor(mmds)} 5k AC Notes.", ChatMessageType.Broadcast));
+                                }
+
+                                if (amt >= 1000 && amt < 5000)
+                                {
+                                    var onekAC = WorldObjectFactory.CreateNewWorldObject(801907);
+                                    var mmds = amt / 1000f;
+                                    onekAC.SetStackSize((int)mmds);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(onekAC))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    amt -= (long)mmds * 1000;
+                                    amountWithdrawn += (long)mmds * 1000;
+                                    session.Player.TryCreateInInventoryWithNetworking(onekAC);
+                                    session.Player.BankedAshcoin -= (long)mmds * 1000;
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew {Math.Floor(mmds)} 1k AC Notes.", ChatMessageType.Broadcast));
+                                }
+
+                                for (var i = amt; i >= 50000; i -= 50000)
+                                {
+                                    var ashcoin = WorldObjectFactory.CreateNewWorldObject(801690);
+                                    ashcoin.SetStackSize(50000);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(ashcoin))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        break;
+                                    }
+
+                                    amt -= 50000;
+
+
+                                    session.Player.TryCreateInInventoryWithNetworking(ashcoin);
+
+                                    session.Player.BankedAshcoin -= ashcoin.StackSize;
+                                    amountWithdrawn += 50000;
+                                }
+
+                                if (amt < 50000 && amt > 0)
+                                {
+                                    var ashcoin = WorldObjectFactory.CreateNewWorldObject(801690);
+                                    ashcoin.SetStackSize((int)amt);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(ashcoin))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    session.Player.TryCreateInInventoryWithNetworking(ashcoin);
+
+                                    session.Player.BankedAshcoin -= amt;
+                                    amountWithdrawn += amt;
+                                }
+
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some AshCoin from your bank account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} Ashcoin", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                            }
+                        }
+
+                        if (parameters[1].Equals("luminance", StringComparison.OrdinalIgnoreCase))
+                        {
+
+                            Int64.TryParse(parameters[2], out long amt2);
+
+                            if (amt2 <= 0)
+                                return;
+
+                            if (amt2 > session.Player.BankedLuminance)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough Luminance to withdraw that amount from your bank. You have {session.Player.BankedLuminance:N0} Luminance in your bank.", ChatMessageType.Help));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You requested {amt2:N0}.", ChatMessageType.Broadcast));
+                                return;
+                            }
+
+                            var available = session.Player.AvailableLuminance ?? 0;
+                            var maximum = session.Player.MaximumLuminance ?? 0;
+                            var remaining = maximum - available;
+
+                            if (available == maximum)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You cannot withdraw that much Luminance because you cannot hold that much.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            if (amt2 > remaining)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You cannot withdraw that much Luminance because you cannot hold that much.", ChatMessageType.Help));
+                                return;
+                            }
+                            session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                            session.Player.GrantLuminance(amt2, XpType.Admin, ShareType.None);
+                            session.Player.BankedLuminance -= amt2;
+                            session.Player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.AvailableLuminance, session.Player.AvailableLuminance ?? 0));
+
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some Luminance from your bank account. (-{amt2:N0})", ChatMessageType.x1B));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance", ChatMessageType.x1B));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                        }
+                    }
+                }
+            }
+        }
+
         [CommandHandler("nextlevel", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, 0)]
         public static void HandleCheckXp(Session session, params string[] parameters)
         {
@@ -69,7 +801,7 @@ namespace ACE.Server.Command.Handlers
                 player.QuestManager.Stamp("PrestigeComplete50");
             if (prestige >= 75 && prestige <= 99)
                 player.QuestManager.Stamp("PrestigeComplete75");
-            if (prestige >= 100)
+            if (prestige >= 100 && prestige <= 149)
                 player.QuestManager.Stamp("PrestigeComplete100");
             if (prestige >= 150)
                 player.QuestManager.Stamp("PrestigeComplete150");

@@ -224,6 +224,12 @@ namespace ACE.Server.Entity
             set { if (!value.HasValue) RemoveProperty(PropertyInt.AllegianceOfficerRank); else SetProperty(PropertyInt.AllegianceOfficerRank, value.Value); }
         }
 
+        public int? BestTime
+        {
+            get => GetProperty(PropertyInt.BestTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.BestTime); else SetProperty(PropertyInt.BestTime, value.Value); }
+        }
+
         /// <summary>
         /// This flag indicates if a player can pass up allegiance XP
         /// </summary>
@@ -271,6 +277,29 @@ namespace ACE.Server.Entity
             return (uint?)GetProperty(PropertyInt.CurrentLeadershipAtLastLogoff) ?? 0;
         }
 
+        public int? BankAccountNumber
+        {
+            get => GetProperty(PropertyInt.BankAccountNumber);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.BankAccountNumber); else SetProperty(PropertyInt.BankAccountNumber, value.Value); }
+        }
+
+        public long? BankedPyreals
+        {
+            get => GetProperty(PropertyInt64.BankedPyreals);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedPyreals); else SetProperty(PropertyInt64.BankedPyreals, value.Value); }
+        }
+
+        public long? BankedLuminance
+        {
+            get => GetProperty(PropertyInt64.BankedLuminance);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedLuminance); else SetProperty(PropertyInt64.BankedLuminance, value.Value); }
+        }
+
+        public long? BankedAshcoin
+        {
+            get => GetProperty(PropertyInt64.BankedAshcoin);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedAshcoin); else SetProperty(PropertyInt64.BankedAshcoin, value.Value); }
+        }
 
         public Allegiance Allegiance { get; set; }
 

@@ -49,6 +49,23 @@ namespace ACE.Database
             }
         }
 
+        public List<string> GetListofBestTimes()
+        {
+            using (var context = new ShardDbContext())
+            {
+                var results = context.BiotaPropertiesInt
+                    .AsNoTracking()
+                    .Where(r => r.Type == 9044).ToList();
+
+                var result = new List<string>();
+                foreach (var time in results)
+                {                    
+                    result.Add($"{time}");
+                }
+
+                return result;
+            }
+        }
 
         /// <summary>
         /// Will return uint.MaxValue if no records were found within the range provided.

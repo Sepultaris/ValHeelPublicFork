@@ -125,7 +125,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
        
     - Chance: 33%:
@@ -143,7 +143,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
     - Chance: 33%:
@@ -161,7 +161,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
 Olthoi Shield Mutation #4:

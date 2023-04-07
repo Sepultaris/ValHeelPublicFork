@@ -216,7 +216,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
        
     - Chance: 15%:
@@ -229,7 +229,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
     - Chance: 14%:
@@ -242,7 +242,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
     - Chance: 13%:
@@ -255,7 +255,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
     - Chance: 13%:
@@ -268,7 +268,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
     - Chance: 13%:
@@ -281,7 +281,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
     - Chance: 12%:
@@ -294,7 +294,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
 
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
     - Chance: 6%:
@@ -307,7 +307,7 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMagicDefense += Random(0.0, 0.1)
         
         WieldRequirements = Level
-        WieldDifficulty = 350
+        WieldDifficulty = 275
         WieldSkillType = 1
 
 Armor Mutation #10:

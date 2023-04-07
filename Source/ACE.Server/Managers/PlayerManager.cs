@@ -53,7 +53,7 @@ namespace ACE.Server.Managers
                 lock (offlinePlayers)
                     offlinePlayers[offlinePlayer.Guid.Full] = offlinePlayer;
             });
-        }
+        }    
 
         private static readonly LinkedList<Player> playersPendingLogoff = new LinkedList<Player>();
 
@@ -184,7 +184,7 @@ namespace ACE.Server.Managers
             }
 
             return null;
-        }
+        }       
 
         public static List<IPlayer> GetAllPlayers()
         {
@@ -271,7 +271,7 @@ namespace ACE.Server.Managers
         }
 
         /// <summary>
-        /// This will return null of the name was not found.
+        /// This will return null if the name was not found.
         /// </summary>
         public static Player GetOnlinePlayer(string name)
         {

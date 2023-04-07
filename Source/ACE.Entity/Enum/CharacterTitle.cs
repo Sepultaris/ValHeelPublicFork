@@ -896,7 +896,6 @@ namespace ACE.Entity.Enum
         Illuminated,
         Transcended,
         CosmicConscious,
-        LastManStanding,
-        CarnageDefender
+        LastManStanding
     }
 }

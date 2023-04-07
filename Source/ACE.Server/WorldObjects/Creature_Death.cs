@@ -649,6 +649,8 @@ namespace ACE.Server.WorldObjects
         public static HashSet<ushort> SpeedRunLandblock_Landblocks = new HashSet<ushort>()
         {
             0x9204,
+            0x9203,
+            0x9202,
         };
     }
 }

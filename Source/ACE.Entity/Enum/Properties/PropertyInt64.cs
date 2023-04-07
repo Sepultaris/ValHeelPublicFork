@@ -34,7 +34,13 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         TotalXpBeyond         = 9004,
         [ServerOnly]
-        VerifyXp              = 9003        
+        VerifyXp              = 9003,
+        [ServerOnly]
+        BankedPyreals         = 9004,
+        [ServerOnly]
+        BankedLuminance       = 9005,
+        [ServerOnly]
+        BankedAshcoin         = 9006
     }
 
     public static class PropertyInt64Extensions

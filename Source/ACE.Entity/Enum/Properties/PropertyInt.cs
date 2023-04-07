@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Net.Sockets;
+using System.Resources;
 
 namespace ACE.Entity.Enum.Properties
 {
@@ -660,7 +661,13 @@ namespace ACE.Entity.Enum.Properties
         MirraArmorBonus = 9038,
         MirraWeaponBonus = 9039,      
         Sockets = 9041,
-        MirraRaingBonus = 9042
+        MirraRaingBonus = 9042,
+        [ServerOnly]
+        LastTime = 9043,
+        [ServerOnly]
+        BestTime = 9044,
+        [ServerOnly]
+        BankAccountNumber = 9045
     }
 
     public static class PropertyIntExtensions

@@ -1348,16 +1348,44 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt.NumberOfPets); else SetProperty(PropertyInt.NumberOfPets, value.Value); }
         }
 
+        public int? BestTime
+        {
+            get => GetProperty(PropertyInt.BestTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.BestTime); else SetProperty(PropertyInt.BestTime, value.Value); }
+        }
+
         public bool Ascended
         {
             get => GetProperty(PropertyBool.Ascended) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.Ascended); else SetProperty(PropertyBool.Ascended, value); }
         }
 
-        public bool PlayerLootMultiplier
+        public int? BankAccountNumber
         {
-            get => GetProperty(PropertyBool.SpellComponentsRequired) ?? true;
-            set { if (value) RemoveProperty(PropertyBool.SpellComponentsRequired); else SetProperty(PropertyBool.SpellComponentsRequired, value); }
+            get => GetProperty(PropertyInt.BankAccountNumber);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.BankAccountNumber); else SetProperty(PropertyInt.BankAccountNumber, value.Value); }
+        }
+
+        public long? BankedPyreals
+        {
+            get => GetProperty(PropertyInt64.BankedPyreals);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedPyreals); else SetProperty(PropertyInt64.BankedPyreals, value.Value); }
+        }
+        public long? BankedLuminance
+        {
+            get => GetProperty(PropertyInt64.BankedLuminance);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedLuminance); else SetProperty(PropertyInt64.BankedLuminance, value.Value); }
+        }
+        public long? BankedAshcoin
+        {
+            get => GetProperty(PropertyInt64.BankedAshcoin);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedAshcoin); else SetProperty(PropertyInt64.BankedAshcoin, value.Value); }
+        }
+
+        public double? BankCommandTimer
+        {
+            get => GetProperty(PropertyFloat.BankCommandTimer);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.BankCommandTimer); else SetProperty(PropertyFloat.BankCommandTimer, value.Value); }
         }
         /// <summary>
         /// Returns player's augmentation resistance for damage type

@@ -77,6 +77,13 @@ namespace ACE.Server.Entity
 
         int? HouseRentTimestamp { get; set; }
 
+        int? BankAccountNumber { get; set; }
+
+        long? BankedPyreals { get; set; }
+
+        long? BankedLuminance { get; set; }
+
+        long? BankedAshcoin { get; set; }
 
         uint GetCurrentLoyalty();
 

@@ -178,7 +178,7 @@ namespace ACE.Server.Factories
                     wo.SetProperty(PropertyBool.Empowered, true);
                     wo.SetProperty(PropertyString.Name, name);
                     wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                    wo.SetProperty(PropertyInt.WieldDifficulty, 350);
+                    wo.SetProperty(PropertyInt.WieldDifficulty, 275);
                     TryMutateGearRating(wo, profile, roll);
                 }
 
@@ -195,7 +195,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyBool.Proto, true);
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
                 TryMutateGearRating(wo, profile, roll);
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -230,7 +230,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyBool.Arramoran, true);
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 600);              
+                wo.SetProperty(PropertyInt.WieldDifficulty, 1500);              
                 wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 5.0f, 5.3f);
                 wo.ArmorModVsBludgeon = Math.Min((wo.ArmorModVsBludgeon ?? 0) + 5.0f, 5.3f);
@@ -303,7 +303,7 @@ namespace ACE.Server.Factories
                         wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
                 }
                 wo.SetProperty(PropertyBool.Empowered, true);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 350);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 275);
             }
             if (profile.Tier == 9 && wo.HasArmorLevel() && isMagical && profile.TreasureType == 4111)
             {
@@ -337,7 +337,7 @@ namespace ACE.Server.Factories
                         wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
                 }
                 wo.SetProperty(PropertyBool.Proto, true);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
             }
             if (profile.Tier == 10 && wo.HasArmorLevel() && isMagical)
             {                
@@ -373,7 +373,7 @@ namespace ACE.Server.Factories
                         wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
                 }
                 wo.SetProperty(PropertyBool.Arramoran, true);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 600);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 1500);
             }
 
             if (profile.Tier >= 8)
