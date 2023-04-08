@@ -39,7 +39,7 @@ namespace ACE.Server.Command.Handlers
             {
                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] To use The Bank of ValHeel you must input one of the commands listed below into the chatbox. When you first use any command correctly, you will receive a bank account number.", ChatMessageType.System));
-                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You may access your account number at any time to give to others so that they may send you pyreals or luminance.", ChatMessageType.System));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You may access your account number at any time to give to others so that they may send you pyreals or AshCoin.", ChatMessageType.System));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] How to use The Bank of ValHeel!", ChatMessageType.System));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
@@ -47,7 +47,7 @@ namespace ACE.Server.Command.Handlers
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank send ACCOUNT# pyreals ### - Attempts to send an amount of pyreals to another account number.", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank send ACCOUNT# ashcoin ### - Attempts to send an amount of AshCoin to another account number.", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank send ACCOUNT# luminance ### - Attempts to send an amount of luminance to another account number.", ChatMessageType.x1B));
-                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit all - Attempts to deposit all pyreals, MMD's(converts to pyreals), luminance, AC Notes, and AshCoin from your character into your bank.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit all - Attempts to deposit all pyreals, MMD's(converts to pyreals), AC Notes, and AshCoin from your character into your bank.", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit pyreals ### - Attempts to deposit the specified amount of pyreals into your pyreal bank.", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit ashcoin ### - Attempts to deposit the specified amount of AshCoin into your pyreal bank.", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit luminance ### - Attempts to deposit the specified amount of luminance into your luminance bank.", ChatMessageType.x1B));
@@ -80,6 +80,21 @@ namespace ACE.Server.Command.Handlers
                 {
                     if (parameters[0].Equals("account", StringComparison.OrdinalIgnoreCase))
                     {
+                        if (session.Player.BankedPyreals == null)
+                        {
+                            session.Player.BankedPyreals = 0;
+                        }
+
+                        if (session.Player.BankedLuminance == null)
+                        {
+                            session.Player.BankedLuminance = 0;
+                        }
+
+                        if (session.Player.BankedAshcoin == null)
+                        {
+                            session.Player.BankedAshcoin = 0;
+                        }
+
                         session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Number: {session.Player.BankAccountNumber}", ChatMessageType.x1B));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin", ChatMessageType.x1B));
@@ -115,6 +130,11 @@ namespace ACE.Server.Command.Handlers
                                     if (amt > session.Player.BankedPyreals)
                                     {
                                         session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pyreals in your bank to send {player.Name} that amount.", ChatMessageType.Help));
+                                        return;
+                                    }
+                                    if (amt <= 0)
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Invalid amount.", ChatMessageType.Help));
                                         return;
                                     }
                                     else
@@ -163,6 +183,11 @@ namespace ACE.Server.Command.Handlers
                                         session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough AshCoin in your bank to send {player.Name} that amount.", ChatMessageType.Help));
                                         return;
                                     }
+                                    if (amt <= 0)
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Invalid amount.", ChatMessageType.Help));
+                                        return;
+                                    }
                                     else
                                     {
                                         amountSent += amt;
@@ -208,6 +233,11 @@ namespace ACE.Server.Command.Handlers
                                         session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough luminance in your bank to send {player.Name} that amount.", ChatMessageType.Help));
                                         return;
                                     }
+                                    if (amt <= 0)
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Invalid amount.", ChatMessageType.Help));
+                                        return;
+                                    }
                                     else
                                     {
                                         amountSent += amt;
@@ -239,7 +269,6 @@ namespace ACE.Server.Command.Handlers
                         }
                         else
                         {
-                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] ERROR: Please specify whether you are sending luminance or pyreals.", ChatMessageType.x1B));
                             return;
                         }
                     }
@@ -247,6 +276,20 @@ namespace ACE.Server.Command.Handlers
 
                     if (parameters[0].Equals("deposit", StringComparison.OrdinalIgnoreCase))
                     {
+                        if (session.Player.BankedPyreals == null)
+                        {
+                            session.Player.BankedPyreals = 0;
+                        }
+
+                        if (session.Player.BankedLuminance == null)
+                        {
+                            session.Player.BankedLuminance = 0;
+                        }
+
+                        if (session.Player.BankedAshcoin == null)
+                        {
+                            session.Player.BankedAshcoin = 0;
+                        }
 
                         if (parameters[1].Equals("all", StringComparison.OrdinalIgnoreCase))
                         {
@@ -507,6 +550,11 @@ namespace ACE.Server.Command.Handlers
                                 session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
                                 long amountWithdrawn = 0;
 
+                                if (amt > 2000000000)
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You can only withdraw a maximum of 2,000,000,000 pyreals at a time.", ChatMessageType.Broadcast));
+                                    return;
+                                }
 
                                 if (amt >= 250000)
                                 {
@@ -584,6 +632,11 @@ namespace ACE.Server.Command.Handlers
                                 session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
                                 long amountWithdrawn = 0;
 
+                                if (amt > 12500000)
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You can only withdraw a maximum of 12,500,000 AshCoin at a time.", ChatMessageType.Broadcast));
+                                    return;
+                                }
 
                                 if (amt >= 50000)
                                 {
@@ -706,8 +759,7 @@ namespace ACE.Server.Command.Handlers
                         }
 
                         if (parameters[1].Equals("luminance", StringComparison.OrdinalIgnoreCase))
-                        {
-
+                        {                            
                             Int64.TryParse(parameters[2], out long amt2);
 
                             if (amt2 <= 0)
@@ -843,6 +895,8 @@ namespace ACE.Server.Command.Handlers
             }
             if (parameters[0].Equals("health"))
             {
+                /*HandleRaiseHealth(player, session, result);*/
+
                 for (int i = 0; i < result; i++)
                 {
                     if (20000000000L > player.AvailableExperience)
@@ -1468,6 +1522,38 @@ namespace ACE.Server.Command.Handlers
                     player.RaisedSelf++;
                 }
             }
+        }
+
+        private static void HandleRaiseHealth(Player player, Session session, int result)
+        {
+            if (result <= 0)
+            {
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxHealth]));
+                ChatPacket.SendServerMessage(session, string.Format("Your Maximum Health has been increased by {0}.", player.RaisedHealth), ChatMessageType.Broadcast);
+                return;
+            }
+            if (20000000000L > player.AvailableExperience)
+            {
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxHealth]));
+                ChatPacket.SendServerMessage(session, string.Format("Your Maximum Health has been increased by {0}.", player.RaisedHealth), ChatMessageType.Broadcast);
+                ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 20 billion(20,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                return;
+            }
+            if (!player.SpendXP(20000000000L))
+            {
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[PropertyAttribute2nd.MaxHealth]));
+                ChatPacket.SendServerMessage(session, string.Format("Your Maximum Health has been increased by {0}.", player.RaisedHealth), ChatMessageType.Broadcast);
+                ChatPacket.SendServerMessage(session, "Not enough experience for remaining points, you require 20 billion(20,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                return;
+            }
+            CreatureVital creatureVital = new CreatureVital(player, PropertyAttribute2nd.MaxHealth);
+            creatureVital.Ranks = Math.Clamp(creatureVital.Ranks + 1, 1u, uint.MaxValue);
+            player.UpdateVital(creatureVital, creatureVital.MaxValue);
+            CreatureVital creatureVital2 = new CreatureVital(player, PropertyAttribute2nd.Health);
+            creatureVital2.Ranks = Math.Clamp(creatureVital2.Ranks + 1, 1u, uint.MaxValue);
+            player.UpdateVital(creatureVital2, creatureVital2.MaxValue);
+            player.RaisedHealth++;
+            HandleRaiseHealth(player, session, result - 1);
         }
 
         [CommandHandler("vassalxp", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Shows full experience from vassals.")]

@@ -65,6 +65,21 @@ namespace ACE.Server.WorldObjects
                 long oldBalanceL = (long)player.BankedLuminance;
                 long oldBalanceA = (long)player.BankedAshcoin;
 
+                if (player.BankedPyreals == null)
+                {
+                    player.BankedPyreals = 0;
+                }
+
+                if (player.BankedLuminance == null)
+                {
+                    player.BankedLuminance = 0;
+                }
+
+                if (player.BankedAshcoin == null)
+                {
+                    player.BankedAshcoin = 0;
+                }
+
                 if (all)
                 {
                     if (mmd == null)
@@ -204,6 +219,15 @@ namespace ACE.Server.WorldObjects
                         }
                     }
 
+                    if (player.AvailableLuminance == null)
+                    {
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked a total of {inheritedValue:N0} Pyreals, {lumInheritedValue:N0} Luminance, and {inheritedashcoinvalue:N0} AshCoin", ChatMessageType.x1D));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balances: {oldBalanceP:N0} Pyreals || {oldBalanceL:N0} Luminance || {oldBalanceA:N0} AshCoin", ChatMessageType.Help));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {player.BankedPyreals:N0} Pyreals || {player.BankedLuminance:N0} Luminance || {player.BankedAshcoin:N0} AshCoin", ChatMessageType.x1B));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                        return;
+                    }
                     if (player.AvailableLuminance > 0)
                     {
                         player.BankedLuminance += player.AvailableLuminance;

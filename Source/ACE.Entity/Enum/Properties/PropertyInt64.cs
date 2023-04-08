@@ -30,17 +30,17 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         AllegianceXPGenerated = 9001,
         [ServerOnly]
-        AllegianceXPReceived  = 9002,
-        [ServerOnly]
-        TotalXpBeyond         = 9004,
+        AllegianceXPReceived  = 9002,        
         [ServerOnly]
         VerifyXp              = 9003,
         [ServerOnly]
-        BankedPyreals         = 9004,
+        TotalXpBeyond         = 9004,
         [ServerOnly]
-        BankedLuminance       = 9005,
+        BankedPyreals         = 9005,
         [ServerOnly]
-        BankedAshcoin         = 9006
+        BankedLuminance       = 9006,
+        [ServerOnly]
+        BankedAshcoin         = 9007
     }
 
     public static class PropertyInt64Extensions
