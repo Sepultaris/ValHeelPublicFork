@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-
+using System.Timers;
 using ACE.Common;
+using ACE.DatLoader.Entity;
 using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
@@ -21,6 +22,7 @@ using ACE.Server.Network.Sequence;
 using ACE.Server.Network.Structure;
 using ACE.Server.Physics;
 using ACE.Server.Physics.Common;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ACE.Server.WorldObjects
@@ -173,8 +175,10 @@ namespace ACE.Server.WorldObjects
                     LogOut();
             }
 
+            Player_Bank.HandleInterestPayments(player);
+
             base.Heartbeat(currentUnixTime);
-        }
+        }      
 
         public static void HandleSpeedRun(Player player, double? currentUnixTime)
         {

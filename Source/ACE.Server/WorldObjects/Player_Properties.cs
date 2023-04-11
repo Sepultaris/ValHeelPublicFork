@@ -1,3 +1,4 @@
+using System;
 using ACE.Common;
 using ACE.Entity;
 using ACE.Entity.Enum;
@@ -1371,6 +1372,11 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyInt64.BankedPyreals);
             set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedPyreals); else SetProperty(PropertyInt64.BankedPyreals, value.Value); }
         }
+        public long? PyrealSavings
+        {
+            get => GetProperty(PropertyInt64.PyrealSavings);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.PyrealSavings); else SetProperty(PropertyInt64.PyrealSavings, value.Value); }
+        }
         public long? BankedLuminance
         {
             get => GetProperty(PropertyInt64.BankedLuminance);
@@ -1387,6 +1393,13 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyFloat.BankCommandTimer);
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.BankCommandTimer); else SetProperty(PropertyFloat.BankCommandTimer, value.Value); }
         }
+
+        public double? InterestTimer
+        {
+            get => GetProperty(PropertyFloat.InterestTimer);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.InterestTimer); else SetProperty(PropertyFloat.InterestTimer, value.Value); }
+        }
+
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

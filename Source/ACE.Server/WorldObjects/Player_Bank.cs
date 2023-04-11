@@ -55,10 +55,6 @@ namespace ACE.Server.WorldObjects
                 var pyreals = player.GetInventoryItemsOfWCID(273);
                 long totalValue = 0;
                 long inheritedValue = 0;
-                long inheritedashfiftyvalue = 0;
-                long inheritedashtenvalue = 0;
-                long inheritedashfivevalue = 0;
-                long inheritedashonevalue = 0;
                 long inheritedashcoinvalue = 0;
                 long lumInheritedValue = 0;
                 long oldBalanceP = (long)player.BankedPyreals;
@@ -321,6 +317,45 @@ namespace ACE.Server.WorldObjects
 
         }
 
+        public static void HandleInterestPayments(Player player)
+        {
+            if (player.InterestTimer == null)
+            {
+                player.InterestTimer = 0L;
+            }
 
+            double interestRate = PropertyManager.GetDouble("interest_rate").Item;
+            long currentTime = (long)Time.GetUnixTime();
+            long duration = (long)(currentTime - player.InterestTimer.Value);
+            int payPeriod = 2592000; // 30 days in seconds = 2592000
+            int numOfPayPeriods = (int)(duration / payPeriod);
+
+            if (duration >= payPeriod && Time.GetUnixTime() >= player.InterestTimer.Value)
+            {
+                long payment = (long)(player.BankedPyreals * interestRate);
+                long multipayments = payment * numOfPayPeriods;
+
+                if (numOfPayPeriods > 1)
+                {
+                    player.PyrealSavings += payment * multipayments;
+                    player.RemoveProperty(PropertyFloat.InterestTimer);
+                    player.InterestTimer = currentTime;
+
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have received an interest payment from the Bank of ValHeel in the amount of: {multipayments:N0}", ChatMessageType.x1D));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Savings Account Balance: {player.PyrealSavings:N0} Pyreals", ChatMessageType.x1B));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                }
+                else
+                player.PyrealSavings += payment;
+                player.RemoveProperty(PropertyFloat.InterestTimer);
+                player.InterestTimer = currentTime;
+
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have received an interest payment from the Bank of ValHeel in the amount of: {payment:N0}", ChatMessageType.x1D));
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Savings Account Balance: {player.PyrealSavings:N0} Pyreals", ChatMessageType.x1B));
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+            }
+        }
     }
 }

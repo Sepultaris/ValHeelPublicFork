@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace ACE.Entity.Enum.Properties
 {
@@ -98,6 +99,7 @@ namespace ACE.Entity.Enum.Properties
         TinkerLog                       = 9007,
         [ServerOnly]
         SpeedRunTime                    = 9008
+
     }
 
     public static class PropertyStringExtensions

@@ -230,7 +230,10 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         LastTime                       = 8024,
         [ServerOnly]
-        BankCommandTimer               = 8025
+        BankCommandTimer               = 8025,
+        [ServerOnly]
+        InterestTimer                  = 8026
+
     }
 
     public static class PropertyFloatExtensions

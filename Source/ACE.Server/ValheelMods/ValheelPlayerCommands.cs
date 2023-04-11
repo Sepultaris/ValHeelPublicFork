@@ -53,6 +53,7 @@ namespace ACE.Server.Command.Handlers
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank deposit luminance ### - Attempts to deposit the specified amount of luminance into your luminance bank.", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank withdraw luminance ### - Attempts to withdraw the specified amount of luminance from your bank to your character.", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank withdraw pyreals ### - Attempts to withdraw the specified amount of pyreals from your bank to your inventory. ", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank withdraw pyrealssavings ### - Attempts to withdraw the specified amount of pyreals from your savings to your inventory. ", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] /bank withdraw ashcoin ### - Attempts to withdraw the specified amount of Ashcoin from your bank to your inventory. ", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
             }
@@ -63,6 +64,10 @@ namespace ACE.Server.Command.Handlers
                     session.Player.BankedLuminance = 0;
                     session.Player.BankedPyreals = 0;
                     session.Player.BankedAshcoin = 0;
+
+                    if (session.Player.InterestTimer == null)
+                    session.Player.InterestTimer = Time.GetFutureUnixTime(2592000);
+                    else session.Player.InterestTimer = Time.GetFutureUnixTime(2592000);
 
                     var bankAccountCreation = new ActionChain();
                     bankAccountCreation.AddDelaySeconds(2);
@@ -80,24 +85,39 @@ namespace ACE.Server.Command.Handlers
                 {
                     if (parameters[0].Equals("account", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (session.Player.BankedPyreals == null)
-                        {
+                        if (session.Player.BankedPyreals == null)                        
                             session.Player.BankedPyreals = 0;
-                        }
 
-                        if (session.Player.BankedLuminance == null)
-                        {
+                        if (session.Player.BankedLuminance == null)                        
                             session.Player.BankedLuminance = 0;
-                        }
-
-                        if (session.Player.BankedAshcoin == null)
-                        {
+                        
+                        if (session.Player.BankedAshcoin == null)                       
                             session.Player.BankedAshcoin = 0;
-                        }
+                        
+                        if (session.Player.PyrealSavings == null)
+                            session.Player.PyrealSavings = 0;
 
+                        // Moved interest to run automatically in Player_Tick
+                        /*if (session.Player.InterestTimer== null)
+                            session.Player.InterestTimer = 0;
+
+                        if (session.Player.InterestTimer.HasValue)
+                        {                           
+                            if (Time.GetUnixTime() >= session.Player.InterestTimer)
+                            {
+                                session.Player.PyrealSavings += (long)(session.Player.BankedPyreals * 0.01);
+                                session.Player.RemoveProperty(PropertyFloat.InterestTimer);
+                                session.Player.SetProperty(PropertyFloat.InterestTimer, Time.GetFutureUnixTime(86400000)); //24 hours: 86400000
+                            }
+                            
+                        }
+                        if (!session.Player.InterestTimer.HasValue)
+                        {
+                            session.Player.SetProperty(PropertyFloat.InterestTimer, Time.GetFutureUnixTime(86400000)); //24 hours: 86400000
+                        }*/
                         session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Number: {session.Player.BankAccountNumber}", ChatMessageType.x1B));
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings", ChatMessageType.x1B));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                         return;
                     }
@@ -614,7 +634,89 @@ namespace ACE.Server.Command.Handlers
 
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some pyreals from your bank account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
-                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                            }
+                        }
+
+                        if (parameters[1].Equals("pyrealsavings", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (amt > session.Player.PyrealSavings)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pyreals to withdraw that amount from your bank. You have {session.Player.BankedPyreals:N0} Pyreals in your bank.", ChatMessageType.Help));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You requested {amt:N0}.", ChatMessageType.Broadcast));
+                                return;
+                            }
+                            else
+                            {
+                                session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                                long amountWithdrawn = 0;
+
+                                if (amt > 2000000000)
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You can only withdraw a maximum of 2,000,000,000 pyreals at a time.", ChatMessageType.Broadcast));
+                                    return;
+                                }
+
+                                if (amt >= 250000)
+                                {
+                                    var mmd = WorldObjectFactory.CreateNewWorldObject(20630);
+                                    var mmds = amt / 250000f;
+                                    mmd.SetStackSize((int)mmds);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(mmd))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    amt -= (long)mmds * 250000;
+                                    amountWithdrawn += (long)mmds * 250000;
+                                    session.Player.TryCreateInInventoryWithNetworking(mmd);
+                                    session.Player.PyrealSavings -= (long)mmds * 250000;
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew {Math.Floor(mmds)} MMDS.", ChatMessageType.Broadcast));
+                                }
+
+                                for (var i = amt; i >= 25000; i -= 25000)
+                                {
+                                    var pyreals = WorldObjectFactory.CreateNewWorldObject(273);
+                                    pyreals.SetStackSize(25000);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(pyreals))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        break;
+                                    }
+
+                                    amt -= 25000;
+
+
+                                    session.Player.TryCreateInInventoryWithNetworking(pyreals);
+
+                                    session.Player.PyrealSavings -= pyreals.StackSize;
+                                    amountWithdrawn += 25000;
+                                }
+
+                                if (amt < 25000 && amt > 0)
+                                {
+                                    var pyreals = WorldObjectFactory.CreateNewWorldObject(273);
+                                    pyreals.SetStackSize((int)amt);
+
+                                    if (session.Player.GetFreeInventorySlots(true) < 10 || !session.Player.HasEnoughBurdenToAddToInventory(pyreals))
+                                    {
+                                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pack space or you are overburdened.", ChatMessageType.Broadcast));
+                                        return;
+                                    }
+
+                                    session.Player.TryCreateInInventoryWithNetworking(pyreals);
+
+                                    session.Player.PyrealSavings -= amt;
+                                    amountWithdrawn += amt;
+                                }
+
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some pyreals from your savings account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings", ChatMessageType.x1B));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                             }
                         }
@@ -623,7 +725,7 @@ namespace ACE.Server.Command.Handlers
                         {
                             if (amt > session.Player.BankedAshcoin)
                             {
-                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough AshCoin to withdraw that amount from your bank. You have {session.Player.BankedPyreals:N0} Pyreals in your bank.", ChatMessageType.Help));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough AshCoin to withdraw that amount from your bank. You have {session.Player.BankedAshcoin:N0} AshCoin in your bank.", ChatMessageType.Help));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You requested {amt:N0}.", ChatMessageType.Broadcast));
                                 return;
                             }
@@ -753,7 +855,7 @@ namespace ACE.Server.Command.Handlers
 
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some AshCoin from your bank account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
-                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} Ashcoin", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings", ChatMessageType.x1B));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                             }
                         }
@@ -794,7 +896,7 @@ namespace ACE.Server.Command.Handlers
 
                             session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                             session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some Luminance from your bank account. (-{amt2:N0})", ChatMessageType.x1B));
-                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance", ChatMessageType.x1B));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance ||  {session.Player.BankedAshcoin:N0}  AshCoin ||  {session.Player.PyrealSavings:N0}  Pyreal Savings", ChatMessageType.x1B));
                             session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                         }
                     }
