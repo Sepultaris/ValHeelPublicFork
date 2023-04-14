@@ -468,7 +468,7 @@ namespace ACE.Server.Factories
 
                 if (cantripLevels == null || cantripLevels.Count != 4)
                 {
-                    log.Error($"RollCantripDifficulty({cantripId}) - unknown cantrip");
+                    //log.Error($"RollCantripDifficulty({cantripId}) - unknown cantrip");
                     continue;
                 }
 

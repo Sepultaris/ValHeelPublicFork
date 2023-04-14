@@ -232,7 +232,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         BankCommandTimer               = 8025,
         [ServerOnly]
-        InterestTimer                  = 8026
+        InterestTimer                  = 8026,
+        [ServerOnly]
+        WithdrawTimer                  = 8027
 
     }
 

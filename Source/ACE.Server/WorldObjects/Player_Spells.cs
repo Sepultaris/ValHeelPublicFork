@@ -303,40 +303,54 @@ namespace ACE.Server.WorldObjects
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 8);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x600335C);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676444);
+                                Session.Network.EnqueueSend(underlayUpdate);
                             }
                             if (damageType == 2)
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 16);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676443);
+                                Session.Network.EnqueueSend(underlayUpdate);
                             }
 
                             if (damageType == 4)
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 32);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x600335A);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676442);
+                                Session.Network.EnqueueSend(underlayUpdate);
                             }
 
                             if (damageType == 8)
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 128);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x6003353);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676435);
+                                Session.Network.EnqueueSend(underlayUpdate);
                             }
                             if (damageType == 16)
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 512);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x6003359);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676440);
+                                Session.Network.EnqueueSend(underlayUpdate);
                             }
 
                             if (damageType == 32)
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 64);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x6003355);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676437);
+                                Session.Network.EnqueueSend(underlayUpdate);
                             }
 
                             if (damageType == 64)
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 256);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x6003354);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676436);
+                                Session.Network.EnqueueSend(underlayUpdate);
                             }
                             if (damageType == 1024)
                             {
@@ -546,7 +560,12 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 4443);
                             }
-
+                            if (damageType == 3) // Slash/Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
                             if (damageType == 4) // Bludgeon
                             {
                                 item.SetProperty(PropertyInt.ItemSpellcraft, 999);
@@ -1052,6 +1071,8 @@ namespace ACE.Server.WorldObjects
                             {
                                 item.SetProperty(PropertyInt.ImbuedEffect, 8);
                                 item.SetProperty(PropertyDataId.IconUnderlay, 0x600335C);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 0);
+                                Session.Network.EnqueueSend(underlayUpdate);
                             }
                             if (damageType == 2)
                             {
@@ -1122,7 +1143,7 @@ namespace ACE.Server.WorldObjects
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
                                 item.SetProperty(PropertyDataId.ProcSpell, 4443);
                             }
-                            if (damageType == 3) // Pierce
+                            if (damageType == 3) // Slash/Pierce
                             {
                                 item.SetProperty(PropertyInt.ItemSpellcraft, 999);
                                 item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);

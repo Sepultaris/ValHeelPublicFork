@@ -1399,6 +1399,11 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyFloat.InterestTimer);
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.InterestTimer); else SetProperty(PropertyFloat.InterestTimer, value.Value); }
         }
+        public double? WithdrawTimer
+        {
+            get => GetProperty(PropertyFloat.WithdrawTimer);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.WithdrawTimer); else SetProperty(PropertyFloat.WithdrawTimer, value.Value); }
+        }
 
         /// <summary>
         /// Returns player's augmentation resistance for damage type

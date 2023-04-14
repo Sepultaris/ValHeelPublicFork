@@ -59,6 +59,7 @@ namespace ACE.Server.WorldObjects
                 long inheritedashcoinvalue = 0;
                 long lumInheritedValue = 0;
                 long oldBalanceP = (long)player.BankedPyreals;
+                long oldBalancePSavings = (long)player.PyrealSavings;
                 long oldBalanceL = (long)player.BankedLuminance;
                 long oldBalanceA = (long)player.BankedAshcoin;
 
@@ -75,6 +76,11 @@ namespace ACE.Server.WorldObjects
                 if (player.BankedAshcoin == null)
                 {
                     player.BankedAshcoin = 0;
+                }
+
+                if (player.PyrealSavings == null)
+                {
+                    player.PyrealSavings = 0;
                 }
 
                 if (all)
@@ -272,21 +278,21 @@ namespace ACE.Server.WorldObjects
                     {
                         amount -= 25000;
                         player.TryConsumeFromInventoryWithNetworking(273, 25000);
-                        player.BankedPyreals += 25000;
+                        player.PyrealSavings += 25000;
                         amountDeposited += 25000;
                     }
 
                     if (amount < 25000)
                     {
                         player.TryConsumeFromInventoryWithNetworking(273, (int)amount);
-                        player.BankedPyreals += amount;
+                        player.PyrealSavings += amount;
                         amountDeposited += amount;
                     }
 
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked {amountDeposited:N0} Pyreals", ChatMessageType.x1D));
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balance: {oldBalanceP:N0} Pyreals", ChatMessageType.Help));
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balance: {player.BankedPyreals:N0} Pyreals", ChatMessageType.x1B));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balance: {oldBalancePSavings:N0} Pyreals in savings", ChatMessageType.Help));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balance: {player.PyrealSavings:N0} Pyreals in savings", ChatMessageType.x1B));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                 }               
                 if (ashcoin)
@@ -356,25 +362,38 @@ namespace ACE.Server.WorldObjects
                     int reputation = player.QuestManager.GetCurrentSolves("Reputation");
 
                     if (reputation >= 0 && reputation <= 14999)
-                        repBoost = 0.00033;
+                        repBoost = 0.01;
                     else if (reputation >= 15000 && reputation <= 24999)
-                        repBoost = 0.00057;
+                        repBoost = 0.017;
                     else if (reputation >= 25000 && reputation <= 49999)
-                        repBoost = 0.00080;
+                        repBoost = 0.024;
                     else if (reputation >= 50000 && reputation <= 99999)
-                        repBoost = 0.00106;
+                        repBoost = 0.032;
                     else if (reputation >= 100000 && reputation <= 199999)
-                        repBoost = 0.00133;
+                        repBoost = 0.04;
                     else if (reputation >= 200000)
-                        repBoost = 0.00153;
+                        repBoost = 0.046;
                     else repBoost = 0;
 
                     finalInterest = interestRate + repBoost;
                 }
-                
+
                 long currentTime = (long)Time.GetUnixTime();
+
+                if (player.InterestTimer == null)
+                {
+                    player.InterestTimer = currentTime;
+                }
+                
                 long duration = (long)(currentTime - player.InterestTimer.Value);
-                int payPeriod = 2592000; // 30 days in seconds = 2592000
+                long interestPeriod = PropertyManager.GetLong("interest_period").Item;
+
+                if (interestPeriod <= 0)
+                {
+                    interestPeriod = 30;
+                }
+
+                long payPeriod = 86400 * interestPeriod; // 1 day in seconds = 86400
                 int numOfPayPeriods = (int)(duration / payPeriod);
 
                 if (duration >= payPeriod && Time.GetUnixTime() >= player.InterestTimer.Value)

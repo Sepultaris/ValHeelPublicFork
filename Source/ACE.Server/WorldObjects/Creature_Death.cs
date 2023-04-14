@@ -643,7 +643,7 @@ namespace ACE.Server.WorldObjects
 
         public static HashSet<ushort> PKLandblock_Landblocks = new HashSet<ushort>()
         {
-            
+            0x016C,
         };
 
         public static HashSet<ushort> SpeedRunLandblock_Landblocks = new HashSet<ushort>()

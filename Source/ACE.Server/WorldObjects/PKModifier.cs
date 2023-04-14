@@ -52,6 +52,12 @@ namespace ACE.Server.WorldObjects
             if (!(activator is Player player))
                 return new ActivationResult(false);
 
+            if (player.IsOnPKLandblock)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat("You cannot change your Player Killer status due to the effects of the area.", ChatMessageType.Help));
+                return new ActivationResult(false);
+            }
+
             if (player.PkLevel > PKLevel.PK || PropertyManager.GetBool("pk_server").Item || PropertyManager.GetBool("pkl_server").Item)
             {
                 if (!string.IsNullOrWhiteSpace(GetProperty(PropertyString.UsePkServerError)))
