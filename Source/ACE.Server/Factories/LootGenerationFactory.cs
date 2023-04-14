@@ -1200,7 +1200,15 @@ namespace ACE.Server.Factories
 
                     // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
             }
-            var mirraChance = ThreadSafeRandom.Next(0, 20000);
+
+            double mirraDrop = PropertyManager.GetDouble("mirra_drop").Item;
+
+            float mirraDropFloat = (float)mirraDrop;
+
+            if (mirraDropFloat <= 0f)
+                mirraDropFloat = 40000f;
+
+            var mirraChance = ThreadSafeRandom.Next(0f, mirraDropFloat);
 
             if (mirraChance <= 1)
             {               
@@ -1208,7 +1216,7 @@ namespace ACE.Server.Factories
             }
                     
             return wo;
-        }
+        }       
 
         /// <summary>
         /// The min/max amount of pyreals that can be rolled per tier, from magloot corpse logs
@@ -1306,7 +1314,7 @@ namespace ACE.Server.Factories
                 var rng = ThreadSafeRandom.Next(0.0f, 1.0f);
 
                 if (rng <= 1.0f)
-                    wieldLevelReq = 350;
+                    wieldLevelReq = 275;
 
             }
 

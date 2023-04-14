@@ -1,6 +1,7 @@
 using ACE.Common;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
+using ACE.Server.Entity.Actions;
 using ACE.Server.Factories;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
@@ -42,7 +43,7 @@ namespace ACE.Server.WorldObjects
         }
 
 
-        public static void Deposit(Player player, long amount, bool all, bool pyreal, bool ashcoin, bool luminance)
+        public static void Deposit(Player player, long amount, bool all, bool pyreal, bool ashcoin, bool luminance, bool pyrealSavings)
         {
             if (player != null)
             {
@@ -263,6 +264,31 @@ namespace ACE.Server.WorldObjects
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balance: {player.BankedPyreals:N0} Pyreals", ChatMessageType.x1B));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                 }
+                if (pyrealSavings)
+                {
+                    long amountDeposited = 0;
+
+                    for (var i = amount; i >= 25000; i -= 25000)
+                    {
+                        amount -= 25000;
+                        player.TryConsumeFromInventoryWithNetworking(273, 25000);
+                        player.BankedPyreals += 25000;
+                        amountDeposited += 25000;
+                    }
+
+                    if (amount < 25000)
+                    {
+                        player.TryConsumeFromInventoryWithNetworking(273, (int)amount);
+                        player.BankedPyreals += amount;
+                        amountDeposited += amount;
+                    }
+
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked {amountDeposited:N0} Pyreals", ChatMessageType.x1D));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balance: {oldBalanceP:N0} Pyreals", ChatMessageType.Help));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balance: {player.BankedPyreals:N0} Pyreals", ChatMessageType.x1B));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                }               
                 if (ashcoin)
                 {
                     long amountDeposited = 0;
@@ -319,43 +345,65 @@ namespace ACE.Server.WorldObjects
 
         public static void HandleInterestPayments(Player player)
         {
-            if (player.InterestTimer == null)
+            if (player.BankAccountNumber != null)
             {
-                player.InterestTimer = 0L;
-            }
+                double interestRate = PropertyManager.GetDouble("interest_rate").Item;
+                double repBoost = 0;
+                double finalInterest = 0;
 
-            double interestRate = PropertyManager.GetDouble("interest_rate").Item;
-            long currentTime = (long)Time.GetUnixTime();
-            long duration = (long)(currentTime - player.InterestTimer.Value);
-            int payPeriod = 2592000; // 30 days in seconds = 2592000
-            int numOfPayPeriods = (int)(duration / payPeriod);
-
-            if (duration >= payPeriod && Time.GetUnixTime() >= player.InterestTimer.Value)
-            {
-                long payment = (long)(player.BankedPyreals * interestRate);
-                long multipayments = payment * numOfPayPeriods;
-
-                if (numOfPayPeriods > 1)
+                if (player.QuestManager.HasQuestCompletes("Reputation"))
                 {
-                    player.PyrealSavings += payment * multipayments;
+                    int reputation = player.QuestManager.GetCurrentSolves("Reputation");
+
+                    if (reputation >= 0 && reputation <= 14999)
+                        repBoost = 0.00033;
+                    else if (reputation >= 15000 && reputation <= 24999)
+                        repBoost = 0.00057;
+                    else if (reputation >= 25000 && reputation <= 49999)
+                        repBoost = 0.00080;
+                    else if (reputation >= 50000 && reputation <= 99999)
+                        repBoost = 0.00106;
+                    else if (reputation >= 100000 && reputation <= 199999)
+                        repBoost = 0.00133;
+                    else if (reputation >= 200000)
+                        repBoost = 0.00153;
+                    else repBoost = 0;
+
+                    finalInterest = interestRate + repBoost;
+                }
+                
+                long currentTime = (long)Time.GetUnixTime();
+                long duration = (long)(currentTime - player.InterestTimer.Value);
+                int payPeriod = 2592000; // 30 days in seconds = 2592000
+                int numOfPayPeriods = (int)(duration / payPeriod);
+
+                if (duration >= payPeriod && Time.GetUnixTime() >= player.InterestTimer.Value)
+                {
+                    long payment = (long)(player.BankedPyreals * finalInterest);
+                    long multipayments = payment * numOfPayPeriods;
+
+                    if (numOfPayPeriods > 1)
+                    {
+                        player.PyrealSavings += payment * multipayments;
+                        player.RemoveProperty(PropertyFloat.InterestTimer);
+                        player.InterestTimer = currentTime;
+
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have received an interest payment from the Bank of ValHeel in the amount of: {multipayments:N0}", ChatMessageType.x1D));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Savings Account Balance: {player.PyrealSavings:N0} Pyreals", ChatMessageType.x1B));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                    }
+                    else
+                        player.PyrealSavings += payment;
                     player.RemoveProperty(PropertyFloat.InterestTimer);
                     player.InterestTimer = currentTime;
 
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have received an interest payment from the Bank of ValHeel in the amount of: {multipayments:N0}", ChatMessageType.x1D));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have received an interest payment from the Bank of ValHeel in the amount of: {payment:N0}", ChatMessageType.x1D));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Savings Account Balance: {player.PyrealSavings:N0} Pyreals", ChatMessageType.x1B));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                 }
-                else
-                player.PyrealSavings += payment;
-                player.RemoveProperty(PropertyFloat.InterestTimer);
-                player.InterestTimer = currentTime;
-
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have received an interest payment from the Bank of ValHeel in the amount of: {payment:N0}", ChatMessageType.x1D));
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Savings Account Balance: {player.PyrealSavings:N0} Pyreals", ChatMessageType.x1B));
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
-            }
+            }            
         }
     }
 }

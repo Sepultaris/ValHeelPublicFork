@@ -175,6 +175,7 @@ namespace ACE.Server.WorldObjects
                     LogOut();
             }
 
+            if (player.BankAccountNumber != null)
             Player_Bank.HandleInterestPayments(player);
 
             base.Heartbeat(currentUnixTime);

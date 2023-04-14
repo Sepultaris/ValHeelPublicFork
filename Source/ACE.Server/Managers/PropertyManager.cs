@@ -615,7 +615,7 @@ namespace ACE.Server.Managers
                 ("player_save_interval", new Property<long>(300, "the number of seconds between automatic player saves")),
                 ("rares_max_days_between", new Property<long>(45, "for rares_real_time_v2: the maximum number of days a player can go before a rare is generated on rare eligible creature kills")),
                 ("rares_max_seconds_between", new Property<long>(5256000, "for rares_real_time: the maximum number of seconds a player can go before a second chance at a rare is allowed on rare eligible creature kills that did not generate a rare")),
-                ("teleport_visibility_fix", new Property<long>(0, "Fixes some possible issues with invisible players and mobs. 0 = default / disabled, 1 = players only, 2 = creatures, 3 = all world objects"))
+                ("teleport_visibility_fix", new Property<long>(0, "Fixes some possible issues with invisible players and mobs. 0 = default / disabled, 1 = players only, 2 = creatures, 3 = all world objects"))                
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<double>> DefaultDoubleProperties =
@@ -651,7 +651,8 @@ namespace ACE.Server.Managers
                 ("vitae_penalty_max", new Property<double>(0.40, "the maximum vitae penalty a player can have")),
                 ("void_pvp_modifier", new Property<double>(0.5, "Scales the amount of damage players take from Void Magic. Defaults to 0.5, as per retail. For earlier content where DRR isn't as readily available, this can be adjusted for balance.")),
                 ("xp_modifier", new Property<double>(1.0, "scales the amount of xp received by players")),
-                ("interest_rate", new Property<double>(0.0373, "determines the global base interest rate"))
+                ("interest_rate", new Property<double>(0.0373, "determines the global base interest rate")),
+                ("mirra_drop", new Property<double>(40000, "Modifies the mirra drop rate via ratio 1 = 1:1, 2 = 1:2 and so on. Default is 40000."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

@@ -15,11 +15,1333 @@ using System.Dynamic;
 using ACE.DatLoader;
 using ACE.Common;
 using ACE.Server.Entity.Actions;
+using MySqlX.XDevAPI.Common;
 
 namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        [CommandHandler("spendsc", AccessLevel.Player, CommandHandlerFlag.None, "Handles all skill credit spending.", "")]        
+        public static void HandleSpendSC(Session session, params string[] parameters)
+        {
+            if (parameters.Length == 0)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Use this command to convert skill credits into skill points for a spcified skill. 1 skill point costs 2 skill credits.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"/spendsc meleed, missiled, arcane, magicd, itemtink, assesp, decep, heal, jump, lock, run, assesc, weaptink, armortink...", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"/spendsc magictink, creature, itemench, war, lead, loyal, fletch, alch, cook, salv, twohand, void, heavy, light, fines...", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"/spendsc missilew, shield, dual, reck, sneak, dirty, summon.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+            }
+            else
+            {
+                int skillCreditCost = 2;
+                if (session.Player.AvailableSkillCredits < skillCreditCost)
+                {
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You must have at least 2 available skill credits.", ChatMessageType.Help));
+                    return;
+                }                
+
+                if (parameters[0].Equals("meleed"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.MeleeDefense);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (parameters.Length < 2 && !int.TryParse(parameters[1], out amount) || amount == 1)
+                    {                        
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Melee Defense 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Melee Defense {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("missiled"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.MissileDefense);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Missile Defense 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Missile Defense {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("magicd"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.MagicDefense);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Magic Defense 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Magic Defense {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("manac"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.ManaConversion);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Mana Conversion 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Mana Conversion {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("itemtink"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.ItemTinkering);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Item Tinkering 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Item Tinkering {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("assesp"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.AssessPerson);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Asses Person 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Asses Person {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("decep"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Deception);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Deception 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Deception {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("heal"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Healing);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Healing 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Healing {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("jump"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Jump);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Jump 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Jump {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("lock"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Lockpick);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Lock Pick 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Lock Pick {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("run"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Run);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Run 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Run {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("assesc"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.AssessCreature);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Asses Creature 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Asses Creature {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("weaptink"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.WeaponTinkering);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Weapon Tinkering 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Weapon Tinkering {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("armortink"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.ArmorTinkering);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Armor Tinkering 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Armor Tinkering {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("magictink"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.MagicItemTinkering);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Magic Item Tinkering 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Magic Item Tinkering {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("creature"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.CreatureEnchantment);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Creature Enchantment 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Creature Enchantment {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("itemench"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.ItemEnchantment);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Item Enchantment 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Item Enchantment {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("life"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.LifeMagic);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Life Magic 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Life Magic {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("war"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.WarMagic);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised War Magic 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised War Magic {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("lead"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Leadership);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Leadership 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Leadership {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("loyal"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Loyalty);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Loyalty 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Loyalty {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("fletch"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Fletching);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Fletching 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Fletching {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("alch"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Alchemy);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Alchemy 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Alchemy {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("cook"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Cooking);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Cooking 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Cooking {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("salv"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Salvaging);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Salvaging 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Salvaging {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("twohand"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.TwoHandedCombat);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Two Handed Combat 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Two Handed Combat {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("void"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.VoidMagic);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Void Magic 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Void Magic {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("heavy"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.HeavyWeapons);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Heavy Weapons 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Heavy Weapons {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("light"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.LightWeapons);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Light Weapons 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Light Weapons {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("fines"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.FinesseWeapons);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Finesse Weapons 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Finesse Weapons {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("missilew"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.MissileWeapons);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Missile Weapons 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Missile Weapons {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("shield"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Shield);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Shield 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Shield {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("dual"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.DualWield);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Dual Wield 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Dual Wield {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("reck"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Recklessness);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Recklessness 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Recklessness {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("sneak"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.SneakAttack);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Sneak Attack 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Sneak Attack {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("dirty"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.DirtyFighting);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Dirty Fighting 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Dirty Fighting {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("summon"))
+                {
+                    var player = session.Player;
+                    var numOfCredits = session.Player.AvailableSkillCredits;
+                    var skill = session.Player.GetCreatureSkill(Skill.Summoning);
+                    int.TryParse(parameters[1], out int amount);
+                    if (!skill.IsMaxRank)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount < 0)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                        return;
+                    }
+                    if (amount == 1)
+                    {
+                        skill.InitLevel += 1;
+                        session.Player.AvailableSkillCredits -= 2;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Summoning 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    else
+                    {
+                        skillCreditCost = amount * 2;
+                        skill.InitLevel += (uint)amount;
+                        session.Player.AvailableSkillCredits -= skillCreditCost;
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Summoning {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
+                        session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
+                    }
+                    return;
+                }
+                else
+                    return;
+            }
+        }
+
         /*[CommandHandler("besttimes", AccessLevel.Player, CommandHandlerFlag.None, 0, "Show current world population", "")]
         public static void HandleBestTimes(Session session, params string[] parameters)
         {
@@ -345,7 +1667,7 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, 0, true, false, false, false);
+                                Player_Bank.Deposit(session.Player, 0, true, false, false, false, false);
                             });
 
                             bankAccountDeposit.EnqueueChain();
@@ -406,7 +1728,67 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, amt, false, true, false, false);
+                                Player_Bank.Deposit(session.Player, amt, false, true, false, false, false);
+                            });
+
+                            bankAccountDeposit.EnqueueChain();
+                            return;
+                        }
+                        if (parameters[1].Equals("pyrealsavings", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (session.Player.BankCommandTimer.HasValue)
+                            {
+                                if (Time.GetUnixTime() >= session.Player.BankCommandTimer)
+                                {
+                                    session.Player.RemoveProperty(PropertyFloat.BankCommandTimer);
+                                }
+                                else
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have used this command too recently.", ChatMessageType.Help));
+                                    return;
+                                }
+                            }
+
+                            Int64.TryParse(parameters[2], out long amt);
+
+                            if (amt <= 0)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You did not enter a valid amount to deposit.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            var pyreals = session.Player.GetInventoryItemsOfWCID(273);
+                            long availablePyreals = 0;
+
+                            foreach (var item in pyreals)
+                                availablePyreals += (long)item.StackSize;
+
+                            if (amt > availablePyreals)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough pyreals in your inventory to deposit that amount.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Attempting to Deposit {amt:N0} Pyreals into your bank...", ChatMessageType.Broadcast));
+
+                            var bankAccountDeposit = new ActionChain();
+                            bankAccountDeposit.AddDelaySeconds(1);
+
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Contacting your local Bank of Dereth representative...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Giving security details...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
+                                Player_Bank.Deposit(session.Player, amt, false, true, false, false, true);
                             });
 
                             bankAccountDeposit.EnqueueChain();
@@ -467,7 +1849,7 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, amt, false, false, true, false);
+                                Player_Bank.Deposit(session.Player, amt, false, false, true, false, false);
                             });
 
                             bankAccountDeposit.EnqueueChain();
@@ -526,7 +1908,7 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, amt, false, false, false, true);
+                                Player_Bank.Deposit(session.Player, amt, false, false, false, true, false);
                             });
 
                             bankAccountDeposit.EnqueueChain();
