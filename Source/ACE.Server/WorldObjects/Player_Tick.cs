@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using System.Timers;
 using ACE.Common;
 using ACE.DatLoader.Entity;
@@ -120,7 +121,66 @@ namespace ACE.Server.WorldObjects
                     player.PlayerKillerStatus = PlayerKillerStatus.PK;
                     session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
                     CommandHandlerHelper.WriteOutputInfo(session, $"WARNING:You have entered a Player Killer area: {session.Player.PlayerKillerStatus.ToString()}", ChatMessageType.Broadcast);
-                    LandblockManager.DoEnvironChange(EnvironChangeType.BellSound);
+
+                    async Task RunActionChainAsync()
+                    {
+                        int randomNum = new Random().Next(1, 7);
+
+                        switch (randomNum)
+                        {
+                            case 1:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder1Sound);
+                                break;
+                            case 2:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder2Sound);
+                                break;
+                            case 3:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder3Sound);
+                                break;
+                            case 4:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder4Sound);
+                                break;
+                            case 5:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder5Sound);
+                                break;
+                            case 6:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder6Sound);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        await Task.Delay(1000); // 1 second delay
+
+                        int randomNum2 = new Random().Next(1, 7);
+
+                        switch (randomNum2)
+                        {
+                            case 1:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.RoarSound);
+                                break;
+                            case 2:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.Chant2Sound);
+                                break;
+                            case 3:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.Chant1Sound);
+                                break;
+                            case 4:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.LostSoulsSound);
+                                break;
+                            case 5:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.DarkWhispers1Sound);
+                                break;
+                            case 6:
+                                LandblockManager.DoEnvironChange(EnvironChangeType.DarkWindSound);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    RunActionChainAsync();
+
                     ApplyVisualEffects(PlayScript.VisionDownBlack);
                     ApplyVisualEffects(PlayScript.BaelZharonSmite);
                 }
@@ -135,7 +195,7 @@ namespace ACE.Server.WorldObjects
                     player.PlayerKillerStatus = PlayerKillerStatus.NPK;
                     session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
                     CommandHandlerHelper.WriteOutputInfo(session, $"WARNING:You have exited a Player Killer area: {session.Player.PlayerKillerStatus.ToString()}", ChatMessageType.Broadcast);
-                    LandblockManager.DoEnvironChange(EnvironChangeType.BellSound);
+
                     ApplyVisualEffects(PlayScript.VisionUpWhite);
                     ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
                 }

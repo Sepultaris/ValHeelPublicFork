@@ -1959,7 +1959,7 @@ namespace ACE.Server.Command.Handlers
                         }
                     }
 
-                    if (parameters[0].Equals("withdraw", StringComparison.OrdinalIgnoreCase) && (parameters[1].Equals("luminance", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyreals", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyrealsavings", StringComparison.OrdinalIgnoreCase)))
+                    if (parameters[0].Equals("withdraw", StringComparison.OrdinalIgnoreCase) && (parameters[1].Equals("luminance", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyreals", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyrealsavings", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("ashcoin", StringComparison.OrdinalIgnoreCase)))
                     {
                         if (session.Player.BankCommandTimer.HasValue)
                         {
@@ -2155,7 +2155,6 @@ namespace ACE.Server.Command.Handlers
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You can only withdraw from your savings account once every {withdrawPeriodInDays:N0} days.", ChatMessageType.Help));
                             return;
                         }
-
                         if (parameters[1].Equals("ashcoin", StringComparison.OrdinalIgnoreCase))
                         {
                             if (amt > session.Player.BankedAshcoin)

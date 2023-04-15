@@ -7,6 +7,7 @@ namespace ACE.Entity.Enum
         Defined,
         Event,
         Night,
-        Day
+        Day,
+        RealTimePeriod
     }
 }

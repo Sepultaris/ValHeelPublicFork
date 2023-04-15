@@ -47,22 +47,6 @@ namespace ACE.Server.WorldObjects
         {
             if (player != null)
             {
-                var fiftykACNote = player.GetInventoryItemsOfWCID(801910);
-                var tenkACNote = player.GetInventoryItemsOfWCID(801909);
-                var fivekACNote = player.GetInventoryItemsOfWCID(801908);
-                var onekACNote = player.GetInventoryItemsOfWCID(801907);
-                var ashCoin = player.GetInventoryItemsOfWCID(801690);
-                var mmd = player.GetInventoryItemsOfWCID(20630);
-                var pyreals = player.GetInventoryItemsOfWCID(273);
-                long totalValue = 0;
-                long inheritedValue = 0;
-                long inheritedashcoinvalue = 0;
-                long lumInheritedValue = 0;
-                long oldBalanceP = (long)player.BankedPyreals;
-                long oldBalancePSavings = (long)player.PyrealSavings;
-                long oldBalanceL = (long)player.BankedLuminance;
-                long oldBalanceA = (long)player.BankedAshcoin;
-
                 if (player.BankedPyreals == null)
                 {
                     player.BankedPyreals = 0;
@@ -82,6 +66,22 @@ namespace ACE.Server.WorldObjects
                 {
                     player.PyrealSavings = 0;
                 }
+
+                var fiftykACNote = player.GetInventoryItemsOfWCID(801910);
+                var tenkACNote = player.GetInventoryItemsOfWCID(801909);
+                var fivekACNote = player.GetInventoryItemsOfWCID(801908);
+                var onekACNote = player.GetInventoryItemsOfWCID(801907);
+                var ashCoin = player.GetInventoryItemsOfWCID(801690);
+                var mmd = player.GetInventoryItemsOfWCID(20630);
+                var pyreals = player.GetInventoryItemsOfWCID(273);
+                long totalValue = 0;
+                long inheritedValue = 0;
+                long inheritedashcoinvalue = 0;
+                long lumInheritedValue = 0;
+                long oldBalanceP = (long)player.BankedPyreals;
+                long oldBalancePSavings = (long)player.PyrealSavings;
+                long oldBalanceL = (long)player.BankedLuminance;
+                long oldBalanceA = (long)player.BankedAshcoin;
 
                 if (all)
                 {

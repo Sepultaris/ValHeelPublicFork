@@ -532,7 +532,15 @@ namespace ACE.Server.WorldObjects
                 case GeneratorTimeType.Day:
                     CheckTimeOfDayStatus();
                     break;
+                case GeneratorTimeType.RealTimePeriod:
+                    CheckRealTimePeriodStatus();
+                    break;
             }            
+        }
+
+        public void CheckRealTimePeriodStatus()
+        {
+            IsUnixTimeWithinRange((long)Time.GetUnixTime());
         }
 
         /// <summary>
@@ -542,7 +550,7 @@ namespace ACE.Server.WorldObjects
         {
             var prevDisabled = GeneratorDisabled;
            
-            var isDay = Timers.CurrentInGameTime.IsDay;
+            var isDay = Timers.CurrentInGameTime.IsDay;            
             var isDayGenerator = GeneratorTimeType == GeneratorTimeType.Day;
 
             //GeneratorDisabled = isDay != isDayGenerator;
@@ -607,12 +615,41 @@ namespace ACE.Server.WorldObjects
 
         private bool eventStatusChanged = false;
 
-        /// <summary>
-        /// Handles starting/stopping the generator
-        /// </summary>
+        public void IsUnixTimeWithinRange(long unixTime)
+        {
+            /*// Save the current state of the GeneratorDisabled variable
+            var prevDisabled = GeneratorDisabled;
+
+            // Calculate the number of seconds since midnight
+            int secondsSinceMidnight = (int)(unixTime % 86400);
+            bool active = secondsSinceMidnight >= GeneratorStartTime * 3600 && secondsSinceMidnight < GeneratorEndTime * 3600;*/
+
+            // Get the current time
+            DateTime currentTime = DateTime.Now;
+
+            bool active = currentTime.TimeOfDay >= TimeSpan.FromHours(GeneratorStartTime) && currentTime.TimeOfDay < TimeSpan.FromHours(GeneratorEndTime);
+                      
+            if (active && GeneratorDisabled == true)
+            {
+                StartGenerator();
+                GeneratorDisabled = false;
+                eventStatusChanged = true;
+            }
+            if(!active && GeneratorDisabled == false)
+            {
+                DisableGenerator();
+                GeneratorDisabled = true;
+                eventStatusChanged = true;
+            }
+            else eventStatusChanged = false;
+        }       
+
         public void HandleStatusStaged(bool prevDisabled, bool cond1, bool cond2)
         {
+            // Initialize the change variable to false
             var change = false;
+
+            // Check the GeneratorTimeType property to determine which conditions to use
             switch (GeneratorTimeType)
             {
                 case GeneratorTimeType.RealTime:
@@ -625,8 +662,13 @@ namespace ACE.Server.WorldObjects
                 case GeneratorTimeType.Night:
                     change = cond1 != cond2;
                     break;
+                case GeneratorTimeType.RealTimePeriod:
+                    change = cond1 && !cond2;
+                    break;
+
             }
 
+            // If the event status has already changed, update the generator's disabled state and start/stop the generator as appropriate
             if (eventStatusChanged)
             {
                 GeneratorDisabled = change;
@@ -636,10 +678,12 @@ namespace ACE.Server.WorldObjects
                 else
                     DisableGenerator();
 
+                // Reset the eventStatusChanged flag
                 eventStatusChanged = false;
             }
             else
             {
+                // If the event status hasn't changed yet, set the eventStatusChanged flag to true if the generator's disabled state has changed
                 if (prevDisabled != change)
                     eventStatusChanged = true;
             }
