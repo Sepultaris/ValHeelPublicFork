@@ -41,6 +41,8 @@ namespace ACE.Server.WorldObjects
         {
         }
 
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public override bool? Init(Player player, PetDevice petDevice)
         {
             var success = base.Init(player, petDevice);
@@ -69,14 +71,14 @@ namespace ACE.Server.WorldObjects
             Faction1Bits = player.Faction1Bits;
 
             return true;
-        }     
+        }
 
         public override void HandleFindTarget()
         {
-            var creature = AttackTarget as Creature;       
+            var creature = AttackTarget as Creature;
 
-            if (creature == null && IsMoving == false|| creature.IsDead && IsMoving == false || !IsVisibleTarget(creature) && IsMoving == false)
-                FindNextTarget();            
+            if (creature == null || creature.IsDead || !IsVisibleTarget(creature))
+                FindNextTarget();
         }
 
         public override bool FindNextTarget()
@@ -85,9 +87,9 @@ namespace ACE.Server.WorldObjects
 
             if (nearbyMonsters.Count == 0)
             {
+                CombatPetStartFollow();
                 return false;
-                //Console.WriteLine($"{Name}.FindNextTarget(): empty");
-                
+                //Console.WriteLine($"{Name}.FindNextTarget(): empty");                
             }
 
             // get nearest monster
@@ -96,8 +98,9 @@ namespace ACE.Server.WorldObjects
 
             if (nearest[0].Distance > VisualAwarenessRangeSq)
             {
+                CombatPetStartFollow();
                 return false;
-            }            
+            }
 
             AttackTarget = nearest[0].Target;
 
@@ -137,7 +140,7 @@ namespace ACE.Server.WorldObjects
 
             return monsters;
         }
-         
+
         public override void Sleep()
         {
 
@@ -146,12 +149,133 @@ namespace ACE.Server.WorldObjects
             // which is the reverse of the current ACE jurassic park model
 
             return;  // empty by default
-            
-        }        
 
-        
+        }
+
+        public void CombatPetTick(double currentUnixTime)
+        {
+            NextMonsterTickTime = currentUnixTime + monsterTickInterval;
+
+            if (IsMoving)
+            {
+                PhysicsObj.update_object();
+
+                UpdatePosition_SyncLocation();
+
+                SendUpdatePosition();
+            }
+
+            if (currentUnixTime >= nextSlowTickTime)
+                CombatPetSlowTick(currentUnixTime);
+        }
+
+        private static readonly double slowTickSeconds = 1.0;
+        private double nextSlowTickTime;
+
+        /// <summary>
+        /// Called 1x per second
+        /// </summary>
+        public void CombatPetSlowTick(double currentUnixTime)
+        {
+            //Console.WriteLine($"{Name}.HeartbeatStatic({currentUnixTime})");
+            var dist = GetCylinderDistance(P_PetOwner);
+
+            nextSlowTickTime += slowTickSeconds;
+
+            if (P_PetOwner?.PhysicsObj == null)
+            {
+                log.Error($"{Name} ({Guid}).SlowTick() - P_PetOwner: {P_PetOwner}, P_PetOwner.PhysicsObj: {P_PetOwner?.PhysicsObj}");
+                Destroy();
+                return;
+            }
+
+            if(GetDistance(P_PetOwner) < dist)
+            {
+                HandleFindTarget();
+                return;
+            }
+          
+            if (dist > MaxDistance)
+                Destroy();
+
+            if (!IsMoving && dist > MinDistance && FindNextTarget() == false)
+                CombatPetStartFollow();
+        }
+
+        // if the passive pet is between min-max distance to owner,
+        // it will turn and start running torwards its owner
+
+        private static readonly float MinDistance = 2.0f;
+        private static readonly float MaxDistance = 192.0f;
+
+        private void CombatPetStartFollow()
+        {
+            // similar to Monster_Navigation.StartTurn()
+
+            //Console.WriteLine($"{Name}.StartFollow()");
+
+            IsMoving = true;
+
+            // broadcast to clients
+            MoveTo(P_PetOwner, RunRate);
+
+            // perform movement on server
+            var mvp = new MovementParameters();
+            mvp.DistanceToObject = MinDistance;
+            mvp.WalkRunThreshold = 0.0f;
+
+            //mvp.UseFinalHeading = true;
+
+            PhysicsObj.MoveToObject(P_PetOwner.PhysicsObj, mvp);
+
+            // prevent snap forward
+            PhysicsObj.UpdateTime = Physics.Common.PhysicsTimer.CurrentTime;
+        }
+
+        /// <summary>
+        /// Broadcasts passive pet movement to clients
+        /// </summary>
+        public override void MoveTo(WorldObject target, float runRate = 1.0f)
+        {
+            /*if (!IsPassivePet)
+            {
+                base.MoveTo(target, runRate);
+                return;
+            }*/
+
+            if (MoveSpeed == 0.0f)
+                GetMovementSpeed();
+
+            var motion = new Motion(this, target, MovementType.MoveToObject);
+
+            motion.MoveToParameters.MovementParameters |= MovementParams.CanCharge;
+            motion.MoveToParameters.DistanceToObject = MinDistance;
+            motion.MoveToParameters.WalkRunThreshold = 0.0f;
+
+            motion.RunRate = RunRate;
+
+            CurrentMotionState = motion;
+
+            EnqueueBroadcastMotion(motion);
+        }
+
+        /// <summary>
+        /// Called when the MoveTo process has completed
+        /// </summary>
+        public override void OnMoveComplete(WeenieError status)
+        {
+            //Console.WriteLine($"{Name}.OnMoveComplete({status})");            
+
+            if (status != WeenieError.None)
+                return;
+
+            PhysicsObj.CachedVelocity = Vector3.Zero;
+            IsMoving = false;
+
+
+        }
     }
-}   
+}
 
         
 

@@ -44,7 +44,13 @@ namespace ACE.Server.WorldObjects
             {
                 pet.Tick(currentUnixTime);
                 return;
-            }          
+            }
+
+            if (!IsPassivePet && this is CombatPet combatPet && IsMoving)
+            {
+                combatPet.CombatPetTick(currentUnixTime);
+                return;
+            }
 
             NextMonsterTickTime = currentUnixTime + monsterTickInterval;
 

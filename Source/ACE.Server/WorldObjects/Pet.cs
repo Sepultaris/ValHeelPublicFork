@@ -211,7 +211,7 @@ namespace ACE.Server.WorldObjects
         // if the passive pet is between min-max distance to owner,
         // it will turn and start running torwards its owner
 
-        private static readonly float MinDistance = 2.0f;
+        private static readonly float MinDistance = 10.0f;
         private static readonly float MaxDistance = 192.0f;
 
         private void StartFollow()
@@ -243,11 +243,11 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public override void MoveTo(WorldObject target, float runRate = 1.0f)
         {
-            if (!IsPassivePet)
+            /*if (!IsPassivePet)
             {
                 base.MoveTo(target, runRate);
                 return;
-            }
+            }*/
 
             if (MoveSpeed == 0.0f)
                 GetMovementSpeed();
