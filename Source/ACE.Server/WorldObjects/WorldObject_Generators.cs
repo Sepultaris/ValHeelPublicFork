@@ -617,18 +617,12 @@ namespace ACE.Server.WorldObjects
 
         public void IsUnixTimeWithinRange(long unixTime)
         {
-            /*// Save the current state of the GeneratorDisabled variable
-            var prevDisabled = GeneratorDisabled;
-
-            // Calculate the number of seconds since midnight
-            int secondsSinceMidnight = (int)(unixTime % 86400);
-            bool active = secondsSinceMidnight >= GeneratorStartTime * 3600 && secondsSinceMidnight < GeneratorEndTime * 3600;*/
-
             // Get the current time
             DateTime currentTime = DateTime.Now;
 
+            // Check to see if the current time falls within the specified range via GeneratorStartTime and GeneratorEndTime
             bool active = currentTime.TimeOfDay >= TimeSpan.FromHours(GeneratorStartTime) && currentTime.TimeOfDay < TimeSpan.FromHours(GeneratorEndTime);
-                      
+
             if (active && GeneratorDisabled == true)
             {
                 StartGenerator();

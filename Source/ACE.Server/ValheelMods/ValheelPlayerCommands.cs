@@ -28,7 +28,7 @@ namespace ACE.Server.Command.Handlers
             if (parameters.Length == 0)
             {
                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
-                session.Network.EnqueueSend(new GameMessageSystemChat($"Use this command to convert skill credits into skill points for a spcified skill. 1 skill point costs 2 skill credits.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Use this command to convert skill credits into skill points for a specified skill. 1 skill point costs 2 skill credits.", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"/spendsc meleed, missiled, arcane, magicd, itemtink, assesp, decep, heal, jump, lock, run, assesc, weaptink, armortink...", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"/spendsc magictink, creature, itemench, war, lead, loyal, fletch, alch, cook, salv, twohand, void, heavy, light, fines...", ChatMessageType.x1B));
                 session.Network.EnqueueSend(new GameMessageSystemChat($"/spendsc missilew, shield, dual, reck, sneak, dirty, summon.", ChatMessageType.x1B));
@@ -37,18 +37,26 @@ namespace ACE.Server.Command.Handlers
             else
             {
                 int skillCreditCost = 2;
-                if (session.Player.AvailableSkillCredits < skillCreditCost)
-                {
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"You must have at least 2 available skill credits.", ChatMessageType.Help));
-                    return;
-                }                
+                int.TryParse(parameters[1], out int amount);
 
+                if (amount >= 2 && amount * 2 > session.Player.AvailableSkillCredits)
+                {
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough skil credits.", ChatMessageType.Help));
+                    return;
+                }
                 if (parameters[0].Equals("meleed"))
                 {
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.MeleeDefense);
-                    int.TryParse(parameters[1], out int amount);
+                    
+
+                    
+                    if (session.Player.AvailableSkillCredits < skillCreditCost)
+                    {
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You must have at least 2 available skill credits.", ChatMessageType.Help));
+                        return;
+                    }
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -69,7 +77,7 @@ namespace ACE.Server.Command.Handlers
                     }
                     else
                     {
-                        skillCreditCost = amount * 2;
+                        skillCreditCost = amount * 2;                                               
                         skill.InitLevel += (uint)amount;
                         session.Player.AvailableSkillCredits -= skillCreditCost;
                         session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Melee Defense {amount} points.", ChatMessageType.Broadcast));
@@ -83,7 +91,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.MissileDefense);
-                    int.TryParse(parameters[1], out int amount);
+
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -118,7 +126,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.ArcaneLore);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -153,7 +161,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.MagicDefense);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -188,7 +196,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.ManaConversion);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -223,7 +231,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.ItemTinkering);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -258,7 +266,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.AssessPerson);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -293,7 +301,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Deception);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -328,7 +336,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Healing);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -363,7 +371,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Jump);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -398,7 +406,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Lockpick);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -433,7 +441,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Run);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -468,7 +476,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.AssessCreature);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -503,7 +511,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.WeaponTinkering);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -538,7 +546,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.ArmorTinkering);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -573,7 +581,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.MagicItemTinkering);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -608,7 +616,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.CreatureEnchantment);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -643,7 +651,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.ItemEnchantment);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -678,7 +686,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.LifeMagic);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -713,7 +721,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.WarMagic);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -748,7 +756,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Leadership);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -783,7 +791,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Loyalty);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -818,7 +826,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Fletching);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -853,7 +861,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Alchemy);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -888,7 +896,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Cooking);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -923,7 +931,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Salvaging);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -958,7 +966,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.TwoHandedCombat);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -993,7 +1001,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.VoidMagic);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1028,7 +1036,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.HeavyWeapons);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1063,7 +1071,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.LightWeapons);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1098,7 +1106,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.FinesseWeapons);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1133,7 +1141,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.MissileWeapons);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1168,7 +1176,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Shield);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1203,7 +1211,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.DualWield);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1238,7 +1246,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Recklessness);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1273,7 +1281,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.SneakAttack);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1308,7 +1316,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.DirtyFighting);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
@@ -1343,7 +1351,7 @@ namespace ACE.Server.Command.Handlers
                     var player = session.Player;
                     var numOfCredits = session.Player.AvailableSkillCredits;
                     var skill = session.Player.GetCreatureSkill(Skill.Summoning);
-                    int.TryParse(parameters[1], out int amount);
+                    
                     if (!skill.IsMaxRank)
                     {
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Skill must be at max rank before you can use this command.", ChatMessageType.Help));
