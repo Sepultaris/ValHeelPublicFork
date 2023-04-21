@@ -456,6 +456,27 @@ namespace ACE.Server.Factories.Tables.Wcids
             WeenieClassName.UmbralShadowSiphon,
         };
 
+        private static readonly List<WeenieClassName> forcePetsPrimalist = new List<WeenieClassName>()
+        {
+            WeenieClassName.WrathfulGuardianEssence,
+            WeenieClassName.VengefulGuardianEssence,
+            WeenieClassName.MournfulGuardianEssence,
+        };
+
+        private static readonly List<WeenieClassName> forcePetsNaturalist = new List<WeenieClassName>()
+        {
+            WeenieClassName.VisciousRuschkEssence,
+            WeenieClassName.ViolentRuschkEssence,
+            WeenieClassName.TormentedRuschkEssence,
+        };
+
+        private static readonly List<WeenieClassName> forcePetsNecromancer = new List<WeenieClassName>()
+        {
+            WeenieClassName.WretchedBonedEssence,
+            WeenieClassName.DefiledBonedEssence,
+            WeenieClassName.HauntedBonedEssence,
+        };
+
         private static readonly List<List<WeenieClassName>> Necromancer_PetDevices = new List<List<WeenieClassName>>()
         {
             fireSkeletons,
@@ -465,6 +486,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             umbrisshadowsiphons,
             panumbrisshadowsiphons,
             umbralshadowsiphons,
+            forcePetsNecromancer,
 
 
 
@@ -476,6 +498,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             umbrisshadowsiphons,
             panumbrisshadowsiphons,
             umbralshadowsiphons,
+            forcePetsNecromancer,
 
 
 
@@ -486,6 +509,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             umbrisshadowsiphons,
             panumbrisshadowsiphons,
             umbralshadowsiphons,
+            forcePetsNecromancer,
 
 
 
@@ -498,16 +522,19 @@ namespace ACE.Server.Factories.Tables.Wcids
             acidElementals,
             lightningElementals,
             frostElementals,
+            forcePetsPrimalist,
 
             acidKnaths,
             lightningKnaths,
             fireKnaths,
             frostKnaths,
+            forcePetsPrimalist,
 
             acidWisps,
             lightningWisps,
             fireWisps,
             frostWisps,
+            forcePetsPrimalist,
         };
 
         private static readonly List<List<WeenieClassName>> Naturalist_PetDevices = new List<List<WeenieClassName>>()
@@ -516,16 +543,19 @@ namespace ACE.Server.Factories.Tables.Wcids
             lightningMoars,
             fireMoars,
             frostMoars,
+            forcePetsNaturalist,
 
             acidGrievvers,
             lightningGrievvers,
             fireGrievvers,
             frostGrievvers,
+            forcePetsNaturalist,
 
             acidWasps,
             fireWasps,
             frostWasps,
             lightningWasps,
+            forcePetsNaturalist,
         };
 
         private static readonly Dictionary<int, int> petLevelIndexes = new Dictionary<int, int>()

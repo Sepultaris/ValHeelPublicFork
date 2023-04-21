@@ -54,13 +54,57 @@ namespace ACE.Server.WorldObjects
             MonsterState = State.Awake;
             IsAwake = true;
 
-            // copy ratings from pet device
-            DamageRating = petDevice.GearDamage;
-            DamageResistRating = petDevice.GearDamageResist;
-            CritDamageRating = petDevice.GearCritDamage;
-            CritDamageResistRating = petDevice.GearCritDamageResist;
+            double petRatingScaleFactor = PropertyManager.GetDouble("combat_pet_rating_scale").Item;
+
+            // inherit ratings from pet device
+            if (DamageRating == null)
+            {
+                DamageRating = 0;
+            }
+            if (DamageResistRating == null)
+            {
+                DamageResistRating = 0;
+            }
+            if (CritDamageRating == null)
+            {
+                CritDamageRating = 0;
+            }
+            if (CritDamageResistRating == null)
+            {
+                CritDamageResistRating = 0;
+            }
+            if (player.GearDamage == null)
+            {
+                DamageRating = petDevice.DamageRating;
+            }
+            DamageRating = petDevice.GearDamage + (int)(player.LumAugDamageRating * petRatingScaleFactor * 5);
+            if (player.DamageResistRating == null)
+            {
+                DamageResistRating = petDevice.DamageResistRating;
+            }
+            DamageResistRating = petDevice.GearDamageResist + (int)(player.LumAugDamageReductionRating * petRatingScaleFactor * 2);
+            if (player.CritDamageRating == null)
+            {
+                CritDamageRating = petDevice.CritDamageRating;
+            }
+            CritDamageRating = petDevice.GearCritDamage + (int)(player.LumAugCritDamageRating * petRatingScaleFactor * 5);
+            if (player.CritDamageResistRating == null)
+            {
+                CritDamageResistRating = petDevice.CritDamageResistRating;
+            }
+            CritDamageResistRating = petDevice.GearCritDamageResist + (int)(player.LumAugCritReductionRating * petRatingScaleFactor * 2);
+            if (player.CritRating == null)
+            {
+                CritRating = petDevice.CritRating;
+            }
             CritRating = petDevice.GearCrit;
+            if (player.CritResistRating == null)
+            {
+                CritResistRating = petDevice.CritResistRating;
+            }
             CritResistRating = petDevice.GearCritResist;
+
+            Level = Level + (player.Level / 2);
 
             // are CombatPets supposed to attack monsters that are in the same faction as the pet owner?
             // if not, there are a couple of different approaches to this
@@ -205,7 +249,7 @@ namespace ACE.Server.WorldObjects
         // if the passive pet is between min-max distance to owner,
         // it will turn and start running torwards its owner
 
-        private static readonly float MinDistance = 2.0f;
+        private static readonly float MinDistance = 5.0f;
         private static readonly float MaxDistance = 192.0f;
 
         private void CombatPetStartFollow()

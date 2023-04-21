@@ -30,6 +30,11 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyInt.PetClass);
             set { if (value.HasValue) SetProperty(PropertyInt.PetClass, value.Value); else RemoveProperty(PropertyInt.PetClass); }
         }
+        public bool? MultiPet
+        {
+            get => GetProperty(PropertyBool.MultiPet);
+            set { if (value.HasValue) SetProperty(PropertyBool.MultiPet, value.Value); else RemoveProperty(PropertyBool.MultiPet); }
+        }
 
         /// <summary>
         /// A new biota be created taking all of its values from weenie.
@@ -79,9 +84,9 @@ namespace ACE.Server.WorldObjects
 
             var result = SummonCreature(player, wcid);
 
-            
 
-                if (result == null || result.Value)
+
+            if (result == null || result.Value)
             {
                 // CombatPet devices should always have structure
                 if (Structure != null)
@@ -95,7 +100,7 @@ namespace ACE.Server.WorldObjects
             else
             {
                 // this would be a good place to send a friendly reminder to install the latest summoning updates from ACE-World-Patch
-            }
+            }            
         }    
 
         public override ActivationResult CheckUseRequirements(WorldObject activator)
@@ -126,7 +131,7 @@ namespace ACE.Server.WorldObjects
 
             if (player.NumberOfPets >= 3)
             {
-                player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
+                player.SendTransientError($"You cannot have any more active pets. {player.NumberOfPets}");
                 return new ActivationResult(false);
             }
             return new ActivationResult(true);

@@ -41,6 +41,17 @@ namespace ACE.Server.Factories
 
             var petDevice = WorldObjectFactory.CreateNewWorldObject(id) as PetDevice;
 
+            if (tier < 9 && petDevice.WeenieClassId == 801334 || petDevice.WeenieClassId == 801336 || petDevice.WeenieClassId == 801338 || petDevice.WeenieClassId == 802428 || petDevice.WeenieClassId == 802432
+                || petDevice.WeenieClassId == 802433 || petDevice.WeenieClassId == 802436 || petDevice.WeenieClassId == 802439 || petDevice.WeenieClassId == 802440 || petDevice.WeenieClassId == 802444 || petDevice.WeenieClassId == 802445 || petDevice.WeenieClassId == 802446)
+            {
+                CreateSummoningEssence(tier, mutate);
+            }
+            if (tier < 10 && petDevice.WeenieClassId == 802428 || petDevice.WeenieClassId == 802432 || petDevice.WeenieClassId == 802433 || petDevice.WeenieClassId == 802436 || petDevice.WeenieClassId == 802439
+                || petDevice.WeenieClassId == 802440 || petDevice.WeenieClassId == 802444 || petDevice.WeenieClassId == 802445 || petDevice.WeenieClassId == 802446)
+            {
+                CreateSummoningEssence(tier, mutate);
+            }
+
             if (petDevice != null && mutate)
                 MutatePetDevice(petDevice, tier);
 

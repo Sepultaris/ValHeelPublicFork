@@ -201,7 +201,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         PlayerLootMultiplier             = 9015,
         [ServerOnly]
-        SpeedRunning                     = 9016
+        SpeedRunning                     = 9016,
+        [ServerOnly]
+        MultiPet                         = 9017
     }
 
     public static class PropertyBoolExtensions

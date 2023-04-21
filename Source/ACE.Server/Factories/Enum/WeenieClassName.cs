@@ -38826,8 +38826,16 @@ namespace ACE.Server.Factories.Enum
         StaticMirra = 801974,
         GreenGarnetMirra = 801975,
         MahoganyMirra = 801976,
-        AlabasterMirra = 801977
-
+        AlabasterMirra = 801977,
+        WretchedBonedEssence = 802439,
+        DefiledBonedEssence = 802440,
+        VisciousRuschkEssence = 802444,
+        ViolentRuschkEssence = 802445,
+        TormentedRuschkEssence = 802446,
+        WrathfulGuardianEssence = 802428,
+        VengefulGuardianEssence = 802432,
+        MournfulGuardianEssence = 802433,
+        HauntedBonedEssence = 802436
     }
 
     

@@ -653,7 +653,8 @@ namespace ACE.Server.Managers
                 ("void_pvp_modifier", new Property<double>(0.5, "Scales the amount of damage players take from Void Magic. Defaults to 0.5, as per retail. For earlier content where DRR isn't as readily available, this can be adjusted for balance.")),
                 ("xp_modifier", new Property<double>(1.0, "scales the amount of xp received by players")),
                 ("interest_rate", new Property<double>(0.0373, "determines the global base interest rate")),
-                ("mirra_drop", new Property<double>(40000, "Modifies the mirra drop rate via ratio 1 = 1:1, 2 = 1:2 and so on. Default is 40000."))
+                ("mirra_drop", new Property<double>(40000, "Modifies the mirra drop rate via ratio 1 = 1:1, 2 = 1:2 and so on. Default is 40000.")),
+                ("combat_pet_rating_scale", new Property<double>(3.0, "Controls the combat pet rating inheritance from the player. Default is 1."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

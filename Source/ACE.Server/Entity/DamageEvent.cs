@@ -377,6 +377,15 @@ namespace ACE.Server.Entity
 
             EffectiveAttackSkill = attacker.GetEffectiveAttackSkill();
 
+            if (attacker.IsCombatPet)
+            {
+                if (attacker is CombatPet combatPet && combatPet.P_PetOwner != null)
+                {
+                    var attackSkillBonus = combatPet.P_PetOwner.GetCreatureSkill(Skill.Summoning).Current;
+                    EffectiveAttackSkill += (attackSkillBonus);
+                }                                                 
+            }
+                
             //var attackType = attacker.GetCombatType();
 
             EffectiveDefenseSkill = defender.GetEffectiveDefenseSkill(CombatType);

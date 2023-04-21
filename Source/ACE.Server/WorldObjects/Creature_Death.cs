@@ -463,6 +463,10 @@ namespace ACE.Server.WorldObjects
                 corpse.IsMonster = true;
                 if (killer.IsPlayer)
                 GenerateTreasure(killer, corpse);
+                if (killer.PetOwner != null && !killer.IsPlayer)
+                {
+                    GenerateTreasure(killer, corpse);
+                }
                 if (IsOnLootMultiplierLandblock)
                 {
                     GenerateTreasure(killer, corpse);
