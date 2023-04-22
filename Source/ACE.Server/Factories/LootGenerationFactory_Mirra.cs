@@ -127,7 +127,7 @@ namespace ACE.Server.Factories
             }
             if (wo.WeenieClassId == 801967)
             {
-                var damageBonus = ThreadSafeRandom.Next(200, 300);
+                var damageBonus = ThreadSafeRandom.Next(0, 100);
 
                 wo.MirraWeaponBonus = damageBonus;
                 wo.UiEffects = UiEffects.Magical;
@@ -140,27 +140,27 @@ namespace ACE.Server.Factories
                 if (wo.Level == 1)
                 {
                     wo.IconOverlayId = 0x6006C34; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(200, 219);
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(15, 24);
                 }
                 if (wo.Level == 2)
                 {
                     wo.IconOverlayId = 0x6006C35; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(220, 239);
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(25, 49);
                 }
                 if (wo.Level == 3)
                 {
                     wo.IconOverlayId = 0x6006C36; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(240, 259);
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(50, 74);
                 }
                 if (wo.Level == 4)
                 {
                     wo.IconOverlayId = 0x6006C37; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(260, 279);
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(75, 90);
                 }
                 if (wo.Level == 5)
                 {
                     wo.IconOverlayId = 0x6006C38; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(280, 300);
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(90, 100);
                 }
             }
             if (wo.WeenieClassId == 801968)
@@ -436,7 +436,7 @@ namespace ACE.Server.Factories
             }
             if (wo.WeenieClassId == 801975)
             {
-                var damageBonus = (float)ThreadSafeRandom.Next(1.00f, 2.00f);
+                var damageBonus = (float)ThreadSafeRandom.Next(0.00f, 1.00f);
 
                 wo.MirraDamageModBonus = damageBonus;
                 wo.UiEffects = UiEffects.Magical;
@@ -445,30 +445,30 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.00f, 1.19f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.01f, 0.04f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.20f, 1.39f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.05f, 0.09f);
                     wo.IconOverlayId = 0x6006C35; // 1
 
                 }
                 if (wo.Level == 3)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.40f, 1.59f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.1f, 0.14f);
                     wo.IconOverlayId = 0x6006C36; // 1
 
                 }
                 if (wo.Level == 4)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.60f, 1.79f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.15f, 0.19f);
                     wo.IconOverlayId = 0x6006C37; // 1
 
                 }
                 if (wo.Level == 5)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.80f, 2.00f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.2f, 0.25f);
                     wo.IconOverlayId = 0x6006C38; // 1
 
                 }
@@ -476,7 +476,7 @@ namespace ACE.Server.Factories
             }
             if (wo.WeenieClassId == 801976)
             {
-                var damageBonus = (float)ThreadSafeRandom.Next(1.00f, 2.00f);
+                var damageBonus = (float)ThreadSafeRandom.Next(0.00f, 1.00f);
 
                 wo.MirraDamageModBonus = damageBonus;
                 wo.UiEffects = UiEffects.Magical;
@@ -485,30 +485,30 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.00f, 1.19f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.01f, 0.04f);
                     wo.IconOverlayId = 0x6006C34; // 1                  
                 }
                 if (wo.Level == 2)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.20f, 1.39f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.05f, 0.09f);
                     wo.IconOverlayId = 0x6006C35; // 1
 
                 }
                 if (wo.Level == 3)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.40f, 1.59f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.1f, 0.14f);
                     wo.IconOverlayId = 0x6006C36; // 1
 
                 }
                 if (wo.Level == 4)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.60f, 1.79f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.15f, 0.19f);
                     wo.IconOverlayId = 0x6006C37; // 1
 
                 }
                 if (wo.Level == 5)
                 {
-                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(1.80f, 2.00f);
+                    wo.MirraDamageModBonus = (float)ThreadSafeRandom.Next(0.2f, 0.25f);
                     wo.IconOverlayId = 0x6006C38; // 1
 
                 }

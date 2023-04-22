@@ -57,21 +57,21 @@ namespace ACE.Server.WorldObjects
             double petRatingScaleFactor = PropertyManager.GetDouble("combat_pet_rating_scale").Item;
 
             // inherit ratings from pet device
-            if (DamageRating == null)
+            if (petDevice.DamageRating == null)
             {
-                DamageRating = 0;
+                DamageRating = 1;
             }
-            if (DamageResistRating == null)
+            if (petDevice.DamageResistRating == null)
             {
-                DamageResistRating = 0;
+                DamageResistRating = 1;
             }
-            if (CritDamageRating == null)
+            if (petDevice.CritDamageRating == null)
             {
-                CritDamageRating = 0;
+                CritDamageRating = 1;
             }
-            if (CritDamageResistRating == null)
+            if (petDevice.CritDamageResistRating == null)
             {
-                CritDamageResistRating = 0;
+                CritDamageResistRating = 1;
             }
             if (player.GearDamage == null)
             {
