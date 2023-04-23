@@ -24,6 +24,7 @@ using ACE.Server.WorldObjects;
 using System.Reflection.Metadata;
 using Renci.SshNet.Messages.Authentication;
 using static ACE.Server.WorldObjects.Player;
+using static ACE.Server.Factories.LootGenerationFactory;
 using ACE.Database.Models.Auth;
 using ACE.Server.Network;
 
@@ -844,6 +845,46 @@ namespace ACE.Server.Managers
                 player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, $"You can't use the {source.NameWithMaterial} on itself."));
                 player.SendUseDoneEvent();
                 return;
+            }
+
+            if (source.WeenieClassId == 802403 && target.WeenieClassId == 802401)
+            {
+                ActionChain craftChain = new ActionChain();
+
+                var animTime = 0.0f;
+
+                player.IsBusy = true;
+
+                if (player.CombatMode != CombatMode.NonCombat)
+                {
+                    var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                    craftChain.AddDelaySeconds(stanceTime);
+
+                    animTime += stanceTime;
+                }
+
+                animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                craftChain.AddAction(player, () =>
+                {
+                    player.IsBusy = false;
+                });
+
+                craftChain.EnqueueChain();
+
+                player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                player.TryCreateInInventoryWithNetworking(HandlePolishMirra());
+                player.TryConsumeFromInventoryWithNetworking(target);
+
+                source.Structure --;
+                player.Session.Network.EnqueueSend(new GameMessagePublicUpdatePropertyInt(source, PropertyInt.Structure, source.Structure.Value));
+                if (source.Structure == 0)
+                {
+                    player.TryConsumeFromInventoryWithNetworking(source);
+                }
             }
 
             if (source.IsMirra)

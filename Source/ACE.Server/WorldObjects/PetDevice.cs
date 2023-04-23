@@ -154,12 +154,15 @@ namespace ACE.Server.WorldObjects
                 log.Error($"{player.Name}.SummonCreature({wcid}) - PetDevice {WeenieClassId} - {WeenieClassName} tried to summon {wo.WeenieClassId} - {wo.WeenieClassName} of unknown type {wo.WeenieType}");
                 return false;
             }
+
             var success = pet.Init(player, this);
-            var petHealth = pet.Health;
-            var petStamina = pet.Stamina;
-            var petMana = pet.Mana;
-            var petName = pet.Name;
-            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You summon a {petName} with {petHealth} Max Health, {petStamina} Max Stamina, and {petMana} Max Mana.", ChatMessageType.Broadcast));
+
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"------------", ChatMessageType.x1B));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You summon forth a {pet.WeenieClassName}.", ChatMessageType.x1B));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.DamageRating} D / {pet.DamageResistRating} DR", ChatMessageType.x1B));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.CritDamageRating} CD / {CritDamageResistRating} CDR", ChatMessageType.x1B));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.Health.MaxValue} H / {pet.Stamina.MaxValue} S / {pet.Mana.MaxValue} M", ChatMessageType.x1B));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"------------", ChatMessageType.x1B));
             player.NumberOfPets++;
 
             return success;

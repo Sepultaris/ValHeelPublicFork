@@ -461,6 +461,10 @@ namespace ACE.Server.Factories.Tables.Wcids
             WeenieClassName.WrathfulGuardianEssence,
             WeenieClassName.VengefulGuardianEssence,
             WeenieClassName.MournfulGuardianEssence,
+            WeenieClassName.WrathfulGuardianEssence,
+            WeenieClassName.VengefulGuardianEssence,
+            WeenieClassName.MournfulGuardianEssence,
+            WeenieClassName.MournfulGuardianEssence,
         };
 
         private static readonly List<WeenieClassName> forcePetsNaturalist = new List<WeenieClassName>()
@@ -468,12 +472,20 @@ namespace ACE.Server.Factories.Tables.Wcids
             WeenieClassName.VisciousRuschkEssence,
             WeenieClassName.ViolentRuschkEssence,
             WeenieClassName.TormentedRuschkEssence,
+            WeenieClassName.VisciousRuschkEssence,
+            WeenieClassName.ViolentRuschkEssence,
+            WeenieClassName.TormentedRuschkEssence,
+            WeenieClassName.TormentedRuschkEssence,
         };
 
         private static readonly List<WeenieClassName> forcePetsNecromancer = new List<WeenieClassName>()
         {
             WeenieClassName.WretchedBonedEssence,
             WeenieClassName.DefiledBonedEssence,
+            WeenieClassName.HauntedBonedEssence,
+            WeenieClassName.WretchedBonedEssence,
+            WeenieClassName.DefiledBonedEssence,
+            WeenieClassName.HauntedBonedEssence,
             WeenieClassName.HauntedBonedEssence,
         };
 
