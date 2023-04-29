@@ -28,6 +28,7 @@ using ACE.Server.WorldObjects.Managers;
 
 using Character = ACE.Database.Models.Shard.Character;
 using MotionTable = ACE.DatLoader.FileTypes.MotionTable;
+using ACE.DatLoader.Entity;
 
 namespace ACE.Server.WorldObjects
 {
@@ -534,7 +535,20 @@ namespace ACE.Server.WorldObjects
             }
 
             if (CurrentActivePet != null)
-                CurrentActivePet.Destroy();
+            {
+                foreach (var creature in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (creature.IsCombatPet)
+                    {
+                        if (creature.PetOwner == Guid.Full)
+                        {
+                            creature.Die();
+                        }
+                    }
+                }
+                NumberOfPets = 0;
+                CurrentActivePet.Die();
+            }
 
             // If we're in the dying animation process, we cannot logout until that animation completes..
             if (isInDeathProcess)

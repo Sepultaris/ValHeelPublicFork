@@ -2757,7 +2757,7 @@ namespace ACE.Server.WorldObjects
 
         /* Ratings */
 
-        public int? DamageRating
+        public int? GearDamageRating
         {
             get => GetProperty(PropertyInt.DamageRating);
             set { if (!value.HasValue) RemoveProperty(PropertyInt.DamageRating); else SetProperty(PropertyInt.DamageRating, value.Value); }

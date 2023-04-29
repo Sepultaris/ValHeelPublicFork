@@ -99,7 +99,7 @@ namespace ACE.Server.WorldObjects
 
             UpdateVital(Health, 0);
 
-            if (topDamager != null)
+            if (topDamager != null && !IsCombatPet)
             {
                 KillerId = topDamager.Guid.Full;
 
@@ -110,31 +110,57 @@ namespace ACE.Server.WorldObjects
                         topDamagerPlayer.CreatureKills = (topDamagerPlayer.CreatureKills ?? 0) + 1;
                 }
             }
-
-            CurrentMotionState = new Motion(MotionStance.NonCombat, MotionCommand.Ready);
-            //IsMonster = false;
-
-            PhysicsObj.StopCompletely(true);
-
-            // broadcast death animation
-            var motionDeath = new Motion(MotionStance.NonCombat, MotionCommand.Dead);
-            var deathAnimLength = ExecuteMotion(motionDeath);
-
-            EmoteManager.OnDeath(lastDamager);
-
-            var dieChain = new ActionChain();
-
-            // wait for death animation to finish
-            //var deathAnimLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.Dead);
-            dieChain.AddDelaySeconds(deathAnimLength);
-
-            dieChain.AddAction(this, () =>
+            if (IsCombatPet)
             {
-                CreateCorpse(topDamager);
-                Destroy();
-            });
+                CurrentMotionState = new Motion(MotionStance.NonCombat, MotionCommand.Ready);
+                //IsMonster = false;
 
-            dieChain.EnqueueChain();
+                PhysicsObj.StopCompletely(true);
+
+                // broadcast death animation
+                var motionDeath1 = new Motion(MotionStance.NonCombat, MotionCommand.Dead);
+                var deathAnimLength1 = ExecuteMotion(motionDeath1);
+
+                var dieChain1 = new ActionChain();
+
+                // wait for death animation to finish
+                //var deathAnimLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.Dead);
+                dieChain1.AddDelaySeconds(deathAnimLength1);
+
+                dieChain1.AddAction(this, () =>
+                {
+                    Destroy();
+                });
+
+                dieChain1.EnqueueChain();
+            }
+            else
+            {
+                CurrentMotionState = new Motion(MotionStance.NonCombat, MotionCommand.Ready);
+                //IsMonster = false;
+
+                PhysicsObj.StopCompletely(true);
+
+                // broadcast death animation
+                var motionDeath = new Motion(MotionStance.NonCombat, MotionCommand.Dead);
+                var deathAnimLength = ExecuteMotion(motionDeath);
+
+                EmoteManager.OnDeath(lastDamager);
+
+                var dieChain = new ActionChain();
+
+                // wait for death animation to finish
+                //var deathAnimLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.Dead);
+                dieChain.AddDelaySeconds(deathAnimLength);
+
+                dieChain.AddAction(this, () =>
+                {
+                    CreateCorpse(topDamager);
+                    Destroy();
+                });
+
+                dieChain.EnqueueChain();
+            }
         }
 
         /// <summary>
@@ -465,6 +491,11 @@ namespace ACE.Server.WorldObjects
                 GenerateTreasure(killer, corpse);
                 if (killer.PetOwner != null && !killer.IsPlayer)
                 {
+                    var petOwner = killer.TryGetPetOwner();
+                    if (corpse.KillerId == petOwner.Guid.Full)
+                    {
+                        corpse.KillerId = petOwner.Guid.Full;
+                    }
                     GenerateTreasure(killer, corpse);
                 }
                 if (IsOnLootMultiplierLandblock)

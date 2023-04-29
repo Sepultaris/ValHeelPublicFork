@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using ACE.Common;
@@ -40,6 +41,9 @@ namespace ACE.Server.WorldObjects
 
         private double houseRentWarnTimestamp;
         private const double houseRentWarnInterval = 3600;
+        private ObjCell CurCell;
+
+        public List<Creature> CombatPets = new List<Creature>();
 
         public void Player_Tick(double currentUnixTime)
         {
@@ -178,8 +182,7 @@ namespace ACE.Server.WorldObjects
                                 break;
                         }
                     }
-
-                    RunActionChainAsync();
+                    _ = RunActionChainAsync();
 
                     ApplyVisualEffects(PlayScript.VisionDownBlack);
                     ApplyVisualEffects(PlayScript.BaelZharonSmite);
@@ -238,8 +241,107 @@ namespace ACE.Server.WorldObjects
             if (player.BankAccountNumber != null)
             Player_Bank.HandleInterestPayments(player);
 
+            /*var visibleCreatureList = PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature();
+
+            foreach (var creature in visibleCreatureList)
+            {
+                if (creature != null && creature.IsCombatPet && creature.PetOwner == player.Guid.Full && !CombatPets.Contains(creature))
+                {
+                    CombatPets.Add(creature);
+                    player.NumberOfPets = CombatPets.Count;
+                }
+            }
+            
+            for (int i = CombatPets.Count - 1; i >= 0; i--)
+            {
+                var combatPet = CombatPets[i];
+                if (!visibleCreatureList.Contains(combatPet))
+                {
+                    CombatPets.RemoveAt(i);
+                    player.NumberOfPets = CombatPets.Count;
+                }
+            }
+
+            if (visibleCreatureList.Count > 4)
+            {
+                if (CombatPets.Count > 0)
+                {
+                    var combatPetToRemove = CombatPets[0];
+                    combatPetToRemove.Die();
+                    CombatPets.RemoveAt(0);
+                }
+            }*/
+
             base.Heartbeat(currentUnixTime);
-        }      
+
+            MonitorCombatPets(CombatPets, player);
+        }
+
+        public void MonitorCombatPets(List<Creature> CombatPets, Player player)
+        {
+            var session = Session;
+            var visibleCreatures = PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature();
+
+            // Remove combat pets that are no longer visible and decrease player's pet count
+            for (int i = CombatPets.Count - 1; i >= 0; i--)
+            {
+                var combatPet = CombatPets[i];
+                if (!visibleCreatures.Contains(combatPet))
+                {
+                    CombatPets.RemoveAt(i);
+                    player.NumberOfPets = CombatPets.Count;
+                    combatPet.Die();
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"A pet was removed {CombatPets.Count}.", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                }
+            }
+
+            // Remove the first combat pet if more than 3 combat pets are visible
+            if (visibleCreatures.Count(c => c.IsCombatPet && c.PetOwner == player.Guid.Full) > 3)
+            {
+                if (CombatPets.Count > 0)
+                {
+                    var oldPetCount = player.NumberOfPets;
+                    var combatPetToRemove = CombatPets[0];
+                    CombatPets.RemoveAt(0);
+                    player.NumberOfPets = CombatPets.Count;
+                    combatPetToRemove.Die();
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have too many pets! Killing the oldest! {oldPetCount} old count / {CombatPets.Count} new count.", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                }
+            }
+
+            // Add new combat pets to the list and increase player's pet count
+            for (int i = 0; i < visibleCreatures.Count; i++)
+            {
+                var creature = visibleCreatures[i];
+
+                if (creature != null && creature.IsCombatPet && creature.PetOwner == player.Guid.Full && !CombatPets.Contains(creature))
+                {
+                    CombatPets.Add(creature);
+                    player.NumberOfPets = CombatPets.Count;
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"A pet was added {CombatPets.Count}.", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                }
+                if (visibleCreatures.Count(c => c.IsCombatPet && c.PetOwner == player.Guid.Full) > 3 && NumberOfPets > 3)
+                {
+                    if (CombatPets.Count > 0)
+                    {
+                        var oldPetCount = player.NumberOfPets;
+                        var combatPetToRemove = CombatPets[0];
+                        CombatPets.RemoveAt(0);
+                        player.NumberOfPets = CombatPets.Count;
+                        combatPetToRemove.Die();
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have too many pets! Killing the oldest! {oldPetCount} old count / {CombatPets.Count} new count.", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    }
+                }
+            }
+        }
 
         public static void HandleSpeedRun(Player player, double? currentUnixTime)
         {

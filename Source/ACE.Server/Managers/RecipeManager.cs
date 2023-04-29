@@ -105,12 +105,12 @@ namespace ACE.Server.Managers
                     if (target.Sockets == 1)
                     {                       
                         target.IconOverlayId = 0x6006C34; // 1
-                        player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateDataID(target, PropertyDataId.IconOverlay, 0x6006C34));
+                        player.Session.Network.EnqueueSend(new GameMessagePublicUpdatePropertyDataID(target, PropertyDataId.IconOverlay, 0x6006C34));
                     }
                     if (target.Sockets == 0)
                     {
                         target.IconOverlayId = 0x6006C35; // 2
-                        player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateDataID(target, PropertyDataId.IconOverlay, 0x6006C35));                       
+                        player.Session.Network.EnqueueSend(new GameMessagePublicUpdatePropertyDataID(target, PropertyDataId.IconOverlay, 0x6006C35));                       
                     }
                 }
             }

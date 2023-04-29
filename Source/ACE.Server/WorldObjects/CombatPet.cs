@@ -55,56 +55,70 @@ namespace ACE.Server.WorldObjects
             IsAwake = true;
 
             double petRatingScaleFactor = PropertyManager.GetDouble("combat_pet_rating_scale").Item;
+            var ratingBonus = player.GetCreatureSkill(Skill.Summoning).Current * 0.02;
+
+            var playerDamageRatingBonus = player.GetDamageRating() + (player.Level / 10);
+            var playerDamageResistRatingBonus = player.GetDamageResistRating() + (player.Level / 10);
+            var playerCritDamageBonus = player.GetCritDamageRating() + (player.Level / 10);
+            var playerCritDamageresistBonus = player.GetCritDamageResistRating() + (player.Level / 10);
+            var playerCritRatingBonus = player.GetCritRating() + (player.Level / 10);
+            var playerCritResistRatingBonus = player.GetCritResistRating() + (player.Level / 10);
 
             // inherit ratings from pet device
-            if (petDevice.DamageRating == null)
+            if (petDevice.GearDamage == null || petDevice.GearDamage == 0)
             {
-                DamageRating = 1;
+                GearDamageRating = (int?)ratingBonus + (player.Level / 10);
             }
-            if (petDevice.DamageResistRating == null)
+            else
+                GearDamageRating = (int?)(petDevice.GearDamage + playerDamageRatingBonus * petRatingScaleFactor) + (int?)ratingBonus;
+
+            if (petDevice.GearDamageResist == null || petDevice.GearDamageResist == 0)
             {
-                DamageResistRating = 1;
+                DamageResistRating = (int?)ratingBonus + (player.Level / 10);
             }
-            if (petDevice.CritDamageRating == null)
+            else
+                DamageResistRating = (int?)(petDevice.GearDamageResist + playerDamageResistRatingBonus * petRatingScaleFactor) + (int?)ratingBonus;
+
+            if (petDevice.GearCritDamage == null || petDevice.GearCritDamage == 0)
             {
-                CritDamageRating = 1;
+                CritDamageRating = (int?)ratingBonus + (player.Level / 10);
             }
-            if (petDevice.CritDamageResistRating == null)
+            else
+                CritDamageRating = (int?)(petDevice.GearCritDamage + playerCritDamageBonus * petRatingScaleFactor) + (int?)ratingBonus;
+
+            if (petDevice.GearCritDamageResist == null || petDevice.GearCritDamageResist == 0)
             {
-                CritDamageResistRating = 1;
+                CritDamageResistRating = (int?)ratingBonus + (player.Level / 10);
             }
-            if (player.GearDamage == null)
+            else
+                CritDamageResistRating = (int?)(petDevice.GearCritDamageResist + playerCritDamageresistBonus * petRatingScaleFactor) + (int?)ratingBonus;
+
+            if (petDevice.GearCrit == null || petDevice.GearCrit == 0)
             {
-                DamageRating = petDevice.DamageRating;
+                CritRating = (int?)ratingBonus + (player.Level / 10);
             }
-            DamageRating = petDevice.GearDamage + (int)(player.LumAugDamageRating * petRatingScaleFactor * 5);
-            if (player.DamageResistRating == null)
+            else
+                CritRating = (int?)(petDevice.CritRating + playerCritRatingBonus * petRatingScaleFactor) + (int?)ratingBonus;
+              
+            if (petDevice.GearCritResist == null || petDevice.GearCritResist == 0)
             {
-                DamageResistRating = petDevice.DamageResistRating;
+                CritResistRating = (int?)ratingBonus + (player.Level / 10);
             }
-            DamageResistRating = petDevice.GearDamageResist + (int)(player.LumAugDamageReductionRating * petRatingScaleFactor * 2);
-            if (player.CritDamageRating == null)
-            {
-                CritDamageRating = petDevice.CritDamageRating;
-            }
-            CritDamageRating = petDevice.GearCritDamage + (int)(player.LumAugCritDamageRating * petRatingScaleFactor * 5);
-            if (player.CritDamageResistRating == null)
-            {
-                CritDamageResistRating = petDevice.CritDamageResistRating;
-            }
-            CritDamageResistRating = petDevice.GearCritDamageResist + (int)(player.LumAugCritReductionRating * petRatingScaleFactor * 2);
-            if (player.CritRating == null)
-            {
-                CritRating = petDevice.CritRating;
-            }
-            CritRating = petDevice.GearCrit;
-            if (player.CritResistRating == null)
-            {
-                CritResistRating = petDevice.CritResistRating;
-            }
-            CritResistRating = petDevice.GearCritResist;
+            else
+                CritResistRating = (int?)(petDevice.CritResistRating + playerCritResistRatingBonus * petRatingScaleFactor) + (int?)ratingBonus;
 
             Level = Level + (player.Level / 2);
+
+            int lifespanBoost = (int)(player.Level / 2) + (int)(player.GetCreatureSkill(Skill.Summoning).Current * 0.1);
+
+            Lifespan = 60;
+
+            Lifespan = Lifespan + (lifespanBoost);
+
+            if (Lifespan > 120)
+            {
+                Lifespan = 120;
+            }
 
             // are CombatPets supposed to attack monsters that are in the same faction as the pet owner?
             // if not, there are a couple of different approaches to this
@@ -211,6 +225,11 @@ namespace ACE.Server.WorldObjects
 
             if (currentUnixTime >= nextSlowTickTime)
                 CombatPetSlowTick(currentUnixTime);
+
+            if (IsDead)
+            {
+                P_PetOwner.NumberOfPets--;
+            }
         }
 
         private static readonly double slowTickSeconds = 1.0;
@@ -240,7 +259,15 @@ namespace ACE.Server.WorldObjects
             }
           
             if (dist > MaxDistance)
+            {
+                P_PetOwner.NumberOfPets--;
                 Destroy();
+                if (P_PetOwner.NumberOfPets < 0)
+                {
+                    P_PetOwner.NumberOfPets = 0;
+                }
+            }
+                
 
             if (!IsMoving && dist > MinDistance && FindNextTarget() == false)
                 CombatPetStartFollow();
@@ -281,12 +308,6 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public override void MoveTo(WorldObject target, float runRate = 1.0f)
         {
-            /*if (!IsPassivePet)
-            {
-                base.MoveTo(target, runRate);
-                return;
-            }*/
-
             if (MoveSpeed == 0.0f)
                 GetMovementSpeed();
 
@@ -316,7 +337,8 @@ namespace ACE.Server.WorldObjects
             PhysicsObj.CachedVelocity = Vector3.Zero;
             IsMoving = false;
 
-
+            CurrentCombatTarget = null;
+            GetNearbyMonsters().Clear();
         }
     }
 }

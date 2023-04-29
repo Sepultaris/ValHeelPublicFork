@@ -850,8 +850,8 @@ namespace ACE.Server.WorldObjects
                     item.Destroy();
             }
 
-            if (this is Pet pet && pet.P_PetOwner?.CurrentActivePet == this)
-                pet.P_PetOwner.CurrentActivePet = null;
+            /*if (this is Pet pet && pet.P_PetOwner?.CurrentActivePet == this)
+                pet.P_PetOwner.CurrentActivePet = null;*/
 
             if (raiseNotifyOfDestructionEvent)
                 NotifyOfEvent(RegenerationType.Destruction);

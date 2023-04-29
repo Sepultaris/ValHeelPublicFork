@@ -382,15 +382,28 @@ namespace ACE.Server.Entity
                 if (attacker is CombatPet combatPet && combatPet.P_PetOwner != null)
                 {
                     var attackSkillBonus = combatPet.P_PetOwner.GetCreatureSkill(Skill.Summoning).Current;
-                    EffectiveAttackSkill += (attackSkillBonus);
+                    EffectiveAttackSkill = combatPet.P_PetOwner.GetEffectiveAttackSkill() + attackSkillBonus;
                 }                                                 
             }
                 
-            //var attackType = attacker.GetCombatType();
+            // var attackType = attacker.GetCombatType();
 
             EffectiveDefenseSkill = defender.GetEffectiveDefenseSkill(CombatType);
 
             var evadeChance = 1.0f - SkillCheck.GetSkillChance(EffectiveAttackSkill, EffectiveDefenseSkill);
+
+            if (defender.IsCombatPet)
+            {
+                if (defender is CombatPet combatPet && combatPet.P_PetOwner != null)
+                {
+                    // var defenseSkillBonus = combatPet.P_PetOwner.GetCreatureSkill(Skill.Summoning).Current;
+
+                    EffectiveDefenseSkill = (uint)(combatPet.P_PetOwner.GetEffectiveDefenseSkill(CombatType) * 0.9) + (uint)(combatPet.P_PetOwner.GetCreatureSkill(Skill.Summoning).Current * 0.1);
+                    // EffectiveDefenseSkill += defenseSkillBonus;
+
+                    evadeChance = 1.0f - SkillCheck.GetSkillChance(EffectiveAttackSkill, EffectiveDefenseSkill);
+                }
+            }
             return (float)evadeChance;
         }
 

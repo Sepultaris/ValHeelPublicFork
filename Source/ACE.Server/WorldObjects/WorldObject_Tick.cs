@@ -97,7 +97,18 @@ namespace ACE.Server.WorldObjects
         {
             if (EnchantmentManager.HasEnchantments)
                 EnchantmentManager.HeartBeat(CachedHeartbeatInterval);
+            if (IsLifespanSpent && this is Pet pet && pet.IsCombatPet)
+            {
+                pet.P_PetOwner.NumberOfPets--;
+                
+                DeleteObject(pet);
 
+                if (pet.P_PetOwner.NumberOfPets < 0)
+                {
+                    pet.P_PetOwner.NumberOfPets = 0;
+                }
+            }
+                
             if (IsLifespanSpent)
                 DeleteObject();
 

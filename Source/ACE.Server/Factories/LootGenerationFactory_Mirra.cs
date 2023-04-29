@@ -119,10 +119,7 @@ namespace ACE.Server.Factories
             wo.Level = Roll_MirraLevel(wo);
  
             if (wo.WeenieClassId == 801966)
-            {                
-                var armorBonus = ThreadSafeRandom.Next(200, 300);
-                
-                wo.MirraArmorBonus = armorBonus;
+            {
                 wo.UiEffects = UiEffects.Magical;
                 wo.ItemUseable = Usable.SourceContainedTargetContained;
                 wo.TargetType = ItemType.Vestements;
@@ -132,25 +129,30 @@ namespace ACE.Server.Factories
 
                 if (wo.Level == 1)
                 {
-                    wo.IconOverlayId = 0x6006C34; // 1 
+                    wo.IconOverlayId = 0x6006C34; // 1
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(10, 24);
                 }
                 if (wo.Level == 2)
                 {
                     wo.IconOverlayId = 0x6006C35; // 2
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(25, 49);
                 }
                 if (wo.Level == 3)
                 {
                     wo.IconOverlayId = 0x6006C36; // 3
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(50, 74);
                 }
                 if (wo.Level == 4)
                 {
                     wo.IconOverlayId = 0x6006C37; // 4
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(75, 99);
                 }
                 if (wo.Level == 5)
                 {
                     wo.IconOverlayId = 0x6006C38; // 5
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(100, 150);
                 }
-               
+
             }
             if (wo.WeenieClassId == 801967)
             {
@@ -583,9 +585,6 @@ namespace ACE.Server.Factories
         {
             if (wo.WeenieClassId == 801966)
             {
-                var armorBonus = ThreadSafeRandom.Next(200, 300);
-
-                wo.MirraArmorBonus = armorBonus;
                 wo.UiEffects = UiEffects.Magical;
                 wo.ItemUseable = Usable.SourceContainedTargetContained;
                 wo.TargetType = ItemType.Vestements;
@@ -596,22 +595,27 @@ namespace ACE.Server.Factories
                 if (wo.Level == 1)
                 {
                     wo.IconOverlayId = 0x6006C34; // 1
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(10, 24);
                 }
                 if (wo.Level == 2)
                 {
                     wo.IconOverlayId = 0x6006C35; // 2
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(25, 49);
                 }
                 if (wo.Level == 3)
                 {
                     wo.IconOverlayId = 0x6006C36; // 3
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(50, 74);
                 }
                 if (wo.Level == 4)
                 {
                     wo.IconOverlayId = 0x6006C37; // 4
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(75, 99);
                 }
                 if (wo.Level == 5)
                 {
                     wo.IconOverlayId = 0x6006C38; // 5
+                    wo.MirraArmorBonus = ThreadSafeRandom.Next(100, 150);
                 }
 
             }

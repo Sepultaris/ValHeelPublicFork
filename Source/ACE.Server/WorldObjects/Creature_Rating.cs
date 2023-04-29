@@ -202,7 +202,7 @@ namespace ACE.Server.WorldObjects
         public int GetDamageRating()
         {
             // get from base properties (monsters)?
-            var damageRating = DamageRating ?? 0;
+            var damageRating = GearDamageRating ?? 0;
 
             // additive enchantments
             var enchantments = EnchantmentManager.GetRating(PropertyInt.DamageRating);

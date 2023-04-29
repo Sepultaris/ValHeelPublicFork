@@ -124,8 +124,6 @@ namespace ACE.Server.Factories
 
                 petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
             }
-
-
         }
 
         public static int GeneratePetDeviceRating(int tier)

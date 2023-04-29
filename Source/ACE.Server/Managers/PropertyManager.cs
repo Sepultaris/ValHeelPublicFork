@@ -654,7 +654,7 @@ namespace ACE.Server.Managers
                 ("xp_modifier", new Property<double>(1.0, "scales the amount of xp received by players")),
                 ("interest_rate", new Property<double>(0.0373, "determines the global base interest rate")),
                 ("mirra_drop", new Property<double>(40000, "Modifies the mirra drop rate via ratio 1 = 1:1, 2 = 1:2 and so on. Default is 40000.")),
-                ("combat_pet_rating_scale", new Property<double>(3.0, "Controls the combat pet rating inheritance from the player. Default is 1."))
+                ("combat_pet_rating_scale", new Property<double>(3.0, "Controls the combat pet rating inheritance from the player. Default is 3."))
                 );
 
         public static readonly ReadOnlyDictionary<string, Property<string>> DefaultStringProperties =

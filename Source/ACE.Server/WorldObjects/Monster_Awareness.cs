@@ -405,6 +405,12 @@ namespace ACE.Server.WorldObjects
 
                     _visualAwarenessRangeSq = visualAwarenessRange * visualAwarenessRange;
                 }
+                if (_visualAwarenessRangeSq == null && IsCombatPet)
+                {
+                    var visualAwarenessRange = (float)((VisualAwarenessRange ?? VisualAwarenessRange_Default) * PropertyManager.GetDouble("mob_awareness_range").Item);
+
+                    _visualAwarenessRangeSq = (visualAwarenessRange * visualAwarenessRange) / 3;
+                }
 
                 return _visualAwarenessRangeSq.Value;
             }

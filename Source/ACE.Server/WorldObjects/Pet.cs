@@ -14,6 +14,7 @@ using ACE.Server.Entity;
 using ACE.Server.Managers;
 using ACE.Server.Physics.Animation;
 using ACE.Entity.Enum.Properties;
+using ACE.Server.Command.Handlers;
 
 namespace ACE.Server.WorldObjects
 {
@@ -93,6 +94,8 @@ namespace ACE.Server.WorldObjects
             player.CurrentActivePet = this;
 
             if (IsPassivePet)
+                nextSlowTickTime = Time.GetUnixTime();
+            if (IsCombatPet)
                 nextSlowTickTime = Time.GetUnixTime();
 
             return true;
@@ -202,7 +205,11 @@ namespace ACE.Server.WorldObjects
             var dist = GetCylinderDistance(P_PetOwner);
 
             if (dist > MaxDistance)
+            {
+                P_PetOwner.NumberOfPets--;
                 Destroy();
+            }
+                
 
             if (!IsMoving && dist > MinDistance)
                 StartFollow();
@@ -211,7 +218,7 @@ namespace ACE.Server.WorldObjects
         // if the passive pet is between min-max distance to owner,
         // it will turn and start running torwards its owner
 
-        private static readonly float MinDistance = 10.0f;
+        private static readonly float MinDistance = 2.0f;
         private static readonly float MaxDistance = 192.0f;
 
         private void StartFollow()

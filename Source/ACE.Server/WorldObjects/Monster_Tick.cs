@@ -52,6 +52,47 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
+            if (!IsPassivePet && this is CombatPet combatPet3)
+            {
+                if (combatPet3.IsDead)
+                {
+                    combatPet3.P_PetOwner.NumberOfPets--;
+
+                    if (combatPet3.P_PetOwner.NumberOfPets < 0)
+                    {
+                        combatPet3.P_PetOwner.NumberOfPets = 0;
+                    }
+                    return;
+                }
+                if (combatPet3.P_PetOwner.IsDead)
+                {
+                    combatPet3.Die();
+                    combatPet3.P_PetOwner.NumberOfPets--;
+
+                    if (combatPet3.P_PetOwner.NumberOfPets < 0)
+                    {
+                        combatPet3.P_PetOwner.NumberOfPets = 0;
+                    }
+                    return;
+                }
+                if (PlayerManager.GetOnlinePlayer(combatPet3.P_PetOwner.Guid.Full) == null)
+                {
+                    combatPet3.Die();
+                    return;
+                }
+                if (combatPet3.P_PetOwner.Teleporting)
+                {
+                    combatPet3.Die();
+                    combatPet3.P_PetOwner.NumberOfPets--;
+
+                    if (combatPet3.P_PetOwner.NumberOfPets < 0)
+                    {
+                        combatPet3.P_PetOwner.NumberOfPets = 0;
+                    }
+                    return;
+                }
+            }
+
             NextMonsterTickTime = currentUnixTime + monsterTickInterval;
 
             if (!IsAwake)
@@ -137,7 +178,7 @@ namespace ACE.Server.WorldObjects
             }
 
             if (PhysicsObj.IsSticky)
-                UpdatePosition(false);
+                UpdatePosition(GetPhysicsObj(), false);
 
             // get distance to target
             var targetDist = GetDistanceToTarget();

@@ -239,7 +239,7 @@ namespace ACE.Server.WorldObjects
         public void Movement()
         {
             //if (!IsRanged)
-                UpdatePosition();
+                UpdatePosition(GetPhysicsObj());
 
             if (MonsterState == State.Awake && GetDistanceToTarget() >= MaxChaseRange)
             {
@@ -252,7 +252,12 @@ namespace ACE.Server.WorldObjects
                 CancelMoveTo();
         }
 
-        public void UpdatePosition(bool netsend = true)
+        public Physics.PhysicsObj GetPhysicsObj()
+        {
+            return PhysicsObj;
+        }
+
+        public void UpdatePosition(Physics.PhysicsObj physicsObj, bool netsend = true)
         {
             stopwatch.Restart();
             PhysicsObj.update_object();

@@ -17,11 +17,103 @@ using ACE.Common;
 using ACE.Server.Entity.Actions;
 using MySqlX.XDevAPI.Common;
 using Google.Protobuf.WellKnownTypes;
+using System.Reflection.Metadata.Ecma335;
+using ACE.Server.Physics;
 
 namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        [CommandHandler("pets", AccessLevel.Player, CommandHandlerFlag.None, "Handles combat pet commands.", "")]
+
+        public static void HandlePets(Session session, params string[] parameters)
+        {
+            var target = CommandHandlerHelper.GetLastAppraisedObject(session);
+
+            if (parameters.Length == 0 || parameters[0] == null)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Use this for pet commands.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                return;
+            }
+            else
+            {
+                if (parameters[0].Equals("reset", StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach(var creature in session.Player.PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                    {
+                        if (creature.IsCombatPet)
+                        {
+                            if (creature.PetOwner == session.Player.Guid.Full)
+                            {
+                                creature.Die();
+                                session.Player.NumberOfPets--;
+                                if (session.Player.NumberOfPets < 0)
+                                {
+                                    session.Player.NumberOfPets = 0;
+                                }
+                            }
+                        }
+                    }
+                    return;
+                }
+                if (parameters[0].Equals("kill", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (target.PetOwner != null && session.Player.Guid.Full == target.PetOwner)
+                    {
+                        target.DeleteObject();
+                        session.Player.NumberOfPets--;
+                        if (session.Player.NumberOfPets < 0)
+                        {
+                            session.Player.NumberOfPets = 0;
+                        }
+                    }
+                    return;
+                }
+            }
+        }
+
+        [CommandHandler("convertlumtosc", AccessLevel.Player, CommandHandlerFlag.None,"Handles converting banked luminance to skill credits.","")]
+
+        public static void HandleConvertLumToSC(Session session, params string[] parameters)
+        {
+            if (parameters.Length == 0)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Use this command to convert luminace into skill credits.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                return;
+            }
+            else
+            {
+                long baseCost = 1000000000;
+                int.TryParse(parameters[0], out int amount);
+                long cost = baseCost * amount;
+
+                if (amount <= 0 || parameters == null)
+                {
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You must use a valid integer.", ChatMessageType.Help));
+                    return;
+                }
+                if (session.Player.BankedLuminance < cost)
+                {
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough banked luminance.", ChatMessageType.Help));
+                    return;
+                }
+                else
+                {
+                    session.Player.BankedLuminance -= cost;
+                    var newScAmount = session.Player.AvailableSkillCredits += amount;
+
+                    session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(session.Player, PropertyInt.AvailableSkillCredits, (int)newScAmount));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have converted {cost} luminance into {amount} skill credits.", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Your New Account Balance: {session.Player.BankedLuminance:N0} Luminanace", ChatMessageType.x1B));
+                    return;
+                }
+            }
+        }
+
         [CommandHandler("spendsc", AccessLevel.Player, CommandHandlerFlag.None, "Handles all skill credit spending.", "")]        
         public static void HandleSpendSC(Session session, params string[] parameters)
         {
