@@ -291,9 +291,9 @@ namespace ACE.Server.WorldObjects
                     CombatPets.RemoveAt(i);
                     player.NumberOfPets = CombatPets.Count;
                     combatPet.Die();
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    /*session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
                     session.Network.EnqueueSend(new GameMessageSystemChat($"A pet was removed {CombatPets.Count}.", ChatMessageType.x1B));
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));*/
                 }
             }
 
@@ -307,9 +307,9 @@ namespace ACE.Server.WorldObjects
                     CombatPets.RemoveAt(0);
                     player.NumberOfPets = CombatPets.Count;
                     combatPetToRemove.Die();
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    /*session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
                     session.Network.EnqueueSend(new GameMessageSystemChat($"You have too many pets! Killing the oldest! {oldPetCount} old count / {CombatPets.Count} new count.", ChatMessageType.x1B));
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));*/
                 }
             }
 
@@ -322,9 +322,9 @@ namespace ACE.Server.WorldObjects
                 {
                     CombatPets.Add(creature);
                     player.NumberOfPets = CombatPets.Count;
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    /*session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
                     session.Network.EnqueueSend(new GameMessageSystemChat($"A pet was added {CombatPets.Count}.", ChatMessageType.x1B));
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));*/
                 }
                 if (visibleCreatures.Count(c => c.IsCombatPet && c.PetOwner == player.Guid.Full) > 3 && NumberOfPets > 3)
                 {
@@ -335,9 +335,9 @@ namespace ACE.Server.WorldObjects
                         CombatPets.RemoveAt(0);
                         player.NumberOfPets = CombatPets.Count;
                         combatPetToRemove.Die();
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                        /*session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"You have too many pets! Killing the oldest! {oldPetCount} old count / {CombatPets.Count} new count.", ChatMessageType.x1B));
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));*/
                     }
                 }
             }

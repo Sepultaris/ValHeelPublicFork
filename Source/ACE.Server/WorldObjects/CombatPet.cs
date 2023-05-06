@@ -109,7 +109,7 @@ namespace ACE.Server.WorldObjects
 
             Level = Level + (player.Level / 2);
 
-            int lifespanBoost = (int)(player.Level / 2) + (int)(player.GetCreatureSkill(Skill.Summoning).Current * 0.1);
+            int lifespanBoost = (int)(player.Level / 8) + (int)(player.GetCreatureSkill(Skill.Summoning).Current * 0.1);
 
             Lifespan = 60;
 

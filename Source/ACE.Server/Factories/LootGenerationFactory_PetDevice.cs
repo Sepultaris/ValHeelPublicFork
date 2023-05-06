@@ -81,6 +81,7 @@ namespace ACE.Server.Factories
                     petDevice.GearCritResist = GeneratePetDeviceRating(tier);
 
                 petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
+                petDevice.CooldownDuration = 30;
             }
             if (tier == 9)
             {
@@ -102,6 +103,7 @@ namespace ACE.Server.Factories
                     petDevice.GearCritResist = GeneratePetDeviceRating(tier);
 
                 petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
+                petDevice.CooldownDuration = 30;
             }
             if (tier == 10)
             {
@@ -123,6 +125,7 @@ namespace ACE.Server.Factories
                     petDevice.GearCritResist = GeneratePetDeviceRating(tier);
 
                 petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
+                petDevice.CooldownDuration = 30;
             }
         }
 
