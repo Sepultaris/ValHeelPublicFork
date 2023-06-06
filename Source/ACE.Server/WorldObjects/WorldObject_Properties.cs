@@ -3082,6 +3082,12 @@ namespace ACE.Server.WorldObjects
             set { if (!value) RemoveProperty(PropertyBool.Proto); else SetProperty(PropertyBool.Proto, value); }
         }
 
+        public bool GunBlade
+        {
+            get => GetProperty(PropertyBool.GunBlade) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Proto); else SetProperty(PropertyBool.GunBlade, value); }
+        }
+
         public bool Arramoran
         {
             get => GetProperty(PropertyBool.Arramoran) ?? false;

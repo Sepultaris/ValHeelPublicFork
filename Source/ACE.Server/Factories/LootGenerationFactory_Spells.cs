@@ -166,7 +166,7 @@ namespace ACE.Server.Factories
             }
             else
             {
-                log.Warn($"RollNumEnchantments({wo.Name}, {profile.TreasureType}, {roll.ItemType}) - unknown item type");
+                // log.Warn($"RollNumEnchantments({wo.Name}, {profile.TreasureType}, {roll.ItemType}) - unknown item type");
                 return 1;   // gems?
             }
         }
@@ -453,7 +453,7 @@ namespace ACE.Server.Factories
             }
             else
             {
-                log.Error($"RollCantrip({wo.Name}, {profile.TreasureType}, {roll.ItemType}) - unknown item type");
+                // log.Error($"RollCantrip({wo.Name}, {profile.TreasureType}, {roll.ItemType}) - unknown item type");
                 return SpellId.Undef;
             }
         }
@@ -576,7 +576,7 @@ namespace ACE.Server.Factories
                 return 19;
             }
 
-            log.Error($"GetSpellCode_Dynamic({wo.Name}) - couldn't determine spell selection code");
+            // log.Error($"GetSpellCode_Dynamic({wo.Name}) - couldn't determine spell selection code");
 
             return 0;
         }
@@ -631,7 +631,7 @@ namespace ACE.Server.Factories
             if (coverageMask == CoverageMask.Feet)
                 return 18;
 
-            log.Error($"GetSpellCode_Dynamic_ClothingArmor({wo.Name}) - couldn't determine spell selection code for {coverageMask}, {isArmor}");
+            // log.Error($"GetSpellCode_Dynamic_ClothingArmor({wo.Name}) - couldn't determine spell selection code for {coverageMask}, {isArmor}");
             return 0;
         }
     }

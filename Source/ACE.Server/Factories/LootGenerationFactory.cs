@@ -945,7 +945,7 @@ namespace ACE.Server.Factories
 
             if (treasureItemType == TreasureItemType_Orig.Undef)
             {
-                log.Error($"LootGenerationFactory.RollWcid({treasureDeath.TreasureType}, {category}): treasureItemType == Undef");
+                // log.Error($"LootGenerationFactory.RollWcid({treasureDeath.TreasureType}, {category}): treasureItemType == Undef");
                 return null;
             }
 

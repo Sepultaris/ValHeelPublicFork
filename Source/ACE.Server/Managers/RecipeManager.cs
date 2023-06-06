@@ -27,6 +27,7 @@ using static ACE.Server.WorldObjects.Player;
 using static ACE.Server.Factories.LootGenerationFactory;
 using ACE.Database.Models.Auth;
 using ACE.Server.Network;
+using System.Reflection.Metadata.Ecma335;
 
 namespace ACE.Server.Managers
 {
@@ -57,11 +58,12 @@ namespace ACE.Server.Managers
                 {
                     var mirraId = source.Guid;
                     var armorbonus = source.MirraArmorBonus;
-                    var startingArmorLevel = target.GetProperty(PropertyInt.ArmorLevel);
+                    var startingArmorLevel = target.GetProperty(PropertyInt.ArmorLevel).Value;
 
                     target.ArmorLevel = startingArmorLevel + armorbonus;
                     target.Sockets--;
                     success = true;
+                    player.Session.Network.EnqueueSend(new GameMessageUpdateObject(target));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {source.Name} has been inserted into {target.Name}.", ChatMessageType.Craft));                    
                 }
                 else if (target.Sockets == 0 || target.Sockets == null)
@@ -890,6 +892,65 @@ namespace ACE.Server.Managers
             if (source.IsMirra)
             {
                 HandleMirra(player, source, target);               
+            }
+
+            if(source.WeenieClassId == 802596)
+            {
+                var session = player.Session;
+                var itemType = target.GetProperty(PropertyInt.ItemType);
+
+                if (target != null && itemType == 1)
+                {
+                    if (target.GunBlade == true)
+                    {
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} has already been converted.", ChatMessageType.Craft));
+                        player.SendUseDoneEvent();
+                        return;
+                    }
+
+                    target.GunBlade = true;
+
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You've converted the {target.Name} into a gunblade.", ChatMessageType.Craft));
+
+                    ActionChain craftChain = new ActionChain();
+
+                    var animTime = 0.0f;
+
+                    player.IsBusy = true;
+
+                    if (player.CombatMode != CombatMode.NonCombat)
+                    {
+                        var stanceTime = player.SetCombatMode(CombatMode.NonCombat);
+                        craftChain.AddDelaySeconds(stanceTime);
+
+                        animTime += stanceTime;
+                    }
+
+                    animTime += player.EnqueueMotion(craftChain, MotionCommand.ClapHands);
+
+                    player.EnqueueMotion(craftChain, MotionCommand.Ready);
+
+                    craftChain.AddAction(player, () =>
+                    {
+                        player.SendUseDoneEvent();
+
+                        player.IsBusy = false;
+                    });
+
+                    craftChain.EnqueueChain();
+
+                    player.NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
+
+                    player.TryConsumeFromInventoryWithNetworking(source);
+
+                    return;
+                }
+                if (itemType != 1)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"This can only be applied to melee weapons.", ChatMessageType.Craft));
+                    player.SendUseDoneEvent();
+                    return;
+                }
             }
 
             if (source.WeenieClassId == 802150)

@@ -6,13 +6,65 @@ using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
 using ACE.Server.Factories;
 using ACE.Entity.Enum.Properties;
+using ACE.Entity.Models;
 using ACE.Server.DuskfallMods;
 using System.Collections.Generic;
+using ACE.Database;
+using log4net;
+using System.Linq;
+using System.Text;
 
 namespace ACE.Server.Command.Handlers
 {
     public static class ValheelAdminCommands
     {
+        [CommandHandler("holtup", AccessLevel.Admin, CommandHandlerFlag.ConsoleInvoke, "Moves errybody (offline) to Holt")]
+        public static void HandleVerifySkillCredits(Session session, params string[] parameters)
+        {
+            //Few ways of getting the position you want:
+            //Negatives for switching between ns/ew, or you can construct with /loc data
+            var holt = new ACE.Entity.Position(42.1f, 33.6f);
+
+            //Similar but no guessing with negatives and checks for errors
+            if (!CommandParameterHelpers.TryParsePosition(new string[] { "42.1N", "33.6E" }, out var e, out var position))
+                return;
+
+            //POI approach
+            var teleportPOI = DatabaseManager.World.GetCachedPointOfInterest("holtburg");
+            if (teleportPOI == null)
+                return;
+            var weenie = DatabaseManager.World.GetCachedWeenie(teleportPOI.WeenieClassId);
+            var portalDest = new ACE.Entity.Position(weenie.GetPosition(PositionType.Destination));
+            WorldObject.AdjustDungeon(portalDest);
+
+            //Easiest to do when the server is closed.  Ordering by account for legibility
+            var sb = new StringBuilder("\r\n");
+            foreach (var p in PlayerManager.GetAllOffline().OrderBy(x => x.Account.AccountId))
+            {
+                //Only move regular players / restrict based on access level.  
+                if (p.Account == null || p.Account.AccessLevel >= (uint)AccessLevel.Sentinel)
+                    continue;
+
+                //Get location position/other positions for player if you need it.  Not needed to move but using it to print position info
+                sb.AppendLine($"{p.Account.AccountId} - {p.Name}:");
+                foreach (var pt in Enum.GetValues<PositionType>())
+                {
+                    if (!p.Biota.PropertiesPosition.TryGetValue(PositionType.Location, out var pos))
+                        continue;
+
+                    sb.AppendLine($"   {pt,-20} - 0x{pos.ObjCellId:X} - {pos.PositionX},{pos.PositionY},{pos.PositionZ}");
+                }
+
+                //Set Location position for a player to holt and save
+                p.Biota.SetPosition(PositionType.Location, holt, p.BiotaDatabaseLock);
+                p.SaveBiotaToDatabase();
+            }
+
+            //Print out locations
+            //ModManager.Log($"{sb}");
+            return;
+        }
+
         [CommandHandler("randomizecolor", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, "Totally randomizes the colors of the appraised armor.")]
         public static void HandleRandomizeColor(Session session, params string[] parameters)
         {
