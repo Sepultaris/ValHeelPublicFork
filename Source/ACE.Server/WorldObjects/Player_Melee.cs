@@ -253,6 +253,11 @@ namespace ACE.Server.WorldObjects
                 OnAttackDone();
             else if (dist > GunBladeDistance && dist > MeleeDistance)
                 OnAttackDone();
+            else if (ammo.WeenieClassId != 300444)
+            {
+                OnAttackDone();
+                SendTransientError($"You must use gunblade ammunition");
+            }
 
             else if (dist <= GunBladeDistance && dist > MeleeDistance && ammo != null)
             {
@@ -523,7 +528,7 @@ namespace ACE.Server.WorldObjects
                         {
                             // target procs don't happen for cleaving
                             var ammo1 = GetEquippedAmmo();
-                            if (ammo1 != null)
+                            if (ammo1 != null && ammo1.WeenieClassId == 300444)
                             {
                                 var projectileSpeed = GetGunBladeProjectileSpeed();
                                 var aimVelocity = GetAimVelocity(target, projectileSpeed);
@@ -539,13 +544,13 @@ namespace ACE.Server.WorldObjects
                             else
                             {
                                 DamageTarget(cleaveHit, weapon);
-
+                                SendTransientError($"You must use gunblade ammunition");
                             }
                                                        
                         }
                     }                   
 
-                    if (weapon != null && weapon.IsGunblade == true && ammo != null)
+                    if (weapon != null && weapon.IsGunblade == true && ammo != null && ammo.WeenieClassId == 300444)
                     {
                         var ammo1 = GetEquippedAmmo();
                         var projectileSpeed = GetGunBladeProjectileSpeed();
@@ -556,6 +561,10 @@ namespace ACE.Server.WorldObjects
 
                         LaunchProjectile(weapon, ammo1, target, origin, orientation, velocity);
                         UpdateAmmoAfterLaunch(ammo1);
+                    }
+                    else
+                    {
+                        SendTransientError($"You must use gunblade ammunition");
                     }
 
                     /*if (weapon != null && weapon.IsGunblade == true && ammo != null)
