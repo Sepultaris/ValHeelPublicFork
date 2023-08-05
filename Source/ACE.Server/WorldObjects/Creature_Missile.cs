@@ -90,6 +90,14 @@ namespace ACE.Server.WorldObjects
         {
             var player = this as Player;
 
+            if (ammo == null)
+            {
+                if (player != null)
+                    player.SendWeenieError(WeenieError.YourAttackMisfired);
+
+                return null;
+            }
+
             if (!velocity.IsValid())
             {
                 if (player != null)
@@ -280,7 +288,7 @@ namespace ACE.Server.WorldObjects
 
             if (maxVelocity == 0.0f)
             {
-                log.Warn($"{Name}.GetMissileSpeed() - {missileLauncher.Name} ({missileLauncher.Guid}) has speed 0");
+                // log.Warn($"{Name}.GetMissileSpeed() - {missileLauncher.Name} ({missileLauncher.Guid}) has speed 0");
 
                 maxVelocity = DefaultProjectileSpeed;
             }
@@ -307,7 +315,7 @@ namespace ACE.Server.WorldObjects
 
             if (maxVelocity == 0.0f)
             {
-                log.Warn($"{Name}.GetMissileSpeed() - {gunBlade.Name} ({gunBlade.Guid}) has speed 0");
+                // log.Warn($"{Name}.GetMissileSpeed() - {gunBlade.Name} ({gunBlade.Guid}) has speed 0");
 
                 maxVelocity = GunBladeProjectileSpeed;
             }

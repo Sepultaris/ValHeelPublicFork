@@ -37,6 +37,11 @@ namespace ACE.Server.WorldObjects
 
             HandlePKDeathBroadcast(lastDamager, topDamager);
 
+            if (Hardcore)
+            {
+                PlayerManager.BroadcastToAll(new GameMessageSystemChat($"The Hardcore player {Name}, has died at level {Level}, with a score of {HcScore}.", ChatMessageType.Broadcast));
+            }
+
             var deathMessage = base.OnDeath(lastDamager, damageType, criticalHit);
 
             var lastDamagerObj = lastDamager?.TryGetAttacker();
@@ -230,6 +235,37 @@ namespace ACE.Server.WorldObjects
             });
 
             dieChain.EnqueueChain();
+
+            if (Hardcore == true)
+            {
+                if (IsPKDeath(topDamager))
+                {
+                    Character.DeleteTime = (ulong)Time.GetUnixTime();
+                    Character.IsDeleted = true;
+                    CharacterChangesDetected = true;
+                    Session.LogOffPlayer(true);
+                    PlayerManager.HandlePlayerDelete(Character.Id);
+
+                    var success = PlayerManager.ProcessDeletedPlayer(Character.Id);
+                }
+                else if (GetNumInventoryItemsOfWCID(802812) >= 1)
+                {
+                    if (TryConsumeFromInventoryWithNetworking(802812, 1))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    Character.DeleteTime = (ulong)Time.GetUnixTime();
+                    Character.IsDeleted = true;
+                    CharacterChangesDetected = true;
+                    Session.LogOffPlayer(true);
+                    PlayerManager.HandlePlayerDelete(Character.Id);
+
+                    var success = PlayerManager.ProcessDeletedPlayer(Character.Id);
+                }
+            }
         }
 
         /// <summary>

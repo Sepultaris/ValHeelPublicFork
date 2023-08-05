@@ -154,6 +154,33 @@ namespace ACE.Server.WorldObjects
 
             if (item != null)
             {
+                if (item.ItemType == ItemType.Portal)
+                {
+                    // kill pets
+                    ActionChain killPets = new ActionChain();
+
+                    killPets.AddAction(this, () =>
+                    {
+                        foreach (var monster in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                        {
+                            if (monster.IsCombatPet)
+                            {
+                                if (monster.PetOwner == Guid.Full)
+                                {
+                                    monster.Destroy();
+                                    NumberOfPets--;
+                                    if (NumberOfPets < 0)
+                                    {
+                                        NumberOfPets = 0;
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    killPets.EnqueueChain();
+                }
+
                 if (item.CurrentLandblock != null && !item.Visibility && item.Guid != LastOpenedContainerId)
                 {
                     if (IsBusy)

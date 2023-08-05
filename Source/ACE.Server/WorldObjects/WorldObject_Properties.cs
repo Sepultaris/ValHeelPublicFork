@@ -2870,11 +2870,11 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyString.TinkerLog);
             set { if (value == null) RemoveProperty(PropertyString.TinkerLog); else SetProperty(PropertyString.TinkerLog, value); }
         }
-        
-        public int? CreatureKills
+
+        public int CreatureKills
         {
-            get => GetProperty(PropertyInt.CreatureKills);
-            set { if (!value.HasValue) RemoveProperty(PropertyInt.CreatureKills); else SetProperty(PropertyInt.CreatureKills, value.Value); }
+            get => GetProperty(PropertyInt.CreatureKills) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.CreatureKills); else SetProperty(PropertyInt.CreatureKills, value); }
         }
 
         public int? PlayerKillsPk

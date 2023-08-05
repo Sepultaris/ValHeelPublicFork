@@ -262,6 +262,7 @@ namespace ACE.Server.WorldObjects
             {
                 P_PetOwner.NumberOfPets--;
                 Destroy();
+
                 if (P_PetOwner.NumberOfPets < 0)
                 {
                     P_PetOwner.NumberOfPets = 0;

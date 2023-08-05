@@ -98,7 +98,7 @@ namespace ACE.Server.WorldObjects
 
             Attackable = true;
 
-            SetProperty(PropertyString.DateOfBirth, $"{DateTime.UtcNow:dd MMMM yyyy}");
+            SetProperty(PropertyString.DateOfBirth, $"{DateTime.Now:dd MMMM yyyy HH:mm:ss}");
         }
 
         /// <summary>
@@ -542,12 +542,12 @@ namespace ACE.Server.WorldObjects
                     {
                         if (creature.PetOwner == Guid.Full)
                         {
-                            creature.Die();
+                            creature.Destroy();
                         }
                     }
                 }
                 NumberOfPets = 0;
-                CurrentActivePet.Die();
+                CurrentActivePet.Destroy();
             }
 
             // If we're in the dying animation process, we cannot logout until that animation completes..

@@ -9,6 +9,7 @@ namespace ACE.Server.Network.GameMessages.Messages
         public GameMessageTurbineChat(ChatNetworkBlobType chatNetworkBlobType, ChatNetworkBlobDispatchType chatNetworkBlobDispatchType, uint channel, string senderName, string message, uint senderID, ChatType chatType)
             : base(GameMessageOpcode.TurbineChat, GameMessageGroup.LoginQueue)
         {
+            ValheelMods.DiscordRelay.RelayIngameChat(message, senderName, chatType, channel, senderID, chatNetworkBlobType, chatNetworkBlobDispatchType);
             /*uint messageSize;       // the number of bytes that follow after this DWORD
             ChatNetworkBlobType type;   // the type of data contained in this message
             uint blobDispatchType;  // 1?

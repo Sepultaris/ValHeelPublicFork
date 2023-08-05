@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACE.Server.DuskfallMods
+namespace ACE.Server.ValheelMods
 {
     public static class ValheelSettings
     {

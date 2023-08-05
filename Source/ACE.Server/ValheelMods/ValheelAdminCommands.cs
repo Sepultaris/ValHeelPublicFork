@@ -7,7 +7,7 @@ using ACE.Server.WorldObjects;
 using ACE.Server.Factories;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
-using ACE.Server.DuskfallMods;
+using ACE.Server.ValheelMods;
 using System.Collections.Generic;
 using ACE.Database;
 using log4net;

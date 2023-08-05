@@ -203,7 +203,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         SpeedRunning                     = 9016,
         [ServerOnly]
-        MultiPet                         = 9017
+        MultiPet                         = 9017,
+        [ServerOnly]
+        Hardcore                         = 9018
     }
 
     public static class PropertyBoolExtensions

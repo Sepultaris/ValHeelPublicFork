@@ -98,7 +98,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         TinkerLog                       = 9007,
         [ServerOnly]
-        SpeedRunTime                    = 9008
+        SpeedRunTime                    = 9008,
+        [ServerOnly]
+        HcAge                             = 9009
 
     }
 

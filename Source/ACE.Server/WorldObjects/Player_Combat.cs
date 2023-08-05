@@ -575,6 +575,9 @@ namespace ACE.Server.WorldObjects
             if (source is Player attacker)
                 UpdatePKTimers(attacker, this);
 
+            if (Hardcore)
+                damageTaken = damageTaken + (uint)(damageTaken * 0.15);
+
             return (int)damageTaken;
         }
 

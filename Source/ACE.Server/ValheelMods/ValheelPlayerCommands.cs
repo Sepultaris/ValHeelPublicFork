@@ -6,24 +6,119 @@ using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Factories;
 using ACE.Server.WorldObjects;
 using ACE.Entity.Enum.Properties;
-using ACE.Server.DuskfallMods;
+using ACE.Server.ValheelMods;
 using ACE.Server.WorldObjects.Entity;
-using log4net.Core;
-using ACE.Entity;
-using Org.BouncyCastle.Bcpg;
-using System.Dynamic;
-using ACE.DatLoader;
 using ACE.Common;
 using ACE.Server.Entity.Actions;
-using MySqlX.XDevAPI.Common;
-using Google.Protobuf.WellKnownTypes;
-using System.Reflection.Metadata.Ecma335;
-using ACE.Server.Physics;
+using System.Collections.Generic;
+using ACE.Server.Entity;
+using System.Text;
+using System.Linq;
 
 namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        [CommandHandler("achlist", AccessLevel.Player, CommandHandlerFlag.None, "This command displays your currently earned achievements.")]
+
+        public static void HandleAchievements(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+
+            var prestigious = $"Prestigious: {player.PrestigeMilestones} ";
+            var monsterSlayer = $"Monster Slayer: {player.MonsterKillsMilestones} ";
+            var wealthyBanker = $"Wealthy Banker: {player.HcPyrealsWonMilestones} ";
+            var levelingUp = $"Leveling Up: {player.LevelMilestones} ";
+            var hardcoreMaster = $"Hardcore Master: {player.HcScoreMilestones} ";
+
+            StringBuilder result = new StringBuilder();
+
+            result.AppendLine($"---------- Your Current Achievements ---------- ");
+            result.AppendLine(prestigious);
+            result.AppendLine(monsterSlayer);
+            result.AppendLine(wealthyBanker);
+            result.AppendLine(levelingUp);
+            result.AppendLine(hardcoreMaster);
+
+            var finalResult = result.ToString();
+
+            session.Network.EnqueueSend(new GameMessageSystemChat($"{finalResult}", ChatMessageType.x1B));
+        }
+
+        [CommandHandler("hcleaders", AccessLevel.Player, CommandHandlerFlag.None, "This command displays the current top ten highest level hardcore players.")]
+
+        public static void HandleHcLeaders(Session session, params string[] parameters)
+        {
+            List<Player> onlineHcPlayers = new List<Player>();
+            List<OfflinePlayer> offlineHcPlayers = new List<OfflinePlayer>();
+
+            foreach (var p in PlayerManager.GetAllOnline())
+            {
+                if (p.Hardcore == true)
+                    onlineHcPlayers.Add(p);
+            }
+
+            foreach (var i in PlayerManager.GetAllOffline())
+            {
+                if (i.Hardcore == true)
+                    offlineHcPlayers.Add(i);
+            }
+
+            List<IPlayer> allHcPlayers = new List<IPlayer>();
+            allHcPlayers.AddRange(onlineHcPlayers);
+            allHcPlayers.AddRange(offlineHcPlayers);
+
+            List<IPlayer> top10Players = allHcPlayers.OrderByDescending(p => p.HcScore).Take(10).ToList();
+
+            StringBuilder result = new StringBuilder();
+            int rank = 1;
+
+            result.AppendLine("---------------------------- Hardcore Top Ten! ---------------------------- ");
+            result.AppendLine("");
+            result.AppendLine("Rank - Name - Level - Age - Creature Kills - Pyreals Won - Score ");
+
+            foreach (var player in top10Players)
+            {
+                result.AppendLine($"{rank} - {player.Name} - {player.Level} - {player.HcAge} - {player.CreatureKills} - {player.HcPyrealsWon} - {player.HcScore} ");
+                rank++;
+            }
+
+            string finalResult = result.ToString();
+
+            if (finalResult == null)
+                return;
+            else
+                session.Network.EnqueueSend(new GameMessageSystemChat($"{finalResult}", ChatMessageType.x1B));
+        }
+
+        [CommandHandler("hardcore", AccessLevel.Admin, CommandHandlerFlag.None, "Handles Hardcore mode.", "")]
+
+        public static void HandleHardcore(Session session, params string[] parameters)
+        {
+
+            if (parameters.Length <= 0)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Use this command to enable Hardcore mode for your character.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Hardcore enabled characters gain a permanent 50% xp bonus.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"This means that if your character dies, you will automatically be logged out and your character will be permanently deleted!", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"To enable Hardcore mode enter /hardcore on, in chat.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"WARNING! THIS IS PERMANENT AND CANNOT BE UNDONE!!!", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+            }
+            switch (parameters?[0].ToLower())
+            {
+                case "1":
+                case "on":
+                    session.Player.Hardcore = true;
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"Warning! Hardcore mode has been enabled!", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"If this chracter dies, you will be logged out, and the character permanently deleted!", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    break;
+            }
+        }
+
         [CommandHandler("pets", AccessLevel.Player, CommandHandlerFlag.None, "Handles combat pet commands.", "")]
 
         public static void HandlePets(Session session, params string[] parameters)
@@ -47,7 +142,7 @@ namespace ACE.Server.Command.Handlers
                         {
                             if (creature.PetOwner == session.Player.Guid.Full)
                             {
-                                creature.Die();
+                                creature.Destroy();
                                 session.Player.NumberOfPets--;
                                 if (session.Player.NumberOfPets < 0)
                                 {
@@ -62,7 +157,7 @@ namespace ACE.Server.Command.Handlers
                 {
                     if (target.PetOwner != null && session.Player.Guid.Full == target.PetOwner)
                     {
-                        target.DeleteObject();
+                        target.Destroy();
                         session.Player.NumberOfPets--;
                         if (session.Player.NumberOfPets < 0)
                         {
@@ -1524,6 +1619,9 @@ namespace ACE.Server.Command.Handlers
                 {
                     session.Player.BankedLuminance = 0;
                     session.Player.BankedPyreals = 0;
+                    if (session.Player.Hardcore && session.Player.HcPyrealsWon > 0)
+                        session.Player.BankedPyreals += (long)session.Player.HcPyrealsWon;
+                    
                     session.Player.BankedAshcoin = 0;
 
                     if (session.Player.WithdrawTimer == null)
@@ -1607,6 +1705,14 @@ namespace ACE.Server.Command.Handlers
 
                             foreach (var player in players)
                             {
+                                var sender = session.Player;
+
+                                if (player.Hardcore && !sender.Hardcore)
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You cannot send pyreals to Hardcore players.", ChatMessageType.Help));
+                                    return;
+                                }
+
                                 if (account == session.Player.BankAccountNumber)
                                     continue;
 
@@ -1658,6 +1764,14 @@ namespace ACE.Server.Command.Handlers
 
                             foreach (var player in players)
                             {
+                                var sender = session.Player;
+
+                                if (player.Hardcore && !sender.Hardcore)
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You cannot send Ashcoin to Hardcore players.", ChatMessageType.Help));
+                                    return;
+                                }
+
                                 if (account == session.Player.BankAccountNumber)
                                     continue;
 
@@ -1708,6 +1822,14 @@ namespace ACE.Server.Command.Handlers
 
                             foreach (var player in players)
                             {
+                                var sender = session.Player;
+
+                                if (player.Hardcore && !sender.Hardcore)
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You cannot send Luminance to Hardcore players.", ChatMessageType.Help));
+                                    return;
+                                }
+
                                 if (account == session.Player.BankAccountNumber)
                                     continue;
 

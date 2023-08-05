@@ -85,6 +85,18 @@ namespace ACE.Server.Entity
 
         long? BankedAshcoin { get; set; }
 
+        bool Hardcore { get; set; }
+
+        int CreatureKills { get; set; }
+
+        ulong HcPyrealsWon { get; set; }
+
+        string HcAge { get; set; }
+
+        double HcAgeTimestamp { get; set; }
+
+        int HcScore { get; set; }
+
         uint GetCurrentLoyalty();
 
         uint GetCurrentLeadership();

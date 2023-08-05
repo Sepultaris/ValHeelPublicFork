@@ -54,7 +54,6 @@ namespace ACE.Server.WorldObjects
             return GetDeathMessage(lastDamager, damageType, criticalHit);
         }
 
-
         public DeathMessage GetDeathMessage(DamageHistoryInfo lastDamagerInfo, DamageType damageType, bool criticalHit = false)
         {
             var lastDamager = lastDamagerInfo?.TryGetAttacker();
@@ -107,7 +106,18 @@ namespace ACE.Server.WorldObjects
                 {
                     var topDamagerPlayer = topDamager.TryGetAttacker();
                     if (topDamagerPlayer != null)
-                        topDamagerPlayer.CreatureKills = (topDamagerPlayer.CreatureKills ?? 0) + 1;
+                        topDamagerPlayer.CreatureKills++;
+
+                    var hcPlayer = topDamagerPlayer as Player;
+
+                    if (hcPlayer.Hardcore)
+                    {
+                        if (hcPlayer.BankedPyreals == null)
+                            hcPlayer.BankedPyreals = 0;
+
+                        hcPlayer.BankedPyreals += 133;
+                        hcPlayer.HcPyrealsWon += 133;
+                    }
                 }
             }
             if (IsCombatPet)
@@ -219,6 +229,7 @@ namespace ACE.Server.WorldObjects
                 var totalXP = (XpOverride ?? 0) * damagePercent;
 
                 playerDamager.EarnXP((long)Math.Round(totalXP), XpType.Kill);
+                
 
                 // handle luminance
                 if (LuminanceAward != null)
@@ -489,14 +500,18 @@ namespace ACE.Server.WorldObjects
                 corpse.IsMonster = true;
                 if (killer.IsPlayer)
                 GenerateTreasure(killer, corpse);
+
                 if (killer.PetOwner != null && !killer.IsPlayer)
                 {
                     var petOwner = killer.TryGetPetOwner();
-                    if (corpse.KillerId == petOwner.Guid.Full)
+
+                    if (corpse.KillerId != null && petOwner != null)
                     {
-                        corpse.KillerId = petOwner.Guid.Full;
+                        if (corpse.KillerId == petOwner.Guid.Full)
+                            corpse.KillerId = petOwner.Guid.Full;
+
+                        GenerateTreasure(killer, corpse);
                     }
-                    GenerateTreasure(killer, corpse);
                 }
                 if (IsOnLootMultiplierLandblock)
                 {

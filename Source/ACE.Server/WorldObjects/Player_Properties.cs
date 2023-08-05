@@ -1372,6 +1372,7 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyInt64.BankedPyreals);
             set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedPyreals); else SetProperty(PropertyInt64.BankedPyreals, value.Value); }
         }
+
         public long? PyrealSavings
         {
             get => GetProperty(PropertyInt64.PyrealSavings);
@@ -1403,6 +1404,66 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyFloat.WithdrawTimer);
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.WithdrawTimer); else SetProperty(PropertyFloat.WithdrawTimer, value.Value); }
+        }
+
+        public bool Hardcore
+        {
+            get => GetProperty(PropertyBool.Hardcore) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hardcore); else SetProperty(PropertyBool.Hardcore, value); }
+        }
+
+        public ulong HcPyrealsWon
+        {
+            get => (ulong)(GetProperty(PropertyInt64.HcPyrealsWon) ?? 0);
+            set { if (value == 0) RemoveProperty(PropertyInt64.HcPyrealsWon); else SetProperty(PropertyInt64.HcPyrealsWon, (long)value); }
+        }
+
+        public string HcAge
+        {
+            get => GetProperty(PropertyString.HcAge);
+            set { if (value == null) RemoveProperty(PropertyString.HcAge); else SetProperty(PropertyString.HcAge, value); }
+        }
+
+        public double HcAgeTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.HcAgeTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.HcAgeTimestamp); else SetProperty(PropertyFloat.HcAgeTimestamp, value); }
+        }
+
+        public int HcScore
+        {
+            get => GetProperty(PropertyInt.HcScore) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.HcScore); else SetProperty(PropertyInt.HcScore, value); }
+        }
+
+        public int MonsterKillsMilestones
+        {
+            get => GetProperty(PropertyInt.MonsterKillsMilestones) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.MonsterKillsMilestones); else SetProperty(PropertyInt.MonsterKillsMilestones, value); }
+        }
+
+        public int HcPyrealsWonMilestones
+        {
+            get => GetProperty(PropertyInt.HcPyrealsWonMilestones) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.HcPyrealsWonMilestones); else SetProperty(PropertyInt.HcPyrealsWonMilestones, value); }
+        }
+
+        public int HcScoreMilestones
+        {
+            get => GetProperty(PropertyInt.HcScoreMilestones) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.HcScoreMilestones); else SetProperty(PropertyInt.HcScoreMilestones, value); }
+        }
+
+        public int LevelMilestones
+        {
+            get => GetProperty(PropertyInt.LevelMilestones) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.LevelMilestones); else SetProperty(PropertyInt.LevelMilestones, value); }
+        }
+
+        public int PrestigeMilestones
+        {
+            get => GetProperty(PropertyInt.PrestigeMilestones) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.PrestigeMilestones); else SetProperty(PropertyInt.PrestigeMilestones, value); }
         }
 
         /// <summary>

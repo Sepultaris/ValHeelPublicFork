@@ -4,12 +4,12 @@ using ACE.Server.Network;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
 using ACE.Entity.Enum.Properties;
-using ACE.Server.DuskfallMods;
+using ACE.Server.ValheelMods;
 using System.Collections.Generic;
 using log4net.Core;
 
 
-namespace ACE.Server.DuskfallMods
+namespace ACE.Server.ValheelMods
 {
     public static class ValheelRaise
     {

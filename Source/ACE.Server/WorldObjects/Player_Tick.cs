@@ -1,31 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using ACE.Common;
-using ACE.DatLoader.Entity;
-using ACE.Entity;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Command.Handlers;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
-using ACE.Server.Factories;
 using ACE.Server.Managers;
 using ACE.Server.Network;
-using ACE.Server.Network.Enum;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Network.Sequence;
 using ACE.Server.Network.Structure;
 using ACE.Server.Physics;
 using ACE.Server.Physics.Common;
-using Google.Protobuf.WellKnownTypes;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using ACE.Server.ValheelMods;
 
 namespace ACE.Server.WorldObjects
 {
@@ -86,8 +78,77 @@ namespace ACE.Server.WorldObjects
                 else if (houseRentWarnTimestamp == 0)
                     houseRentWarnTimestamp = Time.GetFutureUnixTime(houseRentWarnInterval);
             }
+        }
+        public static void CalculatePlayerAge(Player player, double currentUnixTime)
+        {
+            var dob = player.GetProperty(PropertyString.DateOfBirth);
 
-            
+            DateTime currentDate = DateTime.Now;
+
+            DateTime dateFromString = DateTime.Parse(dob);
+
+            player.SetProperty(PropertyString.DateOfBirth, $"{dateFromString}");
+
+            // Calculate the age
+            TimeSpan ageSpan = DateTime.Now - dateFromString;
+            int years = (int)(ageSpan.Days / 365.25);
+            int months = (int)((ageSpan.Days % 365.25) / 30.44);
+            int days = ageSpan.Days % 30;
+            int hours = ageSpan.Hours;
+            int minutes = ageSpan.Minutes;
+
+            // Format the age
+            string formattedAge = $"{years:00}:{months:00}:{days:00}:{hours:00}:{minutes:00}";
+
+            // I used this to monitor the output on the console so I didn't have to log in 
+            //Console.WriteLine($"Age as YY:MM:DD:HH:MM format: {formattedAge}");
+
+            player.HcAge = formattedAge;
+        }
+
+        public static void CalculateHcPlayerAgeTimestamp(Player player, double currentUnxiTime)
+        {
+            var dob = player.GetProperty(PropertyString.DateOfBirth);
+
+            DateTime dateFromString = DateTime.Parse(dob);
+            long originalUnixTimestamp = ((DateTimeOffset)dateFromString).ToUnixTimeSeconds();
+
+            DateTime currentDate = DateTime.Now.ToUniversalTime();
+            long currentUnixTimestamp = ((DateTimeOffset)currentDate).ToUnixTimeSeconds();
+
+            long ageInSeconds = currentUnixTimestamp - originalUnixTimestamp;
+
+            player.HcAgeTimestamp = ageInSeconds;
+        }
+
+        public static void HcScoreCalculator(IPlayer player, long value)
+        {
+            if (player != null)
+            {
+                const long maxValue = 500_000_000;
+                ulong pyrealsWon = player.HcPyrealsWon;
+                float pyrealMultiplier = (float)(Math.Round((float)pyrealsWon + 1.0f) / (float)maxValue);
+
+                if (pyrealMultiplier < 0.01)
+                    pyrealMultiplier = 0.01f;
+
+                int baseScore = (int)((int)(player.Level * player.CreatureKills) + ((player.HcAgeTimestamp /60) /60));
+
+                float score = (float)(baseScore + (baseScore * pyrealMultiplier) - ((player.HcAgeTimestamp / 60) / 60)) / 1000;
+
+                if (score < 0)
+                    score = 0;
+
+                    player.HcScore = (int)Math.Round(score);
+            }
+        }
+
+        public static void PlayerAcheivements(Player player)
+        {
+            if (!player.Hardcore)
+                return;
+
+
         }
 
         private static readonly TimeSpan MaximumTeleportTime = TimeSpan.FromMinutes(5);
@@ -108,6 +169,17 @@ namespace ACE.Server.WorldObjects
             PK_DeathTick();
 
             GagsTick();
+
+            if (Hardcore)
+            {
+                CalculatePlayerAge(this, currentUnixTime);
+
+                CalculateHcPlayerAgeTimestamp(this, currentUnixTime);
+
+                HcAchievementSystem.CheckAndHandleAchievements(this);
+
+                HcScoreCalculator(this, (long)HcPyrealsWon);
+            }
 
             PhysicsObj.ObjMaint.DestroyObjects();
 

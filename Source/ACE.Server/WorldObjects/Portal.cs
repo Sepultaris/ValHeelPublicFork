@@ -100,6 +100,30 @@ namespace ACE.Server.WorldObjects
 
         public virtual void OnCollideObject(Player player)
         {
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in player.PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == player.Guid.Full)
+                        {
+                            monster.Destroy();
+                            player.NumberOfPets--;
+                            if (player.NumberOfPets < 0)
+                            {
+                                player.NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
+
             OnActivate(player);
         }
 

@@ -20,7 +20,7 @@
     <PackageIcon>ace-retro-icon2.png</PackageIcon>
     <PackageIconUrl />
     <ApplicationIcon>images\ace_retro_icon_2.ico</ApplicationIcon>
-      <OutputPath>C:\ACE\Server\</OutputPath>
+      <OutputPath>C:\ACETestServer\Server\</OutputPath>
       <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
       <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
@@ -141,6 +141,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="2.0.0" />
     <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="Log4Net.Async.Standard" Version="3.1.0" />
     <PackageReference Include="MySql.Data" Version="8.0.22" />

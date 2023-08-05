@@ -234,7 +234,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         InterestTimer                  = 8026,
         [ServerOnly]
-        WithdrawTimer                  = 8027
+        WithdrawTimer                  = 8027,
+        [ServerOnly]
+        HcAgeTimestamp                 = 8028
 
     }
 

@@ -320,6 +320,19 @@ namespace ACE.Server.WorldObjects
                 return false;
             }
 
+            // player can't swear to Hardcore players
+            if (!Hardcore && target.Hardcore)
+            {
+                Session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot swear to a hardcore character.", ChatMessageType.Broadcast));
+                return false;
+            }
+
+            if (Hardcore && !target.Hardcore)
+            {
+                Session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot swear to a normal character.", ChatMessageType.Broadcast));
+                return false;
+            }
+
             // patron must currently be greater or equal level
             /*if (target.Level < Level)
             {

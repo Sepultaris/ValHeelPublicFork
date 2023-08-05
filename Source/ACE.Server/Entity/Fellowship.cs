@@ -78,6 +78,18 @@ namespace ACE.Server.Entity
             if (inviter == null || newMember == null)
                 return;
 
+            if (inviter.Hardcore && !newMember.Hardcore)
+            {
+                inviter.Session.Network.EnqueueSend(new GameMessageSystemChat($"{newMember.Name} is not Hardcore. You can only invite other Hardcore players to your fellowship.", ChatMessageType.Help));
+                return;
+            }
+
+            if (!inviter.Hardcore && newMember.Hardcore)
+            {
+                inviter.Session.Network.EnqueueSend(new GameMessageSystemChat($"{newMember.Name} is Hardcore. You cannot invite them to a fellowship.", ChatMessageType.Help));
+                return;
+            }
+
             if (IsLocked)
             {
 

@@ -789,6 +789,33 @@ namespace ACE.Server.WorldObjects
                 var targetPlayer = target as Player;
                 var targetCreature = target as Creature;
 
+                // kill pets
+                ActionChain killPets = new ActionChain();
+
+                if (player != null)
+                {
+                    killPets.AddAction(player, () =>
+                    {
+                        foreach (var monster in player.PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                        {
+                            if (monster.IsCombatPet)
+                            {
+                                if (monster.PetOwner == player.Guid.Full)
+                                {
+                                    monster.Destroy();
+                                    player.NumberOfPets--;
+                                    if (player.NumberOfPets < 0)
+                                    {
+                                        player.NumberOfPets = 0;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                killPets.EnqueueChain();
+
                 switch (spell.MetaSpellType)
                 {
                     case SpellType.PortalRecall:
@@ -877,6 +904,7 @@ namespace ACE.Server.WorldObjects
 
                                 // lifestone recall
                                 ActionChain lifestoneRecall = new ActionChain();
+                                
                                 lifestoneRecall.AddAction(targetPlayer, () => targetPlayer.DoPreTeleportHide());
                                 lifestoneRecall.AddDelaySeconds(2.0f);  // 2 second delay
                                 lifestoneRecall.AddAction(targetPlayer, () => targetPlayer.TeleToPosition(recall));

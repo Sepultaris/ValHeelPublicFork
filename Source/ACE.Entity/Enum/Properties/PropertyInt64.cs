@@ -42,7 +42,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         BankedAshcoin         = 9007,
         [ServerOnly]
-        PyrealSavings         = 9008
+        PyrealSavings         = 9008,
+        [ServerOnly]
+        HcPyrealsWon          = 9009
     }
 
     public static class PropertyInt64Extensions

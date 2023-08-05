@@ -253,11 +253,6 @@ namespace ACE.Server.WorldObjects
                 OnAttackDone();
             else if (dist > GunBladeDistance && dist > MeleeDistance)
                 OnAttackDone();
-            else if (ammo.WeenieClassId != 300444)
-            {
-                OnAttackDone();
-                SendTransientError($"You must use gunblade ammunition");
-            }
 
             else if (dist <= GunBladeDistance && dist > MeleeDistance && ammo != null)
             {
@@ -527,61 +522,49 @@ namespace ACE.Server.WorldObjects
                         foreach (var cleaveHit in cleave)
                         {
                             // target procs don't happen for cleaving
-                            var ammo1 = GetEquippedAmmo();
-                            if (ammo1 != null && ammo1.WeenieClassId == 300444)
+                            //var ammo = GetEquippedAmmo();
+                            if (ammo != null && ammo.WeenieClassId == 300444)
                             {
                                 var projectileSpeed = GetGunBladeProjectileSpeed();
                                 var aimVelocity = GetAimVelocity(target, projectileSpeed);
                                 var aimLevel = GetAimLevel(aimVelocity);
-                                var localOrigin = GetProjectileSpawnOrigin(ammo1.WeenieClassId, aimLevel);
+                                var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
                                 var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
 
                                 DamageTarget(cleaveHit, weapon);
                                 TryProcEquippedItems(this, cleaveHit, false, weapon);
-                                LaunchProjectile(weapon, ammo1, target, origin, orientation, velocity);
-                                UpdateAmmoAfterLaunch(ammo1);
+                                LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
+
+                                if (ammo.StackSize != null)
+                                    UpdateAmmoAfterLaunch(ammo);
                             }
                             else
                             {
                                 DamageTarget(cleaveHit, weapon);
-                                SendTransientError($"You must use gunblade ammunition");
+
                             }
                                                        
                         }
                     }                   
 
-                    if (weapon != null && weapon.IsGunblade == true && ammo != null && ammo.WeenieClassId == 300444)
+                    if (weapon != null && weapon.IsGunblade == true && ammo != null)
                     {
-                        var ammo1 = GetEquippedAmmo();
-                        var projectileSpeed = GetGunBladeProjectileSpeed();
-                        var aimVelocity = GetAimVelocity(target, projectileSpeed);
-                        var aimLevel = GetAimLevel(aimVelocity);
-                        var localOrigin = GetProjectileSpawnOrigin(ammo1.WeenieClassId, aimLevel);
-                        var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+                        if (ammo != null && ammo.WeenieClassId == 300444)
+                        {
+                            // var ammo = GetEquippedAmmo();
+                            var projectileSpeed = GetGunBladeProjectileSpeed();
+                            var aimVelocity = GetAimVelocity(target, projectileSpeed);
+                            var aimLevel = GetAimLevel(aimVelocity);
+                            var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+                            var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
 
-                        LaunchProjectile(weapon, ammo1, target, origin, orientation, velocity);
-                        UpdateAmmoAfterLaunch(ammo1);
+                            LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
+
+                            if (ammo.StackSize != null)
+                                UpdateAmmoAfterLaunch(ammo);
+                        }
                     }
-                    else
-                    {
-                        SendTransientError($"You must use gunblade ammunition");
-                    }
-
-                    /*if (weapon != null && weapon.IsGunblade == true && ammo != null)
-                    {                       
-                        var projectileSpeed = GetProjectileSpeed();
-                        var aimVelocity = GetAimVelocity(target, projectileSpeed);
-                        var aimLevel = GetAimLevel(aimVelocity);
-                        var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
-                        var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
-
-                        LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
-                        UpdateAmmoAfterLaunch(ammo);                        
-                    }*/
                 });
-
-                //if (numStrikes == 1 || TwoHandedCombat)
-                    //actionChain.AddDelaySeconds(swingTime);
             }
 
             //actionChain.AddDelaySeconds(animLength - swingTime * numStrikes);
@@ -702,6 +685,14 @@ namespace ACE.Server.WorldObjects
 
             var prevTime = 0.0f;
             var ammo = GetEquippedAmmo();
+
+            if (ammo == null && weapon.IsGunblade)
+            {
+                Attacking = false;
+                OnAttackDone();
+                return;
+            }
+
             var projectileSpeed = GetGunBladeProjectileSpeed();
             var aimVelocity = GetAimVelocity(target, projectileSpeed);
             var aimLevel = GetAimLevel(aimVelocity);
@@ -742,7 +733,6 @@ namespace ACE.Server.WorldObjects
                             UpdateAmmoAfterLaunch(ammo);
                         }
                     }
-
 
                     if (weapon != null && weapon.IsGunblade == true && ammo == null)
                     {

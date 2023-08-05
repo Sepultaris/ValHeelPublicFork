@@ -667,7 +667,14 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         BestTime = 9044,
         [ServerOnly]
-        BankAccountNumber = 9045
+        BankAccountNumber = 9045,
+        [ServerOnly]
+        HcScore           = 9046,
+        MonsterKillsMilestones = 9047,
+        HcPyrealsWonMilestones = 9048,
+        HcScoreMilestones = 9049,
+        LevelMilestones = 9050,
+        PrestigeMilestones = 9051
     }
 
     public static class PropertyIntExtensions

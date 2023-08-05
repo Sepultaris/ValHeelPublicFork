@@ -232,7 +232,7 @@ namespace ACE.Server.Network.Handlers
                 session.SendCharacterError(CharacterError.EnterGameCharacterNotOwned);
                 return;
             }
-
+            
             if (PlayerManager.GetOnlinePlayer(guid) != null)
             {
                 // If this happens, it could be that the previous session for this Player terminated in a way that didn't transfer the player to offline via PlayerManager properly.

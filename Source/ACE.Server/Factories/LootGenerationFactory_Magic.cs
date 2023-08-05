@@ -628,7 +628,7 @@ namespace ACE.Server.Factories
             }
             else if (!roll.IsGem)
             {
-                log.Error($"RollSpellcraft({wo.Name}, {roll.ItemType}) - unknown item type");
+                // log.Error($"RollSpellcraft({wo.Name}, {roll.ItemType}) - unknown item type");
             }
 
             var rng = ThreadSafeRandom.Next(range.min, range.max);

@@ -1,6 +1,6 @@
 using ACE.Entity.Enum.Properties;
 
-namespace ACE.Server.DuskfallMods
+namespace ACE.Server.ValheelMods
 {
     enum RaiseTargetVital
     {        

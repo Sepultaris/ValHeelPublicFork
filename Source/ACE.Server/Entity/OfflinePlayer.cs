@@ -301,6 +301,42 @@ namespace ACE.Server.Entity
             set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedAshcoin); else SetProperty(PropertyInt64.BankedAshcoin, value.Value); }
         }
 
+        public bool Hardcore
+        {
+            get => GetProperty(PropertyBool.Hardcore) ?? false;
+            set { if (value) RemoveProperty(PropertyBool.Hardcore); else SetProperty(PropertyBool.Hardcore, value); }
+        }
+
+        public int CreatureKills
+        {
+            get => GetProperty(PropertyInt.CreatureKills) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.CreatureKills); else SetProperty(PropertyInt.CreatureKills, value); }
+        }
+
+        public ulong HcPyrealsWon
+        {
+            get => (ulong)(GetProperty(PropertyInt64.HcPyrealsWon) ?? 0);
+            set { if (value == 0) RemoveProperty(PropertyInt64.HcPyrealsWon); else SetProperty(PropertyInt64.HcPyrealsWon, (long)value); }
+        }
+
+        public string HcAge
+        {
+            get => GetProperty(PropertyString.HcAge) ?? "00:00:00:00:00";
+            set { if (value == null) RemoveProperty(PropertyString.HcAge); else SetProperty(PropertyString.HcAge, value); }
+        }
+
+        public double HcAgeTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.HcAgeTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.HcAgeTimestamp); else SetProperty(PropertyFloat.HcAgeTimestamp, value); }
+        }
+
+        public int HcScore
+        {
+            get => GetProperty(PropertyInt.HcScore) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.HcScore); else SetProperty(PropertyInt.HcScore, (int)value); }
+        }
+
         public Allegiance Allegiance { get; set; }
 
         public AllegianceNode AllegianceNode { get; set; }

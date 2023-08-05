@@ -95,7 +95,7 @@ namespace ACE.Server.Factories
                     wo.SetProperty(PropertyBool.Empowered, true);
                     wo.SetProperty(PropertyString.Name, name);
                     wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                    wo.SetProperty(PropertyInt.WieldDifficulty, 350);
+                    wo.SetProperty(PropertyInt.WieldDifficulty, 275);
                 }
 
             }
@@ -113,7 +113,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyBool.Proto, true);
                 wo.SetProperty(PropertyString.Name, name);
                 wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 700);
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
@@ -177,7 +177,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
                 wo.ItemBaseXp = basexp;
                 wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 600);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 1500);
 
                 if (jewelryProc >= 0.0f)
                 {
