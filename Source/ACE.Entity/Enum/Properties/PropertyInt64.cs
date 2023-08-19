@@ -51,6 +51,8 @@ namespace ACE.Entity.Enum.Properties
         HcScore               = 9011,
         [ServerOnly]
         CreatureKills         = 9012,
+        [ServerOnly]
+        PriceOnHead           = 9013,
     }
 
     public static class PropertyInt64Extensions

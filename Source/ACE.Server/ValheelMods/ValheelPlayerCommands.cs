@@ -2018,7 +2018,7 @@ namespace ACE.Server.Command.Handlers
                             }
 
                             session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
-                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Attempting to Deposit your Pyreals, Luminance, and AshCoin into your bank...", ChatMessageType.Broadcast));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Attempting to Deposit your Pyreals, Luminance, AshCoin, and Carnage Tokens into your bank...", ChatMessageType.Broadcast));
 
                             var bankAccountDeposit = new ActionChain();
                             bankAccountDeposit.AddDelaySeconds(1);
@@ -2674,6 +2674,10 @@ namespace ACE.Server.Command.Handlers
                                     amountWithdrawn += amt;
                                 }
 
+                                ValHeelCurrencyMarket.RemoveACFromCirculation(amt);
+                                ValHeelCurrencyMarket.QueryACCirculation();
+                                ValHeelCurrencyMarket.CalculateACValue(ValHeelCurrencyMarket.ACInCirculation);
+
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some AshCoin from your bank account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance ||  {session.Player.BankedAshcoin:N0}  AshCoin ||  {session.Player.PyrealSavings:N0}  Pyreal Savings ||  {session.Player.BankedCarnageTokens:N0}  Banked Carnage Tokens", ChatMessageType.x1B));
@@ -2742,6 +2746,10 @@ namespace ACE.Server.Command.Handlers
                             session.Player.TryCreateInInventoryWithNetworking(cToken);
                             session.Player.BankedCarnageTokens -= amt2;
                             session.Player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.BankedCarnageTokens, session.Player.BankedCarnageTokens ?? 0));
+
+                            ValHeelCurrencyMarket.RemoveCTFromCirculation(amt);
+                            ValHeelCurrencyMarket.QueryCTCirculation();
+                            ValHeelCurrencyMarket.CalculateCTValue(ValHeelCurrencyMarket.CTInCirculation);
 
                             session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                             session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some Carnage Tokens from your bank account. (-{amt2:N0})", ChatMessageType.x1B));

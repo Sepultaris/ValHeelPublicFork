@@ -3,6 +3,7 @@ using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.ValheelMods;
 
 namespace ACE.Server.WorldObjects
 {
@@ -78,7 +79,7 @@ namespace ACE.Server.WorldObjects
                 long inheritedValue = 0;
                 long inheritedashcoinvalue = 0;
                 long lumInheritedValue = 0;
-                long CTokenInheritedValue = 0;
+                long cTokenInheritedValue = 0;
                 long oldBalanceP = (long)player.BankedPyreals;
                 long oldBalancePSavings = (long)player.PyrealSavings;
                 long oldBalanceL = (long)player.BankedLuminance;
@@ -206,6 +207,10 @@ namespace ACE.Server.WorldObjects
                             player.BankedAshcoin += totalValue;
 
                             inheritedashcoinvalue += totalValue;
+
+                            ValHeelCurrencyMarket.AddACToCirculation(inheritedashcoinvalue);
+                            ValHeelCurrencyMarket.QueryACCirculation();
+                            ValHeelCurrencyMarket.CalculateACValue(ValHeelCurrencyMarket.ACInCirculation);
                         }
                     }
 
@@ -239,16 +244,20 @@ namespace ACE.Server.WorldObjects
 
                             player.BankedCarnageTokens += totalValue;
 
-                            inheritedValue += totalValue;
+                            cTokenInheritedValue += totalValue;
+
+                            ValHeelCurrencyMarket.AddCTToCirculation(cTokenInheritedValue);
+                            ValHeelCurrencyMarket.QueryCTCirculation();
+                            ValHeelCurrencyMarket.CalculateCTValue(ValHeelCurrencyMarket.CTInCirculation);
                         }
                     }
 
                     if (player.AvailableLuminance == null)
                     {
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
-                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked a total of {inheritedValue:N0} Pyreals, {lumInheritedValue:N0} Luminance, and {inheritedashcoinvalue:N0} AshCoin", ChatMessageType.x1D));
-                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balances: {oldBalanceP:N0} Pyreals || {oldBalanceL:N0} Luminance || {oldBalanceA:N0} AshCoin", ChatMessageType.Help));
-                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {player.BankedPyreals:N0} Pyreals || {player.BankedLuminance:N0} Luminance || {player.BankedAshcoin:N0} AshCoin", ChatMessageType.x1B));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked a total of {inheritedValue:N0} Pyreals, {lumInheritedValue:N0} Luminance, {inheritedashcoinvalue:N0} AshCoin, and {cTokenInheritedValue:N0}", ChatMessageType.x1D));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balances: {oldBalanceP:N0} Pyreals || {oldBalanceL:N0} Luminance || {oldBalanceA:N0} AshCoin || {oldBalanceC:N0} Carnage Tokens", ChatMessageType.Help));
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {player.BankedPyreals:N0} Pyreals || {player.BankedLuminance:N0} Luminance || {player.BankedAshcoin:N0} AshCoin || {player.BankedCarnageTokens:N0} Carnage Tokens", ChatMessageType.x1B));
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                         return;
                     }
@@ -261,9 +270,9 @@ namespace ACE.Server.WorldObjects
                     }
 
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked a total of {inheritedValue:N0} Pyreals, {lumInheritedValue:N0} Luminance, and {inheritedashcoinvalue:N0} AshCoin", ChatMessageType.x1D));
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balances: {oldBalanceP:N0} Pyreals || {oldBalanceL:N0} Luminance || {oldBalanceA:N0} AshCoin", ChatMessageType.Help));
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {player.BankedPyreals:N0} Pyreals || {player.BankedLuminance:N0} Luminance || {player.BankedAshcoin:N0} AshCoin", ChatMessageType.x1B));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked a total of {inheritedValue:N0} Pyreals, {lumInheritedValue:N0} Luminance, {inheritedashcoinvalue:N0} AshCoin and {cTokenInheritedValue:N0}", ChatMessageType.x1D));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balances: {oldBalanceP:N0} Pyreals || {oldBalanceL:N0} Luminance || {oldBalanceA:N0} AshCoin || {oldBalanceC:N0} Carnage Tokens", ChatMessageType.Help));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {player.BankedPyreals:N0} Pyreals || {player.BankedLuminance:N0} Luminance || {player.BankedAshcoin:N0} AshCoin || {player.BankedCarnageTokens:N0} Carnage Tokens", ChatMessageType.x1B));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                 }
                 if (pyreal)
@@ -335,6 +344,10 @@ namespace ACE.Server.WorldObjects
                         amountDeposited += amount;
                     }
 
+                    ValHeelCurrencyMarket.AddACToCirculation(amountDeposited);
+                    ValHeelCurrencyMarket.QueryACCirculation();
+                    ValHeelCurrencyMarket.CalculateACValue(ValHeelCurrencyMarket.ACInCirculation);
+
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked {amountDeposited:N0} AshCoin", ChatMessageType.x1D));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balance: {oldBalanceA:N0} AshCoin", ChatMessageType.Help));
@@ -359,6 +372,10 @@ namespace ACE.Server.WorldObjects
                         player.BankedCarnageTokens += amount;
                         amountDeposited += amount;
                     }
+
+                    ValHeelCurrencyMarket.AddCTToCirculation(amountDeposited);
+                    ValHeelCurrencyMarket.QueryCTCirculation();
+                    ValHeelCurrencyMarket.CalculateCTValue(ValHeelCurrencyMarket.CTInCirculation);
 
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked {amountDeposited:N0} Carnage Tokens", ChatMessageType.x1D));

@@ -118,6 +118,13 @@ namespace ACE.Server.WorldObjects
 
                 globalPKDe += "\n[PKDe]";
 
+                if (HasBounty)
+                {
+                    globalPKDe += $" {Name} had a bounty of {PriceOnHead} pyreals.";
+                    pkPlayer.BankedAshcoin += PriceOnHead;
+                    PriceOnHead = 0;
+                }
+
                 PlayerManager.BroadcastToAll(new GameMessageSystemChat(globalPKDe, ChatMessageType.Broadcast));
             }
             else if (IsPKLiteDeath(topDamager))

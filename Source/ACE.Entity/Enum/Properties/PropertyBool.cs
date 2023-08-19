@@ -205,7 +205,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         MultiPet                         = 9017,
         [ServerOnly]
-        Hardcore                         = 9018
+        Hardcore                         = 9018,
+        [ServerOnly]
+        HasBounty                        = 9019,
     }
 
     public static class PropertyBoolExtensions

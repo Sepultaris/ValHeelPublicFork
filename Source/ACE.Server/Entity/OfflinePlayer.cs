@@ -343,6 +343,18 @@ namespace ACE.Server.Entity
             set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedCarnageTokens); else SetProperty(PropertyInt64.BankedCarnageTokens, value.Value); }
         }
 
+        public bool HasBounty
+        {
+            get => GetProperty(PropertyBool.HasBounty) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.HasBounty); else SetProperty(PropertyBool.HasBounty, value); }
+        }
+
+        public long? PriceOnHead
+        {
+            get => GetProperty(PropertyInt64.PriceOnHead);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.PriceOnHead); else SetProperty(PropertyInt64.PriceOnHead, value.Value); }
+        }
+
         public Allegiance Allegiance { get; set; }
 
         public AllegianceNode AllegianceNode { get; set; }

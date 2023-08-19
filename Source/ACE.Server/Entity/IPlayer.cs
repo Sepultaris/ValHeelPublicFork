@@ -99,6 +99,10 @@ namespace ACE.Server.Entity
 
         long? BankedCarnageTokens { get; set; }
 
+        bool HasBounty { get; set; }
+
+        long? PriceOnHead { get; set; }
+
         uint GetCurrentLoyalty();
 
         uint GetCurrentLeadership();

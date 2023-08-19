@@ -170,6 +170,19 @@ namespace ACE.Server.WorldObjects
 
             GagsTick();
 
+            if (ValHeelBounty.HasBountyCheck(Name))
+            {
+                if (PriceOnHead == null)
+                    PriceOnHead = 0;
+
+                if (PriceOnHead > 1000000)
+                {
+                    PlayerKillerStatus = PlayerKillerStatus.PK;
+                    Session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(this, PropertyInt.PlayerKillerStatus, (int)PlayerKillerStatus));
+                    CommandHandlerHelper.WriteOutputInfo(Session, $"WARNING!: Your bounty has become too high and you are now a wanted player.", ChatMessageType.Broadcast);
+                }
+            }
+
             if (Hardcore)
             {
                 CalculatePlayerAge(this, currentUnixTime);
@@ -264,7 +277,7 @@ namespace ACE.Server.WorldObjects
             {
                 var pkStatus = player.PlayerKillerStatus;
 
-                if (pkStatus == PlayerKillerStatus.PK && !PKTimerActive)
+                if (pkStatus == PlayerKillerStatus.PK && !PKTimerActive && PriceOnHead < 1000000)
                 {
                     player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
                     player.PlayerKillerStatus = PlayerKillerStatus.NPK;

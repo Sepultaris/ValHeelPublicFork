@@ -32,10 +32,10 @@ namespace ACE.Server.ValheelMods
         private static double ACToCTExchangeRate = 0;
         private static double CTToACExchangeRate = 0;
 
-        private static long CTInCirculation;
-        private static long ACInCirculation;
+        public static long CTInCirculation;
+        public static long ACInCirculation;
 
-        private static void CalculateACValue(long circulation)
+        public static void CalculateACValue(long circulation)
         {
             double demandFactor = Math.Min(1.0, ACUsers / (double)Pop);
 
@@ -55,7 +55,7 @@ namespace ACE.Server.ValheelMods
             QueryACCirculation();
         }
 
-        private static void CalculateCTValue(long circulation)
+        public static void CalculateCTValue(long circulation)
         {
             double demandFactor = Math.Min(1.0, CTUsers / (double)Pop);
 
@@ -188,6 +188,7 @@ namespace ACE.Server.ValheelMods
                 QueryACCirculation();
                 QueryCTCirculation();
                 CalculateACValue(ACInCirculation);
+                CalculateCTValue(CTInCirculation);
             }
             else
             {
@@ -203,6 +204,7 @@ namespace ACE.Server.ValheelMods
                 QueryACCirculation();
                 QueryCTCirculation();
                 CalculateACValue(ACInCirculation);
+                CalculateCTValue(CTInCirculation);
             }
         }
 
@@ -336,9 +338,21 @@ namespace ACE.Server.ValheelMods
             CalculateCTValue(CTInCirculation);
         }
 
+        public static void RemoveCTFromCirculation(long amount)
+        {
+            CTInCirculation -= amount;
+            CalculateCTValue(CTInCirculation);
+        }
+
         public static void AddACToCirculation(long amount)
         {
             ACInCirculation += amount;
+            CalculateACValue(ACInCirculation);
+        }
+
+        public static void RemoveACFromCirculation(long amount)
+        {
+            ACInCirculation -= amount;
             CalculateACValue(ACInCirculation);
         }
 
@@ -358,6 +372,11 @@ namespace ACE.Server.ValheelMods
 
         public static string MarketDataGenerator()
         {
+            QueryACCirculation();
+            QueryCTCirculation();
+            CalculateACValue(ACInCirculation);
+            CalculateCTValue(CTInCirculation);
+
             string marketData = "\n";
             marketData = "Current Market Data:\n";
             marketData += "Pyreal Value: " + PyrealValue + "\n";
