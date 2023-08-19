@@ -44,7 +44,13 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         PyrealSavings         = 9008,
         [ServerOnly]
-        HcPyrealsWon          = 9009
+        HcPyrealsWon          = 9009,
+        [ServerOnly]
+        BankedCarnageTokens   = 9010,
+        [ServerOnly]
+        HcScore               = 9011,
+        [ServerOnly]
+        CreatureKills         = 9012,
     }
 
     public static class PropertyInt64Extensions

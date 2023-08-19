@@ -106,17 +106,39 @@ namespace ACE.Server.WorldObjects
                 {
                     var topDamagerPlayer = topDamager.TryGetAttacker();
                     if (topDamagerPlayer != null)
+                    {
                         topDamagerPlayer.CreatureKills++;
 
-                    var hcPlayer = topDamagerPlayer as Player;
+                        var hcPlayer = topDamagerPlayer as Player;
 
-                    if (hcPlayer.Hardcore)
+                        if (hcPlayer.Hardcore)
+                        {
+                            if (hcPlayer.BankedPyreals == null)
+                                hcPlayer.BankedPyreals = 0;
+
+                            hcPlayer.BankedPyreals += 133;
+                            hcPlayer.HcPyrealsWon += 133;
+                        }
+                    }
+                }
+            }
+            if (topDamager != null && IsCombatPet)
+            {
+                var owner = topDamager.TryGetPetOwner();
+
+                if (owner != null)
+                {
+                    KillerId = owner.Guid.Full;
+
+                    owner.CreatureKills++;
+
+                    if (owner.Hardcore)
                     {
-                        if (hcPlayer.BankedPyreals == null)
-                            hcPlayer.BankedPyreals = 0;
+                        if (owner.BankedPyreals == null)
+                            owner.BankedPyreals = 0;
 
-                        hcPlayer.BankedPyreals += 133;
-                        hcPlayer.HcPyrealsWon += 133;
+                        owner.BankedPyreals += 133;
+                        owner.HcPyrealsWon += 133;
                     }
                 }
             }

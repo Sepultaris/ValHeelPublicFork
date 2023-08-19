@@ -191,12 +191,9 @@ namespace ACE.Server.WorldObjects
 
             var success = pet.Init(player, this);
 
-            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"------------", ChatMessageType.x1B));
-            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You summon forth {pet.Name}.", ChatMessageType.x1B));
-            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.GearDamageRating} D / {pet.DamageResistRating} DR", ChatMessageType.x1B));
-            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.CritDamageRating} CD / {pet.CritDamageResistRating} CDR", ChatMessageType.x1B));
-            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.Health.MaxValue} H / {pet.Stamina.MaxValue} S / {pet.Mana.MaxValue} M", ChatMessageType.x1B));
-            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"------------", ChatMessageType.x1B));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.GearDamageRating} D / {pet.DamageResistRating} DR", ChatMessageType.Broadcast));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.CritDamageRating} CD / {pet.CritDamageResistRating} CDR", ChatMessageType.Broadcast));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.Health.MaxValue} H / {pet.Stamina.MaxValue} S / {pet.Mana.MaxValue} M", ChatMessageType.Broadcast));
             player.NumberOfPets++;
 
             return success;

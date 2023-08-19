@@ -669,12 +669,11 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         BankAccountNumber = 9045,
         [ServerOnly]
-        HcScore           = 9046,
-        MonsterKillsMilestones = 9047,
-        HcPyrealsWonMilestones = 9048,
-        HcScoreMilestones = 9049,
-        LevelMilestones = 9050,
-        PrestigeMilestones = 9051
+        MonsterKillsMilestones = 9046,
+        HcPyrealsWonMilestones = 9047,
+        HcScoreMilestones = 9048,
+        LevelMilestones = 9049,
+        PrestigeMilestones = 9050
     }
 
     public static class PropertyIntExtensions

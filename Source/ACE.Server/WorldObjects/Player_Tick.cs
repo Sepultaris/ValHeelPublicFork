@@ -132,14 +132,14 @@ namespace ACE.Server.WorldObjects
                 if (pyrealMultiplier < 0.01)
                     pyrealMultiplier = 0.01f;
 
-                int baseScore = (int)((int)(player.Level * player.CreatureKills) + ((player.HcAgeTimestamp /60) /60));
+                long baseScore = (long)((player.Level * player.CreatureKills) + ((player.HcAgeTimestamp /60) /60));
 
                 float score = (float)(baseScore + (baseScore * pyrealMultiplier) - ((player.HcAgeTimestamp / 60) / 60)) / 1000;
 
                 if (score < 0)
                     score = 0;
 
-                    player.HcScore = (int)Math.Round(score);
+                    player.HcScore = (long)Math.Round(score);
             }
         }
 

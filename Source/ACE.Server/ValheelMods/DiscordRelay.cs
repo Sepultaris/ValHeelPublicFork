@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using ACE.Server.WorldObjects;
 using System.Collections.Generic;
 using System.Linq;
+using ACE.Entity.Enum.Properties;
 
 namespace ACE.Server.ValheelMods
 {
@@ -218,6 +219,14 @@ namespace ACE.Server.ValheelMods
             allHcPlayers.AddRange(onlineHcPlayers);
             allHcPlayers.AddRange(offlineHcPlayers);
 
+            foreach (var p in allHcPlayers)
+            {
+                if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 2_629_746)
+                {
+                    allHcPlayers.Remove(p);
+                }
+            }
+
             List<IPlayer> top10Players = allHcPlayers.OrderByDescending(p => p.HcScore).Take(10).ToList();
 
             StringBuilder result = new StringBuilder();
@@ -251,6 +260,31 @@ namespace ACE.Server.ValheelMods
             string finalResult = result.ToString();
 
             await hcchannel.SendMessageAsync(finalResult);
+        }
+
+        public static long CalculateHcPlayerAge(IPlayer player, double currentUnxiTime)
+        {
+            var dob = player.GetProperty(PropertyString.DateOfBirth);
+
+            DateTime dateFromString = DateTime.Parse(dob);
+            long originalUnixTimestamp = ((DateTimeOffset)dateFromString).ToUnixTimeSeconds();
+
+            DateTime currentDate = DateTime.Now.ToUniversalTime();
+            long currentUnixTimestamp = ((DateTimeOffset)currentDate).ToUnixTimeSeconds();
+
+            long ageInSeconds = currentUnixTimestamp - originalUnixTimestamp;
+
+            player.HcAgeTimestamp = ageInSeconds;
+
+            return ageInSeconds;
+        }
+
+        public static double GetCurrentUnixTime()
+        {
+            DateTime currentDate = DateTime.Now.ToUniversalTime();
+            double currentUnixTimestamp = ((DateTimeOffset)currentDate).ToUnixTimeSeconds();
+
+            return currentUnixTimestamp;
         }
 
         public static void QueueMessageForDiscord(string message)

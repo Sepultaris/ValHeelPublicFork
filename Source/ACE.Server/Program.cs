@@ -268,8 +268,11 @@ namespace ACE.Server
             log.Info("Initializing EventManager...");
             EventManager.Initialize();
 
-            log.Info("Initializing Discord Relay...");
-            ValheelMods.DiscordRelay.Initialize();
+            /*log.Info("Initializing Discord Relay...");
+            ValheelMods.DiscordRelay.Initialize();*/
+
+            log.Info("Initializing ValHeel Currency Market...");
+            ValheelMods.ValHeelCurrencyMarket.InitializeCurrencyValues();
 
             // Free up memory before the server goes online. This can free up 6 GB+ on larger servers.
             log.Info("Forcing .net garbage collection...");

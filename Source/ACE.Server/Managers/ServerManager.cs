@@ -137,6 +137,12 @@ namespace ACE.Server.Managers
                     player.Session.LogOffPlayer(true);
             }));
 
+            WorldManager.EnqueueAction(new ActionEventDelegate(() =>
+            {
+                log.Debug("Saving Global Market Data...");
+                ValheelMods.ValHeelCurrencyMarket.SaveCurrencyValues();
+            }));
+
             // Wait for all players to log out
             var logUpdateTS = DateTime.MinValue;
             int playerCount;

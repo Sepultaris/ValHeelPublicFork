@@ -12,6 +12,7 @@ using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Physics;
 using ACE.Server.Physics.Animation;
 using ACE.Server.WorldObjects.Entity;
+using Microsoft.EntityFrameworkCore.Update;
 
 namespace ACE.Server.WorldObjects
 {
@@ -273,11 +274,16 @@ namespace ACE.Server.WorldObjects
             if (healAmount > missingVital)
                 healAmount = missingVital;
 
+            healAmount = healAmount + healingSkill * 0.3f; // ??
+
+            if (healAmount < vital.MaxValue * 0.3f)
+                healAmount = (uint)Math.Round(vital.MaxValue * 0.3f);
+
             // stamina check? On the Q&A board a dev posted that stamina directly effects the amount of damage you can heal
             // low stam = less vital healed. I don't have exact numbers for it. Working through forum archive.
 
             // stamina cost: 1 stamina per 5 vital healed 
-            staminaCost = (uint)Math.Round(healAmount / 5.0f);
+            staminaCost = (uint)Math.Round(healAmount / 50.0f);
             if (staminaCost > healer.Stamina.Current)
             {
                 staminaCost = healer.Stamina.Current;

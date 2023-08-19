@@ -23,6 +23,11 @@ namespace ACE.Server.WorldObjects
 
             var m_amount = (long)Math.Round(amount * enchantment * modifier);
 
+            if (Hardcore == true)
+            {
+                m_amount = m_amount + (long)(m_amount * 0.50);
+            }
+
             GrantLuminance(m_amount, xpType, shareType);
         }
 
@@ -47,7 +52,10 @@ namespace ACE.Server.WorldObjects
             var maximum = MaximumLuminance ?? 0;
 
             if (available == maximum)
+            {
+                BankedLuminance = BankedLuminance + amount;
                 return;
+            }
 
             // this is similar to Player_Xp.UpdateXpAndLevel()
 

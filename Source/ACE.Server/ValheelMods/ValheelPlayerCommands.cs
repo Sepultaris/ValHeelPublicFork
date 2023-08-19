@@ -19,6 +19,87 @@ namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        [CommandHandler("vex", AccessLevel.Admin, CommandHandlerFlag.None, "This is the ValHeel Currency Exchange.")]
+
+        public static void HandleVex(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+
+            if (parameters.Length == 0)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"{ValHeelCurrencyMarket.MarketDataGenerator()}", ChatMessageType.System));
+            }
+
+            if (parameters.Length > 0)
+            {
+                // This is the buy command
+                if (parameters[0].Equals("buy", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (parameters[2] != null)
+                    {
+                        Int64.TryParse(parameters[2], out long amount);
+
+                        if (parameters[1].Equals("ac", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ValHeelCurrencyMarket.BuyAshCoins(player, amount);
+                        }
+                        if (parameters[1].Equals("ct", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ValHeelCurrencyMarket.BuyCarnageTokens(player, amount);
+                        }
+                    }
+                }
+
+                // This is the sell command
+                if (parameters[0].Equals("sell", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (parameters[2] != null)
+                    {
+                        Int64.TryParse(parameters[2], out long amount);
+
+                        if (parameters[1].Equals("ac", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (parameters[2] != null)
+                            {
+                                ValHeelCurrencyMarket.SellAshCoins(player, amount);
+                            }
+                        }
+                        if (parameters[1].Equals("ct", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (parameters[2] != null)
+                            {
+                                ValHeelCurrencyMarket.SellCarnageTokens(player, amount);
+                            }
+                        }
+                    }
+                }
+
+                if (parameters[0].Equals("exchange", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (parameters[2] != null)
+                    {
+                        Int64.TryParse(parameters[2], out long amount);
+
+                        if (parameters[1].Equals("acforct", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (parameters[2] != null)
+                            {
+                                ValHeelCurrencyMarket.ExchangeAcForCt(player, amount);
+                            }
+                        }
+
+                        if (parameters[1].Equals("ctforac", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (parameters[2] != null)
+                            {
+                                ValHeelCurrencyMarket.ExchangeCtForAc(player, amount);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         [CommandHandler("achlist", AccessLevel.Player, CommandHandlerFlag.None, "This command displays your currently earned achievements.")]
 
         public static void HandleAchievements(Session session, params string[] parameters)
@@ -68,6 +149,14 @@ namespace ACE.Server.Command.Handlers
             allHcPlayers.AddRange(onlineHcPlayers);
             allHcPlayers.AddRange(offlineHcPlayers);
 
+            foreach (var p in allHcPlayers)
+            {
+                if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 2_629_746)
+                {
+                    allHcPlayers.Remove(p);
+                }
+            }
+
             List<IPlayer> top10Players = allHcPlayers.OrderByDescending(p => p.HcScore).Take(10).ToList();
 
             StringBuilder result = new StringBuilder();
@@ -90,6 +179,33 @@ namespace ACE.Server.Command.Handlers
             else
                 session.Network.EnqueueSend(new GameMessageSystemChat($"{finalResult}", ChatMessageType.x1B));
         }
+
+        public static long CalculateHcPlayerAge(IPlayer player, double currentUnxiTime)
+        {
+            var dob = player.GetProperty(PropertyString.DateOfBirth);
+
+            DateTime dateFromString = DateTime.Parse(dob);
+            long originalUnixTimestamp = ((DateTimeOffset)dateFromString).ToUnixTimeSeconds();
+
+            DateTime currentDate = DateTime.Now.ToUniversalTime();
+            long currentUnixTimestamp = ((DateTimeOffset)currentDate).ToUnixTimeSeconds();
+
+            long ageInSeconds = currentUnixTimestamp - originalUnixTimestamp;
+
+            player.HcAgeTimestamp = ageInSeconds;
+
+            return ageInSeconds;
+        }
+
+        public static double GetCurrentUnixTime()
+        {
+            DateTime currentDate = DateTime.Now.ToUniversalTime();
+            double currentUnixTimestamp = ((DateTimeOffset)currentDate).ToUnixTimeSeconds();
+
+            return currentUnixTimestamp;
+        }
+
+        
 
         [CommandHandler("hardcore", AccessLevel.Admin, CommandHandlerFlag.None, "Handles Hardcore mode.", "")]
 
@@ -1660,6 +1776,9 @@ namespace ACE.Server.Command.Handlers
                         if (session.Player.PyrealSavings == null)
                             session.Player.PyrealSavings = 0;
 
+                        if (session.Player.BankedCarnageTokens == null)
+                            session.Player.BankedCarnageTokens = 0;
+
                         // Moved interest to run automatically in Player_Tick
                         /*if (session.Player.InterestTimer== null)
                             session.Player.InterestTimer = 0;
@@ -1680,7 +1799,7 @@ namespace ACE.Server.Command.Handlers
                         }*/
                         session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Number: {session.Player.BankAccountNumber}", ChatMessageType.x1B));
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings || {session.Player.BankedCarnageTokens:N0} Carnage Tokens", ChatMessageType.x1B));
                         session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                         return;
                     }
@@ -1705,14 +1824,6 @@ namespace ACE.Server.Command.Handlers
 
                             foreach (var player in players)
                             {
-                                var sender = session.Player;
-
-                                if (player.Hardcore && !sender.Hardcore)
-                                {
-                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You cannot send pyreals to Hardcore players.", ChatMessageType.Help));
-                                    return;
-                                }
-
                                 if (account == session.Player.BankAccountNumber)
                                     continue;
 
@@ -1766,12 +1877,6 @@ namespace ACE.Server.Command.Handlers
                             {
                                 var sender = session.Player;
 
-                                if (player.Hardcore && !sender.Hardcore)
-                                {
-                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You cannot send Ashcoin to Hardcore players.", ChatMessageType.Help));
-                                    return;
-                                }
-
                                 if (account == session.Player.BankAccountNumber)
                                     continue;
 
@@ -1823,12 +1928,6 @@ namespace ACE.Server.Command.Handlers
                             foreach (var player in players)
                             {
                                 var sender = session.Player;
-
-                                if (player.Hardcore && !sender.Hardcore)
-                                {
-                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You cannot send Luminance to Hardcore players.", ChatMessageType.Help));
-                                    return;
-                                }
 
                                 if (account == session.Player.BankAccountNumber)
                                     continue;
@@ -1898,6 +1997,11 @@ namespace ACE.Server.Command.Handlers
                             session.Player.BankedAshcoin = 0;
                         }
 
+                        if (session.Player.BankedCarnageTokens == null)
+                        {
+                            session.Player.BankedCarnageTokens = 0;
+                        }
+
                         if (parameters[1].Equals("all", StringComparison.OrdinalIgnoreCase))
                         {
                             if (session.Player.BankCommandTimer.HasValue)
@@ -1932,7 +2036,7 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, 0, true, false, false, false, false);
+                                Player_Bank.Deposit(session.Player, 0, true, false, false, false, false, false);
                             });
 
                             bankAccountDeposit.EnqueueChain();
@@ -1993,7 +2097,7 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, amt, false, true, false, false, false);
+                                Player_Bank.Deposit(session.Player, amt, false, true, false, false, false, false);
                             });
 
                             bankAccountDeposit.EnqueueChain();
@@ -2053,7 +2157,7 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, amt, false, false, false, false, true);
+                                Player_Bank.Deposit(session.Player, amt, false, false, false, false, true, false);
                             });
 
                             bankAccountDeposit.EnqueueChain();
@@ -2114,7 +2218,68 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, amt, false, false, true, false, false);
+                                Player_Bank.Deposit(session.Player, amt, false, false, true, false, false, false);
+                            });
+
+                            bankAccountDeposit.EnqueueChain();
+                            return;
+                        }
+
+                        if (parameters[1].Equals("ctokens", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (session.Player.BankCommandTimer.HasValue)
+                            {
+                                if (Time.GetUnixTime() >= session.Player.BankCommandTimer)
+                                {
+                                    session.Player.RemoveProperty(PropertyFloat.BankCommandTimer);
+                                }
+                                else
+                                {
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You have used this command too recently.", ChatMessageType.Help));
+                                    return;
+                                }
+                            }
+
+                            Int64.TryParse(parameters[2], out long amt);
+
+                            if (amt <= 0)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You did not enter a valid amount to deposit.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            var cToken = session.Player.GetInventoryItemsOfWCID(800112);
+                            long availableCToken = 0;
+
+                            foreach (var item in cToken)
+                                availableCToken += (long)item.StackSize;
+
+                            if (amt > availableCToken)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough Carnage Tokens in your inventory to deposit that amount.", ChatMessageType.Help));
+                                return;
+                            }
+
+                            session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Attempting to Deposit {amt:N0} Carnage Tokens into your bank...", ChatMessageType.Broadcast));
+
+                            var bankAccountDeposit = new ActionChain();
+                            bankAccountDeposit.AddDelaySeconds(1);
+
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Contacting your local Bank of Dereth representative...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Giving security details...", ChatMessageType.Broadcast));
+                            });
+                            bankAccountDeposit.AddDelaySeconds(1);
+                            bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
+                                Player_Bank.Deposit(session.Player, amt, false, false, false, false, false, true);
                             });
 
                             bankAccountDeposit.EnqueueChain();
@@ -2173,7 +2338,7 @@ namespace ACE.Server.Command.Handlers
                             bankAccountDeposit.AddAction(WorldManager.ActionQueue, () =>
                             {
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Processing done!", ChatMessageType.Broadcast));
-                                Player_Bank.Deposit(session.Player, amt, false, false, false, true, false);
+                                Player_Bank.Deposit(session.Player, amt, false, false, false, true, false, false);
                             });
 
                             bankAccountDeposit.EnqueueChain();
@@ -2181,7 +2346,7 @@ namespace ACE.Server.Command.Handlers
                         }
                     }
 
-                    if (parameters[0].Equals("withdraw", StringComparison.OrdinalIgnoreCase) && (parameters[1].Equals("luminance", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyreals", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyrealsavings", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("ashcoin", StringComparison.OrdinalIgnoreCase)))
+                    if (parameters[0].Equals("withdraw", StringComparison.OrdinalIgnoreCase) && (parameters[1].Equals("luminance", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyreals", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("pyrealsavings", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("ashcoin", StringComparison.OrdinalIgnoreCase) || parameters[1].Equals("ctokens", StringComparison.OrdinalIgnoreCase)))
                     {
                         if (session.Player.BankCommandTimer.HasValue)
                         {
@@ -2281,7 +2446,7 @@ namespace ACE.Server.Command.Handlers
 
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some pyreals from your bank account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
-                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance ||  {session.Player.BankedAshcoin:N0}  AshCoin ||  {session.Player.PyrealSavings:N0}  Pyreal Savings ||  {session.Player.BankedCarnageTokens:N0}  Banked Carnage Tokens", ChatMessageType.x1B));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                             }
                         }
@@ -2364,7 +2529,7 @@ namespace ACE.Server.Command.Handlers
                                     session.Player.WithdrawTimer = (Time.GetUnixTime() + withdrawPeriod);
                                     session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                                     session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some pyreals from your savings account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
-                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings", ChatMessageType.x1B));
+                                    session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance ||  {session.Player.BankedAshcoin:N0}  AshCoin ||  {session.Player.PyrealSavings:N0}  Pyreal Savings ||  {session.Player.BankedCarnageTokens:N0}  Banked Carnage Tokens", ChatMessageType.x1B));
                                     session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                                     return;
                                 }
@@ -2511,7 +2676,7 @@ namespace ACE.Server.Command.Handlers
 
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some AshCoin from your bank account. (-{amountWithdrawn:N0})", ChatMessageType.x1B));
-                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance || {session.Player.BankedAshcoin:N0} AshCoin || {session.Player.PyrealSavings:N0} Pyreal Savings", ChatMessageType.x1B));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance ||  {session.Player.BankedAshcoin:N0}  AshCoin ||  {session.Player.PyrealSavings:N0}  Pyreal Savings ||  {session.Player.BankedCarnageTokens:N0}  Banked Carnage Tokens", ChatMessageType.x1B));
                                 session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                             }
                         }
@@ -2552,7 +2717,35 @@ namespace ACE.Server.Command.Handlers
 
                             session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                             session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some Luminance from your bank account. (-{amt2:N0})", ChatMessageType.x1B));
-                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance ||  {session.Player.BankedAshcoin:N0}  AshCoin ||  {session.Player.PyrealSavings:N0}  Pyreal Savings", ChatMessageType.x1B));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance ||  {session.Player.BankedAshcoin:N0}  AshCoin ||  {session.Player.PyrealSavings:N0}  Pyreal Savings ||  {session.Player.BankedCarnageTokens:N0}  Banked Carnage Tokens", ChatMessageType.x1B));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                        }
+
+                        if (parameters[1].Equals("CTokens", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Int64.TryParse(parameters[2], out long amt2);
+
+                            if (amt2 <= 0)
+                                return;
+
+                            if (amt2 > session.Player.BankedCarnageTokens)
+                            {
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You do not have enough Carnage Tokens to withdraw that amount from your bank. You have {session.Player.BankedCarnageTokens:N0} Luminance in your bank.", ChatMessageType.Help));
+                                session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You requested {amt2:N0}.", ChatMessageType.Broadcast));
+                                return;
+                            }
+
+                            var available = session.Player.BankedCarnageTokens ?? 0;
+                            var cToken = WorldObjectFactory.CreateNewWorldObject(800112);
+                            cToken.SetStackSize((int)amt2);
+                            session.Player.SetProperty(PropertyFloat.BankCommandTimer, Time.GetFutureUnixTime(10));
+                            session.Player.TryCreateInInventoryWithNetworking(cToken);
+                            session.Player.BankedCarnageTokens -= amt2;
+                            session.Player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt64(session.Player, PropertyInt64.BankedCarnageTokens, session.Player.BankedCarnageTokens ?? 0));
+
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You withdrew some Carnage Tokens from your bank account. (-{amt2:N0})", ChatMessageType.x1B));
+                            session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balances: {session.Player.BankedPyreals:N0} Pyreals || {session.Player.BankedLuminance:N0} Luminance ||  {session.Player.BankedAshcoin:N0}  AshCoin ||  {session.Player.PyrealSavings:N0}  Pyreal Savings ||  { session.Player.BankedCarnageTokens:N0}  Banked Carnage Tokens", ChatMessageType.x1B));
                             session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                         }
                     }

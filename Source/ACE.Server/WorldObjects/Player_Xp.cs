@@ -50,7 +50,7 @@ namespace ACE.Server.WorldObjects
 
             if (Hardcore == true)
             {
-                m_amount = (m_amount + (int)(m_amount * 0.50));
+                m_amount = m_amount + (long)(m_amount * 0.50);
             }
 
             GrantXP(m_amount, xpType, shareType);

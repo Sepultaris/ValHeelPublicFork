@@ -307,10 +307,10 @@ namespace ACE.Server.Entity
             set { if (value) RemoveProperty(PropertyBool.Hardcore); else SetProperty(PropertyBool.Hardcore, value); }
         }
 
-        public int CreatureKills
+        public long CreatureKills
         {
-            get => GetProperty(PropertyInt.CreatureKills) ?? 0;
-            set { if (value == 0) RemoveProperty(PropertyInt.CreatureKills); else SetProperty(PropertyInt.CreatureKills, value); }
+            get => GetProperty(PropertyInt64.CreatureKills) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CreatureKills); else SetProperty(PropertyInt64.CreatureKills, value); }
         }
 
         public ulong HcPyrealsWon
@@ -331,10 +331,16 @@ namespace ACE.Server.Entity
             set { if (value == 0.0) RemoveProperty(PropertyFloat.HcAgeTimestamp); else SetProperty(PropertyFloat.HcAgeTimestamp, value); }
         }
 
-        public int HcScore
+        public long HcScore
         {
-            get => GetProperty(PropertyInt.HcScore) ?? 0;
-            set { if (value == 0) RemoveProperty(PropertyInt.HcScore); else SetProperty(PropertyInt.HcScore, (int)value); }
+            get => GetProperty(PropertyInt64.HcScore) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.HcScore); else SetProperty(PropertyInt64.HcScore, value); }
+        }
+
+        public long? BankedCarnageTokens
+        {
+            get => GetProperty(PropertyInt64.BankedCarnageTokens);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt64.BankedCarnageTokens); else SetProperty(PropertyInt64.BankedCarnageTokens, value.Value); }
         }
 
         public Allegiance Allegiance { get; set; }

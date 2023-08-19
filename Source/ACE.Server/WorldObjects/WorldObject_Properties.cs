@@ -2871,10 +2871,10 @@ namespace ACE.Server.WorldObjects
             set { if (value == null) RemoveProperty(PropertyString.TinkerLog); else SetProperty(PropertyString.TinkerLog, value); }
         }
 
-        public int CreatureKills
+        public long CreatureKills
         {
-            get => GetProperty(PropertyInt.CreatureKills) ?? 0;
-            set { if (value == 0) RemoveProperty(PropertyInt.CreatureKills); else SetProperty(PropertyInt.CreatureKills, value); }
+            get => GetProperty(PropertyInt64.CreatureKills) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CreatureKills); else SetProperty(PropertyInt64.CreatureKills, value); }
         }
 
         public int? PlayerKillsPk
@@ -3153,6 +3153,36 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyFloat.SpeedrunEndTime);
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.SpeedrunEndTime); else SetProperty(PropertyFloat.SpeedrunEndTime, value.Value); }
+        }
+
+        public double CTInCirculation
+        {
+            get => GetProperty(PropertyFloat.CTInCirculation) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyFloat.CTInCirculation); else SetProperty(PropertyFloat.CTInCirculation, (double)value); }
+        }
+
+        public double ACInCirculation
+        {
+            get => GetProperty(PropertyFloat.ACInCirculation) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyFloat.ACInCirculation); else SetProperty(PropertyFloat.ACInCirculation, (double)value); }
+        }
+
+        public double PyrealValue
+        {
+            get => GetProperty(PropertyFloat.PyrealValue) ?? 1;
+            set { if (value == 0) RemoveProperty(PropertyFloat.PyrealValue); else SetProperty(PropertyFloat.PyrealValue, (double)value); }
+        }
+
+        public double MMDValue
+        {
+            get => GetProperty(PropertyFloat.MMDValue) ?? 250000;
+            set { if (value == 0) RemoveProperty(PropertyFloat.MMDValue); else SetProperty(PropertyFloat.MMDValue, (double)value); }
+        }
+
+        public double ACValue
+        {
+            get => GetProperty(PropertyFloat.ACValue) ?? 1;
+            set { if (value == 0) RemoveProperty(PropertyFloat.ACValue); else SetProperty(PropertyFloat.ACValue, (double)value); }
         }
     }
 }

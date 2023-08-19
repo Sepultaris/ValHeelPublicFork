@@ -729,8 +729,11 @@ namespace ACE.Server.WorldObjects
                             // target procs don't happen for cleaving
                             DamageTarget(cleaveHit, weapon);
                             TryProcEquippedItems(this, cleaveHit, false, weapon);
-                            LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
-                            UpdateAmmoAfterLaunch(ammo);
+                            if (ammo != null)
+                            {
+                                LaunchProjectile(weapon, ammo, cleaveHit, origin, orientation, velocity);
+                                UpdateAmmoAfterLaunch(ammo);
+                            }
                         }
                     }
 

@@ -1,13 +1,8 @@
 using ACE.Common;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
-using ACE.Server.Entity.Actions;
-using ACE.Server.Factories;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ACE.Server.WorldObjects
 {
@@ -42,8 +37,7 @@ namespace ACE.Server.WorldObjects
             return true;
         }
 
-
-        public static void Deposit(Player player, long amount, bool all, bool pyreal, bool ashcoin, bool luminance, bool pyrealSavings)
+        public static void Deposit(Player player, long amount, bool all, bool pyreal, bool ashcoin, bool luminance, bool pyrealSavings, bool cToken)
         {
             if (player != null)
             {
@@ -67,6 +61,12 @@ namespace ACE.Server.WorldObjects
                     player.PyrealSavings = 0;
                 }
 
+                if (player.BankedCarnageTokens == null)
+                {
+                    player.BankedCarnageTokens = 0;
+                }
+
+                var CToken = player.GetInventoryItemsOfWCID(800112);
                 var fiftykACNote = player.GetInventoryItemsOfWCID(801910);
                 var tenkACNote = player.GetInventoryItemsOfWCID(801909);
                 var fivekACNote = player.GetInventoryItemsOfWCID(801908);
@@ -78,10 +78,14 @@ namespace ACE.Server.WorldObjects
                 long inheritedValue = 0;
                 long inheritedashcoinvalue = 0;
                 long lumInheritedValue = 0;
+                long CTokenInheritedValue = 0;
                 long oldBalanceP = (long)player.BankedPyreals;
                 long oldBalancePSavings = (long)player.PyrealSavings;
                 long oldBalanceL = (long)player.BankedLuminance;
                 long oldBalanceA = (long)player.BankedAshcoin;
+                long oldBalanceC = (long)player.BankedCarnageTokens;
+
+                // TODO: Add funtionality for depositing Carnage Tokens
 
                 if (all)
                 {
@@ -222,6 +226,23 @@ namespace ACE.Server.WorldObjects
                         }
                     }
 
+                    foreach (var item in CToken)
+                    {
+                        if (item != null)
+                        {
+                            totalValue = (long)item.StackSize;
+
+                            player.TryConsumeFromInventoryWithNetworking(800112);
+
+                            if (!player.BankedCarnageTokens.HasValue)
+                                player.BankedCarnageTokens = 0;
+
+                            player.BankedCarnageTokens += totalValue;
+
+                            inheritedValue += totalValue;
+                        }
+                    }
+
                     if (player.AvailableLuminance == null)
                     {
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
@@ -318,6 +339,31 @@ namespace ACE.Server.WorldObjects
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked {amountDeposited:N0} AshCoin", ChatMessageType.x1D));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balance: {oldBalanceA:N0} AshCoin", ChatMessageType.Help));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balance: {player.BankedAshcoin:N0} AshCoin", ChatMessageType.x1B));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                }
+                if (cToken)
+                {
+                    long amountDeposited = 0;
+
+                    for (var i = amount; i >= 100; i -= 100)
+                    {
+                        amount -= 100;
+                        player.TryConsumeFromInventoryWithNetworking(801690, 100);
+                        player.BankedCarnageTokens += 100;
+                        amountDeposited += 100;
+                    }
+
+                    if (amount < 100)
+                    {
+                        player.TryConsumeFromInventoryWithNetworking(801690, (int)amount);
+                        player.BankedCarnageTokens += amount;
+                        amountDeposited += amount;
+                    }
+
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] You banked {amountDeposited:N0} Carnage Tokens", ChatMessageType.x1D));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] Old Account Balance: {oldBalanceC:N0} Carnage Tokens", ChatMessageType.Help));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"[BANK] New Account Balance: {player.BankedCarnageTokens:N0} Carnage Tokens", ChatMessageType.x1B));
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.Broadcast));
                 }
                 if (luminance)

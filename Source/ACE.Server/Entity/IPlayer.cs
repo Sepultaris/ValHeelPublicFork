@@ -87,7 +87,7 @@ namespace ACE.Server.Entity
 
         bool Hardcore { get; set; }
 
-        int CreatureKills { get; set; }
+        long CreatureKills { get; set; }
 
         ulong HcPyrealsWon { get; set; }
 
@@ -95,7 +95,9 @@ namespace ACE.Server.Entity
 
         double HcAgeTimestamp { get; set; }
 
-        int HcScore { get; set; }
+        long HcScore { get; set; }
+
+        long? BankedCarnageTokens { get; set; }
 
         uint GetCurrentLoyalty();
 

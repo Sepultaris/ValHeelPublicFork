@@ -236,7 +236,17 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         WithdrawTimer                  = 8027,
         [ServerOnly]
-        HcAgeTimestamp                 = 8028
+        HcAgeTimestamp                 = 8028,
+        [ServerOnly]
+        CTInCirculation                = 8029,
+        [ServerOnly]
+        ACInCirculation                = 8030,
+        [ServerOnly]
+        PyrealValue                    = 8031,
+        [ServerOnly]
+        MMDValue                       = 8032,
+        [ServerOnly]
+        ACValue                        = 8033,
 
     }
 

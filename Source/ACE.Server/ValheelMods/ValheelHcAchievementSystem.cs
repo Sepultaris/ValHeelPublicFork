@@ -29,7 +29,7 @@ namespace ACE.Server.ValheelMods
 
             for (int i = 0; i < PrestigeMilestones.Length; i++)
             {
-                if (player.QuestManager.GetCurrentSolves("Prestige") >= PrestigeMilestones[player.PrestigeMilestones])
+                if (player.PrestigeMilestones < PrestigeMilestones.Length && player.QuestManager.GetCurrentSolves("Prestige") >= PrestigeMilestones[player.PrestigeMilestones])
                 {
                     long winnings = 250000 * (((player.PrestigeMilestones * player.PrestigeMilestones) * 2) * 10);
 
@@ -67,7 +67,7 @@ namespace ACE.Server.ValheelMods
 
             for (int i = 0; i < MonsterKillsMilestones.Length; i++)
             {
-                if (player.CreatureKills >= MonsterKillsMilestones[player.MonsterKillsMilestones])
+                if (player.MonsterKillsMilestones < MonsterKillsMilestones.Length && player.CreatureKills >= MonsterKillsMilestones[player.MonsterKillsMilestones])
                 {
                     long winnings = 250000 * (((player.MonsterKillsMilestones * player.MonsterKillsMilestones) * 2) * 10);
 
@@ -92,7 +92,7 @@ namespace ACE.Server.ValheelMods
 
             for (int i = 0; i < HcPyrealsWonMilestones.Length; i++)
             {
-                if (player.HcPyrealsWon >= HcPyrealsWonMilestones[player.HcPyrealsWonMilestones])
+                if (player.HcPyrealsWonMilestones < HcPyrealsWonMilestones.Length && player.HcPyrealsWon >= HcPyrealsWonMilestones[player.HcPyrealsWonMilestones])
                 {
                     long winnings = 250000 * (((player.HcPyrealsWonMilestones * player.HcPyrealsWonMilestones) * 2) * 10);
 
@@ -119,7 +119,7 @@ namespace ACE.Server.ValheelMods
 
             for (int i = 0; i < HcScoreMilestones.Length; i++)
             {
-                if (player.HcScore >= HcScoreMilestones[player.HcScoreMilestones])
+                if (player.HcScoreMilestones < HcScoreMilestones.Length && player.HcScore >= HcScoreMilestones[player.HcScoreMilestones])
                 {
                     long winnings = 250000 * (((player.HcScoreMilestones * player.HcScoreMilestones) * 2) * 10);
 
@@ -167,7 +167,7 @@ namespace ACE.Server.ValheelMods
 
             for (int i = 0; i < LevelMilestones.Length; i++)
             {
-                if (player.Level >= LevelMilestones[player.LevelMilestones])
+                if (player.LevelMilestones < LevelMilestones.Length && player.Level >= LevelMilestones[player.LevelMilestones])
                 {
                     long winnings = 250000 * (((player.LevelMilestones * player.LevelMilestones) * 2) * 10);
 

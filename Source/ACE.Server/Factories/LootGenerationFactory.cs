@@ -347,6 +347,7 @@ namespace ACE.Server.Factories
                     wo = CreateMirra(profile, isMagical, true);
                     break;
             }
+
             return wo;
         }
 
