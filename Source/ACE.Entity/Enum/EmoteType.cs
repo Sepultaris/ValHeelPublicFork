@@ -132,7 +132,8 @@ namespace ACE.Entity.Enum
         // Unknown Id Emotes & Custom Emotes
         Enlightenment = 9001,
         Pop = 9002,
-        ForceLogOff = 9003
-
+        ForceLogOff = 9003,
+        ServerBountyQuery = 9004,
+        PayOffBounty = 9005,
     }
 }

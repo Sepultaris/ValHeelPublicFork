@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using ACE.Common;
 using ACE.DatLoader;
 using ACE.DatLoader.Entity;
@@ -13,6 +14,7 @@ using ACE.Server.Managers;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Physics;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace ACE.Server.WorldObjects
 {
@@ -817,7 +819,7 @@ namespace ACE.Server.WorldObjects
 
         public Physics.Common.Position StartPos { get; set; }
 
-        public void DoCastSpell_Inner(Spell spell, bool isWeaponSpell, uint manaUsed, WorldObject target, CastingPreCheckStatus castingPreCheckStatus, bool finishCast = true)
+        public async void DoCastSpell_Inner(Spell spell, bool isWeaponSpell, uint manaUsed, WorldObject target, CastingPreCheckStatus castingPreCheckStatus, bool finishCast = true)
         {
             if (RecordCast.Enabled)
                 RecordCast.Log($"DoCastSpell_Inner()");
@@ -866,7 +868,7 @@ namespace ACE.Server.WorldObjects
 
                 return;
             }
-           
+
             var pk_error = CheckPKStatusVsTarget(target, spell);
             if (pk_error != null)
                 castingPreCheckStatus = CastingPreCheckStatus.InvalidPKStatus;
@@ -876,12 +878,28 @@ namespace ACE.Server.WorldObjects
                 case CastingPreCheckStatus.Success:
 
                     if ((spell.Flags & SpellFlags.FellowshipSpell) == 0)
-                        CreatePlayerSpell(target, spell, isWeaponSpell);                    
+                        CreatePlayerSpell(target, spell, isWeaponSpell);
                     else
                     {
                         var fellows = GetFellowshipTargets();
                         foreach (var fellow in fellows)
                             CreatePlayerSpell(fellow, spell, isWeaponSpell);
+                    }
+
+                    if (spell.Name == "Incantation of Heal Self" && !IsHoTTicking)
+                    {
+                        var procSpell = new Spell(SpellId.HealOther5);
+                        int numCasts = 3;
+                        int castIntervalMilliseconds = 3000; // 3000 ms = 3 seconds
+                        Task castingTask = CastSpellMultipleTimes((Player)this, (Player)target, procSpell, numCasts, castIntervalMilliseconds, false, castingPreCheckStatus);
+                    }
+
+                    if (spell.Name == "Incantation of Revitalize Self" && !IsHoTTicking)
+                    {
+                        var procSpell = new Spell(SpellId.RevitalizeOther5);
+                        int numCasts = 3;
+                        int castIntervalMilliseconds = 3000; // 3000 ms = 3 seconds
+                        Task castingTask = CastSpellMultipleTimes((Player)this, (Player)target, procSpell, numCasts, castIntervalMilliseconds, false, castingPreCheckStatus);
                     }
 
                     // handle self procs
@@ -926,6 +944,32 @@ namespace ACE.Server.WorldObjects
 
             if (finishCast)
                 FinishCast();
+        }
+
+        static async Task CastSpellMultipleTimes(Player caster, Player target, Spell spell, int numCasts, int castIntervalMilliseconds, bool isWeaponSpell, CastingPreCheckStatus castingPreCheckStatus)
+        {
+            caster.IsHoTTicking = true;
+            await Task.Delay(3000);
+
+            for (int i = 0; i < numCasts; i++)
+            {
+                var fellows = target.GetFellowshipTargets();
+
+                if (fellows != null)
+                {
+                    foreach (var fellow in fellows)
+                    {
+                        if (caster.GetDistance(target) < 192.0f)
+                        {
+                            caster.CreatePlayerSpell(fellow, spell, isWeaponSpell);
+                        }
+                    }
+                }
+
+                await Task.Delay(castIntervalMilliseconds); // Wait for the specified interval before casting again
+            }
+
+            caster.IsHoTTicking = false;
         }
 
         public void FinishCast()

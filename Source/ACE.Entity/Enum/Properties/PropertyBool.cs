@@ -208,6 +208,8 @@ namespace ACE.Entity.Enum.Properties
         Hardcore                         = 9018,
         [ServerOnly]
         HasBounty                        = 9019,
+        [ServerOnly]
+        IsHoTTicking                     = 9020,
     }
 
     public static class PropertyBoolExtensions

@@ -47,7 +47,7 @@ namespace ACE.Server.Network.GameAction.Actions
                 targetPlayer.Session.Network.EnqueueSend(tell);
             }
             else
-                creature.EmoteManager.OnTalkDirect(session.Player, message);
+                creature.EmoteManager.OnTalkDirect(creature, session.Player, message);
         }
     }
 }

@@ -15,6 +15,7 @@ using ACE.Server.Managers;
 using ACE.Server.Network.Structure;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.ValheelMods;
 
 namespace ACE.Server.WorldObjects
 {
@@ -222,6 +223,33 @@ namespace ACE.Server.WorldObjects
             }
             else
                 Session.Network.EnqueueSend(new GameMessageSystemChat("Your augmentation prevents the tides of death from ripping away your current enchantments!", ChatMessageType.Broadcast));
+
+            if (IsPKDeath(topDamager))
+            {
+                if (HasBounty)
+                {
+                    var bounty = PriceOnHead;
+
+                    if (bounty != null)
+                        return;
+
+                    foreach (var p in PlayerManager.GetAllOnline())
+                    {
+                        if (p != null)
+                        {
+                            if (p.Guid == topDamager.Guid)
+                            {
+                                p.BankedAshcoin = p.BankedAshcoin + bounty;
+                                ValHeelCurrencyMarket.AddACToCirculation((long)bounty);
+                                PriceOnHead = 0;
+                                HasBounty = false;
+                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have claimed the bounty of {Name} for {bounty} AshCoin!", ChatMessageType.Broadcast));
+                                PlayerManager.BroadcastToAll(new GameMessageSystemChat($"{topDamager.Name} has claimed the bounty of {Name} for {bounty} AshCoin!", ChatMessageType.Broadcast));
+                            }
+                        }
+                    }
+                }
+            }
 
             // wait for the death animation to finish
             var dieChain = new ActionChain();

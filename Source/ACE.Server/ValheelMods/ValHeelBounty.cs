@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
+using ACE.Server.Command.Handlers;
 using ACE.Server.Entity;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
@@ -21,9 +22,14 @@ namespace ACE.Server.ValheelMods
 
         public static void PlaceBounty(Player contractor, string target, long amount)
         {
+            if (contractor == null)
+                return;
+            if (target == null)
+                return;
+
             if (!AllPlayersNamesList().Contains(target))
             {
-                contractor.Session.Network.EnqueueSend(new GameMessageSystemChat($"{target} could not be found.", ChatMessageType.Broadcast));
+                contractor.Session.Network.EnqueueSend(new GameMessageSystemChat($"A player with the name {target} could not be found.", ChatMessageType.Broadcast));
                 return;
             }
 
@@ -33,9 +39,15 @@ namespace ACE.Server.ValheelMods
                 return;
             }
 
+            if (amount <= 0)
+            {
+                contractor.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must place a bounty of at least 1 AshCoin.", ChatMessageType.Broadcast));
+                return;
+            }
+
             if (contractor.BankedAshcoin < amount)
             {
-                contractor.Session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough AshCoin to place a bounty on {target}.", ChatMessageType.Broadcast));
+                contractor.Session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough AshCoin to place that bounty.", ChatMessageType.Broadcast));
                 return;
             }
 
@@ -53,13 +65,20 @@ namespace ACE.Server.ValheelMods
 
                         p.SetProperty(PropertyInt64.PriceOnHead, newPrice);
                     }
+
+                    contractor.BankedAshcoin -= amount;
+                    ValHeelCurrencyMarket.RemoveACFromCirculation(amount);
+                    contractor.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have placed a bounty on {target}'s head for {amount} AshCoin.", ChatMessageType.Broadcast));
                 }
             }
 
             foreach (var p in PlayerManager.GetAllOnline())
             {
-                if (p.Name == target)
+                if (p.Name == target && p.PriceOnHead == null || p.Name == target && p.PriceOnHead == 0)
                     p.Session.Network.EnqueueSend(new GameMessageSystemChat($"{contractor.Name} has placed a bounty on your head for {amount} AshCoin.", ChatMessageType.Broadcast));
+                if (p.Name == target && p.PriceOnHead > 0)
+                    p.Session.Network.EnqueueSend(new GameMessageSystemChat($"{contractor.Name} has increased the bounty on your head by {amount} AshCoin. Your bounty is now {p.PriceOnHead} AshCoin", ChatMessageType.Broadcast));
+
             }
         }
 
@@ -131,6 +150,44 @@ namespace ACE.Server.ValheelMods
             }
 
             return playerList;
+        }
+
+        public static void PayOffBounty(Player player)
+        {
+            var cost = player.PriceOnHead * 2;
+
+            if (player.PriceOnHead == null || player.PriceOnHead == 0)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have a bounty on your head.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            if (player.BankedAshcoin < cost)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have enough AshCoin to pay off your bounty. You need {cost} AshCoin.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            if (player.PriceOnHead > 1000000)
+            {
+                player.PlayerKillerStatus = PlayerKillerStatus.NPK;
+                player.Session.Network.EnqueueSend(new GameMessagePublicUpdatePropertyInt(player, PropertyInt.PlayerKillerStatus, (int)player.PlayerKillerStatus));
+                player.SetProperty(PropertyInt64.PriceOnHead, 0);
+                player.SetProperty(PropertyBool.HasBounty, false);
+                player.BankedAshcoin -= cost;
+                ValHeelCurrencyMarket.RemoveACFromCirculation((long)cost);
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have paid off your bounty at a cost of {cost} AshCoin", ChatMessageType.Broadcast));
+                return;
+            }
+            else
+            {
+                player.SetProperty(PropertyInt64.PriceOnHead, 0);
+                player.SetProperty(PropertyBool.HasBounty, false);
+                player.BankedAshcoin -= cost;
+                ValHeelCurrencyMarket.RemoveACFromCirculation((long)cost);
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have paid off your bounty at a cost of {cost} AshCoin", ChatMessageType.Broadcast));
+                return;
+            }
         }
     }
 }

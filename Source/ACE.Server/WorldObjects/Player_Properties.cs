@@ -1484,6 +1484,12 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt64.PriceOnHead); else SetProperty(PropertyInt64.PriceOnHead, value.Value); }
         }
 
+        public bool IsHoTTicking
+        {
+            get => GetProperty(PropertyBool.IsHoTTicking) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsHoTTicking); else SetProperty(PropertyBool.IsHoTTicking, value); }
+        }
+
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

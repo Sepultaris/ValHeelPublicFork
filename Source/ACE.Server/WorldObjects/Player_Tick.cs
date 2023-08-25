@@ -179,7 +179,8 @@ namespace ACE.Server.WorldObjects
                 {
                     PlayerKillerStatus = PlayerKillerStatus.PK;
                     Session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(this, PropertyInt.PlayerKillerStatus, (int)PlayerKillerStatus));
-                    CommandHandlerHelper.WriteOutputInfo(Session, $"WARNING!: Your bounty has become too high and you are now a wanted player.", ChatMessageType.Broadcast);
+                    CommandHandlerHelper.WriteOutputInfo(Session, $"WARNING!: Your bounty has become too high! You are now a wanted player.", ChatMessageType.Broadcast);
+                    CommandHandlerHelper.WriteOutputInfo(Session, $"WARNING!: You will remain PK until another player kills you.", ChatMessageType.Broadcast);
                 }
             }
 
@@ -276,6 +277,9 @@ namespace ACE.Server.WorldObjects
             else if (!IsOnPKLandblock)
             {
                 var pkStatus = player.PlayerKillerStatus;
+
+                if (PriceOnHead == null)
+                    PriceOnHead = 0;
 
                 if (pkStatus == PlayerKillerStatus.PK && !PKTimerActive && PriceOnHead < 1000000)
                 {

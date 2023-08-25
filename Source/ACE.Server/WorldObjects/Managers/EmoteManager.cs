@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-
+using System.Text;
 using ACE.Common;
 using ACE.Common.Extensions;
 using ACE.Database;
@@ -20,6 +20,7 @@ using ACE.Server.Factories.Enum;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.ValheelMods;
 using log4net;
 
 using Position = ACE.Entity.Position;
@@ -1473,6 +1474,32 @@ namespace ACE.Server.WorldObjects.Managers
                 default:
                     log.Debug($"EmoteManager.Execute - Encountered Unhandled EmoteType {(EmoteType)emote.Type} for {WorldObject.Name} ({WorldObject.WeenieClassId})");
                     break;
+
+                case EmoteType.ServerBountyQuery:
+
+                    {
+                        List<string> bountyInfoList = new List<string>();
+                        var bountInfoTitle = $"Current Active Bounties";
+
+                        bountyInfoList.Add(bountInfoTitle);
+
+                        foreach (var p in ValHeelBounty.ActiveBoutiesPlayerList())
+                        {
+                            var bountyInfo = $"Name: {p.Name} Level: {p.Level} Bounty: {p.PriceOnHead} AshCoin";
+                            var bountyInfoString = string.Join("\n", bountyInfo);
+                            bountyInfoList.Add(bountyInfoString);
+                        }
+
+                        var msg2 = string.Join("\n", bountyInfoList);
+                        player.Session.Network.EnqueueSend(new GameMessageSystemChat(msg2, ChatMessageType.Broadcast));
+                    }
+                    break;
+
+                case EmoteType.PayOffBounty:
+                    {
+                        ValHeelBounty.PayOffBounty(player);
+                    }
+                    break;
             }
 
             return delay;
@@ -1929,8 +1956,25 @@ namespace ACE.Server.WorldObjects.Managers
         /// <summary>
         /// Called when this NPC receives a direct text message from a player
         /// </summary>
-        public void OnTalkDirect(Player player, string message)
+        public void OnTalkDirect(Creature creature, Player player, string message)
         {
+            // Split the message into words
+            string[] words = message.Split(' ');
+
+            if (words.Length > 0)
+            {
+                string firstWord = words[0].ToLower(); // Convert to lowercase for case-insensitive comparison
+
+                if (firstWord == "bounty" && creature.Name == "Bounty Board")
+                {
+                    if (words.Length > 2 && long.TryParse(words[words.Length - 1], out long amount))
+                    {
+                        string target = string.Join(" ", words.Skip(1).Take(words.Length - 2));
+                        ValHeelBounty.PlaceBounty(player, target, amount);
+                    }
+                }
+            }
+
             ExecuteEmoteSet(EmoteCategory.ReceiveTalkDirect, message, player);
         }
 
