@@ -8,6 +8,7 @@ using ACE.DatLoader;
 using ACE.DatLoader.Entity;
 using ACE.Entity;
 using ACE.Entity.Enum;
+using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Managers;
@@ -15,6 +16,7 @@ using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Physics;
 using Microsoft.EntityFrameworkCore.Internal;
+using static ACE.Server.WorldObjects.Player;
 
 namespace ACE.Server.WorldObjects
 {
@@ -819,7 +821,7 @@ namespace ACE.Server.WorldObjects
 
         public Physics.Common.Position StartPos { get; set; }
 
-        public async void DoCastSpell_Inner(Spell spell, bool isWeaponSpell, uint manaUsed, WorldObject target, CastingPreCheckStatus castingPreCheckStatus, bool finishCast = true)
+        public void DoCastSpell_Inner(Spell spell, bool isWeaponSpell, uint manaUsed, WorldObject target, CastingPreCheckStatus castingPreCheckStatus, bool finishCast = true)
         {
             if (RecordCast.Enabled)
                 RecordCast.Log($"DoCastSpell_Inner()");
@@ -886,22 +888,6 @@ namespace ACE.Server.WorldObjects
                             CreatePlayerSpell(fellow, spell, isWeaponSpell);
                     }
 
-                    if (spell.Name == "Incantation of Heal Self" && !IsHoTTicking)
-                    {
-                        var procSpell = new Spell(SpellId.HealOther5);
-                        int numCasts = 3;
-                        int castIntervalMilliseconds = 3000; // 3000 ms = 3 seconds
-                        Task castingTask = CastSpellMultipleTimes((Player)this, (Player)target, procSpell, numCasts, castIntervalMilliseconds, false, castingPreCheckStatus);
-                    }
-
-                    if (spell.Name == "Incantation of Revitalize Self" && !IsHoTTicking)
-                    {
-                        var procSpell = new Spell(SpellId.RevitalizeOther5);
-                        int numCasts = 3;
-                        int castIntervalMilliseconds = 3000; // 3000 ms = 3 seconds
-                        Task castingTask = CastSpellMultipleTimes((Player)this, (Player)target, procSpell, numCasts, castIntervalMilliseconds, false, castingPreCheckStatus);
-                    }
-
                     // handle self procs
                     if (spell.IsHarmful && target != this)
                         TryProcEquippedItems(this, this, true, caster);
@@ -933,6 +919,36 @@ namespace ACE.Server.WorldObjects
                     break;
             }
 
+            var lifeMagicSkill = GetCreatureSkill(Skill.LifeMagic);
+            var warMagicSkill = GetCreatureSkill(Skill.WarMagic);
+            var warChannelRoll = ThreadSafeRandom.Next((float)0.0, 1.0f);
+            var warChannelChance = 0.25f;
+            var currentUnixTime = (uint)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+
+            if (IsHealer)
+            {
+                // Lifemagic HoT/Sot
+                if (spell.School == MagicSchool.LifeMagic && spell.IsBeneficial && spell.VitalDamageType == DamageType.Health && !IsHoTTicking && lifeMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
+                    LifeMagicHot(this, (Player)target, GetHoTSpell(spell.Name));
+                else if (spell.School == MagicSchool.LifeMagic && spell.IsBeneficial && spell.VitalDamageType == DamageType.Stamina && !IsHoTTicking && lifeMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
+                    LifeMagicSot(this, (Player)target, GetHoTSpell(spell.Name));
+            }
+
+            // War Channeling
+            if (IsDps)
+            {
+                if (LastWarChannelTimestamp == 0)
+                    LastWarChannelTimestamp = currentUnixTime - WarChannelTimerDuration;
+                
+                if (spell.School == MagicSchool.WarMagic && spell.NumProjectiles > 0 && /*currentUnixTime - LastWarChannelTimestamp >= WarChannelTimerDuration &&*/ warChannelChance >= warChannelRoll && warMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
+                {
+                    var procSpell = spell;
+                    int numCasts = NumOfChannelCasts;
+
+                    WarMagicChannel(this, (Creature)target, procSpell, numCasts, false);
+                    LastWarChannelTimestamp = currentUnixTime;
+                }
+            }
 
             if (pk_error != null && spell.NumProjectiles == 0)
             {
@@ -946,30 +962,271 @@ namespace ACE.Server.WorldObjects
                 FinishCast();
         }
 
-        static async Task CastSpellMultipleTimes(Player caster, Player target, Spell spell, int numCasts, int castIntervalMilliseconds, bool isWeaponSpell, CastingPreCheckStatus castingPreCheckStatus)
+        static int GetHoTSpell(string spellName)
         {
-            caster.IsHoTTicking = true;
-            await Task.Delay(3000);
-
-            for (int i = 0; i < numCasts; i++)
+            string[] spellNames =
             {
-                var fellows = target.GetFellowshipTargets();
+            // Health
+            "Incantation of Heal Self",
+            "Adja's Intervention",
+            "Heal Self VI",
+            "Heal Self V",
+            "Heal Self IV",
+            "Heal Self III",
+            "Heal Self II",
+            "Heal Self I",
+            "Incantation of Heal Other",
+            "Adja's Gift",
+            "Heal Other VI",
+            "Heal Other V",
+            "Heal Other IV",
+            "Heal Other III",
+            "Heal Other II",
+            "Heal Otehr I",
+            
+            // Stamina
+            "Incantation of Revitalize Self",
+            "Robustification",
+            "Revitalize Self VI",
+            "Revitalize Self V",
+            "Revitalize Self IV",
+            "Revitalize Self III",
+            "Revitalize Self II",
+            "Revitalize Self I",
+            "Incantation of Revitalize Other",
+            "Replenish",
+            "Revitalize Other VI",
+            "Revitalize Other V",
+            "Revitalize Other IV",
+            "Revitalize Other III",
+            "Revitalize Other II",
+            "Revitalize Other I",
+        };
 
-                if (fellows != null)
+            int[] spellMappings =
+            {
+            // Health
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            
+            // Stamina
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+        };
+
+            int index = Array.IndexOf(spellNames, spellName);
+            int procSpell;
+
+            if (index != -1)
+            {
+                procSpell = spellMappings[index];
+            }
+            else
+            {
+                return 1;
+            }
+
+            return procSpell;
+        }
+
+        public void LifeMagicHot(Player caster, Player target, int spell)
+        {
+            // This sets the HoT flag on the target
+            var fellows = caster.GetFellowshipTargets();
+            double currentUnixTime = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+
+            if (fellows != null)
+            {
+                foreach (var fellow in fellows)
                 {
-                    foreach (var fellow in fellows)
+                    if (caster.GetDistance(fellow) < 30.0f)
                     {
-                        if (caster.GetDistance(target) < 192.0f)
+                        if (spell == 8)
                         {
-                            caster.CreatePlayerSpell(fellow, spell, isWeaponSpell);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot8, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 7)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot7, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 6)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot6, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 5)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot5, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 4)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot4, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 3)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot3, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 2)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot2, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 1)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot1, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
                         }
                     }
                 }
+            }
+        }
 
-                await Task.Delay(castIntervalMilliseconds); // Wait for the specified interval before casting again
+        public void LifeMagicSot(Player caster, Player target, int spell)
+        {
+            // This sets the HoT flag on the target
+            var fellows = caster.GetFellowshipTargets();
+            double currentUnixTime = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+
+            if (fellows != null)
+            {
+                foreach (var fellow in fellows)
+                {
+                    if (caster.GetDistance(fellow) < 30.0f)
+                    {
+                        if (spell == 8)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot8, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 7)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot7, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 6)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot6, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 5)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot5, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 4)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot4, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 3)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot3, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 2)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot2, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 1)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot1, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void WarMagicChannel(Player caster, Creature target, Spell spell, int numCasts, bool isWeaponSpell)
+        {
+            var weapon = caster.GetEquippedWand();
+            var fellows = caster.GetFellowshipTargets();
+            caster.IsWarChanneling = true;
+
+            for (int i = 0; i < numCasts; i++)
+            {
+                if (fellows != null && target != null && spell != null)
+                {
+                    foreach (var fellow in fellows)
+                    {
+                        if (caster.GetDistance(fellow) < 30.0f)
+                        {
+                            if (fellow.GetDistance(target) < 30.0f)
+                            {
+                                fellow.WarMagic(target, spell, weapon);
+                            }
+                        }
+                    }
+                }
             }
 
-            caster.IsHoTTicking = false;
+            caster.IsWarChanneling = false;
         }
 
         public void FinishCast()
@@ -1127,12 +1384,32 @@ namespace ACE.Server.WorldObjects
                         {
                             WarMagic(target, spell, caster, isWeaponSpell);
                             var cleave = GetMagicCleaveTarget(targetCreature, caster);
+                            var warChannelRoll = ThreadSafeRandom.Next((float)0.0, 1.0f);
+                            var warChannelChance = 0.10f;
+                            var warMagicSkill = GetCreatureSkill(Skill.WarMagic);
+                            var currentUnixTime = (uint)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
                             foreach (var cleaveHit in cleave)
                             {
-
                                 WarMagic(cleaveHit, spell, caster, isWeaponSpell);
                                 TryProcEquippedItems(this, cleaveHit, false, caster);
+                            }
+                            if (IsDps && warChannelChance >= warChannelRoll)
+                            {
+                                foreach (var c in cleave)
+                                {
+                                    if (LastWarChannelTimestamp == 0)
+                                        LastWarChannelTimestamp = currentUnixTime - WarChannelTimerDuration;
+
+                                    if (spell.School == MagicSchool.WarMagic && spell.NumProjectiles > 0 && /*currentUnixTime - LastWarChannelTimestamp >= WarChannelTimerDuration &&*/ warMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
+                                    {
+                                        var procSpell = spell;
+                                        int numCasts = NumOfChannelCasts;
+
+                                        WarMagicChannel(this, (Creature)target, procSpell, numCasts, false);
+                                        LastWarChannelTimestamp = currentUnixTime;
+                                    }
+                                }
                             }
                             break;
                         }

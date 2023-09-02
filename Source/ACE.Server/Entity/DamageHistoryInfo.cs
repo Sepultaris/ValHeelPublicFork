@@ -1,6 +1,7 @@
 using System;
 
 using ACE.Entity;
+using ACE.Server.Managers;
 using ACE.Server.WorldObjects;
 
 namespace ACE.Server.Entity
@@ -11,6 +12,7 @@ namespace ACE.Server.Entity
 
         public readonly ObjectGuid Guid;
         public readonly string Name;
+        public readonly int DoTOwnerGuid;
 
         public float TotalDamage;
 
@@ -24,11 +26,27 @@ namespace ACE.Server.Entity
 
             Guid = attacker.Guid;
             Name = attacker.Name;
+            DoTOwnerGuid = attacker.DoTOwnerGuid;
 
             TotalDamage = totalDamage;
 
             if (attacker is CombatPet combatPet && combatPet.P_PetOwner != null)
                 PetOwner = new WeakReference<Player>(combatPet.P_PetOwner);
+
+            if (attacker.WeenieClassId == 300501)
+            {
+                foreach (var p in PlayerManager.GetAllOnline())
+                {
+                    if (p.Guid.Full == attacker.DoTOwnerGuid)
+                    {
+                        if (DoTOwnerGuid != 0)
+                        {
+                            Guid = p.Guid;
+                            Name = p.Name;
+                        }
+                    }
+                }
+            }
         }
 
         public WorldObject TryGetAttacker()

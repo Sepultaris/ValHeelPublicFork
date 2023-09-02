@@ -357,6 +357,43 @@ namespace ACE.Server.Entity
                 Damage = Damage + weaponDamage;
             }
 
+            // Class Damage Modifiers
+
+            // Tank
+            if (attacker.IsTank)
+            {
+                Damage = Damage - Damage * 0.2f;
+                return Damage;
+            }
+            else if (defender.IsTank)
+            {
+                Damage = Damage - Damage * 0.2f;
+                return Damage;
+            }
+            // DPS
+            else if (attacker.IsDps)
+            {
+                Damage = Damage + Damage * 0.2f;
+                return Damage;
+            }
+            else if (defender.IsDps)
+            {
+                Damage = Damage + Damage * 0.3f;
+                return Damage;
+            }
+            // Healer
+            else if (attacker.IsHealer)
+            {
+                Damage = Damage - Damage * 0.2f;
+                return Damage;
+            }
+            else if (defender.IsHealer)
+            {
+                Damage = Damage + Damage * 0.2f;
+                return Damage;
+            }
+            else
+
             return Damage;
         }
 

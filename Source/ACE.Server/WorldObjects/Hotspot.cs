@@ -8,6 +8,7 @@ using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Entity.Actions;
+using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
 
 namespace ACE.Server.WorldObjects
@@ -37,23 +38,43 @@ namespace ACE.Server.WorldObjects
 
         public override void OnCollideObject(WorldObject wo)
         {
-            if (!(wo is Creature creature))
-                return;
-
-            if (!AffectsAis && !(wo is Player))
-                return;
-
-            if (!Creatures.Contains(creature.Guid))
+            if (wo.WeenieClassId == 300501)
             {
-                //Console.WriteLine($"{Name} ({Guid}).OnCollideObject({creature.Name})");
-                Creatures.Add(creature.Guid);
-            }
+                if (wo is Creature creature1)
+                {
+                    if (!Creatures.Contains(creature1.Guid))
+                    {
+                        //Console.WriteLine($"{Name} ({Guid}).OnCollideObject({creature.Name})");
+                        Creatures.Add(creature1.Guid);
+                    }
 
-            if (ActionLoop == null)
-            {
-                ActionLoop = NextActionLoop;
-                NextActionLoop.EnqueueChain();
+                    if (ActionLoop == null)
+                    {
+                        ActionLoop = NextActionLoop;
+                        NextActionLoop.EnqueueChain();
+                    }
+                }
             }
+            else
+            {
+                if (!(wo is Creature creature))
+                    return;
+
+                if (!AffectsAis && !(wo is Player) && WeenieClassId != 300501)
+                    return;
+
+                if (!Creatures.Contains(creature.Guid))
+                {
+                    //Console.WriteLine($"{Name} ({Guid}).OnCollideObject({creature.Name})");
+                    Creatures.Add(creature.Guid);
+                }
+
+                if (ActionLoop == null)
+                {
+                    ActionLoop = NextActionLoop;
+                    NextActionLoop.EnqueueChain();
+                }
+            } 
         }
 
         public override void OnCollideObjectEnd(WorldObject wo)
@@ -162,7 +183,94 @@ namespace ACE.Server.WorldObjects
 
         private void Activate(Creature creature)
         {
-            if (!IsHot) return;
+            if (WeenieClassId == 300501)
+            {
+                var dotAmount = DamageNext;
+                var iDoTAmount = (int)Math.Round(dotAmount);
+
+                var dotPlayer = creature as Player;
+                var dotOwner = PlayerManager.GetAllOnline().FirstOrDefault(p => p.Guid.Full == DoTOwnerGuid);
+
+                if (dotPlayer is Player)
+                    return;
+
+                switch (DamageType)
+                {
+                    default:
+
+                        if (creature.Invincible) return;
+
+                        dotAmount *= creature.GetResistanceMod(DamageType, this, null);
+
+                        if (dotPlayer != null)
+                            iDoTAmount = dotPlayer.TakeDamage(this, DamageType, dotAmount, Server.Entity.BodyPart.Foot);
+                        else
+                            iDoTAmount = (int)creature.TakeDamage(this, DamageType, dotAmount);
+
+                        if (creature.IsDead && Creatures.Contains(creature.Guid))
+                            Creatures.Remove(creature.Guid);
+
+                        break;
+
+                    case DamageType.Mana:
+                        iDoTAmount = creature.UpdateVitalDelta(creature.Mana, -iDoTAmount);
+
+                        foreach (var p in PlayerManager.GetAllOnline())
+                        {
+                            if (DoTOwnerGuid == p.Guid.Full)
+                            {
+                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"You bleed {creature.Name} for {-iDoTAmount} of {DamageType} Damage.", ChatMessageType.CombatSelf));
+                            }
+                        }
+
+                        break;
+
+                    case DamageType.Stamina:
+                        iDoTAmount = creature.UpdateVitalDelta(creature.Stamina, -iDoTAmount);
+
+                        foreach (var p in PlayerManager.GetAllOnline())
+                        {
+                            if (DoTOwnerGuid == p.Guid.Full)
+                            {
+                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"You bleed {creature.Name} for {-iDoTAmount} of {DamageType} Damage.", ChatMessageType.CombatSelf));
+                            }
+                        }
+
+                        break;
+
+                    case DamageType.Health:
+                        iDoTAmount = creature.UpdateVitalDelta(creature.Health, -iDoTAmount);
+
+                        creature.PlayParticleEffect(PlayScript.HealthDownRed, creature.Guid, 0.5f);
+
+                        if (creature.IsDead)
+                        {
+                            creature.Die();
+                        }
+
+                        foreach (var p in PlayerManager.GetAllOnline())
+                        {
+                            if (DoTOwnerGuid == p.Guid.Full)
+                            {
+                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"** You bleed {creature.Name} for {-iDoTAmount} of {DamageType} Damage. **", ChatMessageType.CombatSelf));
+                            }
+                        }
+
+                        foreach (var p in PlayerManager.GetAllOnline())
+                        {
+                            if (DoTOwnerGuid == p.Guid.Full && dotOwner != null)
+                            {
+                                creature.DamageHistory.Add(dotOwner, DamageType.Health, (uint)iDoTAmount);
+                            }
+                        }
+
+                        break;
+                }
+
+                return;
+            }
+
+            if (!IsHot && WeenieClassId != 300501) return;
 
             var amount = DamageNext;
             var iAmount = (int)Math.Round(amount);

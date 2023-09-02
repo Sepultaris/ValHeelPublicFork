@@ -210,6 +210,30 @@ namespace ACE.Entity.Enum.Properties
         HasBounty                        = 9019,
         [ServerOnly]
         IsHoTTicking                     = 9020,
+        [ServerOnly]
+        IsWarChanneling                  = 9021,
+        [ServerOnly]
+        Hot1                             = 9022,
+        Hot2                             = 9023,
+        Hot3                             = 9024,
+        Hot4                             = 9025,
+        Hot5                             = 9026,
+        Hot6                             = 9027,
+        Hot7                             = 9028,
+        Hot8                             = 9029,
+        [ServerOnly]
+        Sot1                             = 9030,
+        Sot2                             = 9031,
+        Sot3                             = 9032,
+        Sot4                             = 9033,
+        Sot5                             = 9034,
+        Sot6                             = 9035,
+        Sot7                             = 9036,
+        Sot8                             = 9037,
+        [ServerOnly]
+        IsDps                            = 9038,
+        IsTank                           = 9039,
+        IsHealer                         = 9040,
     }
 
     public static class PropertyBoolExtensions

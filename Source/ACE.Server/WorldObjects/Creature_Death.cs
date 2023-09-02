@@ -111,7 +111,7 @@ namespace ACE.Server.WorldObjects
 
                         var hcPlayer = topDamagerPlayer as Player;
 
-                        if (hcPlayer.Hardcore)
+                        if (hcPlayer != null && hcPlayer.Hardcore)
                         {
                             if (hcPlayer.BankedPyreals == null)
                                 hcPlayer.BankedPyreals = 0;
@@ -122,7 +122,7 @@ namespace ACE.Server.WorldObjects
                     }
                 }
             }
-            if (topDamager != null && IsCombatPet)
+            /*if (topDamager != null && IsCombatPet)
             {
                 var owner = topDamager.TryGetPetOwner();
 
@@ -141,7 +141,7 @@ namespace ACE.Server.WorldObjects
                         owner.HcPyrealsWon += 133;
                     }
                 }
-            }
+            }*/
             if (IsCombatPet)
             {
                 CurrentMotionState = new Motion(MotionStance.NonCombat, MotionCommand.Ready);
@@ -474,6 +474,23 @@ namespace ACE.Server.WorldObjects
                         if (petOwner != null)
                             corpse.KillerId = petOwner.Guid.Full;
                     }
+
+                    if (killer.DoTOwnerGuid != 0)
+                    {
+                        foreach (var p in PlayerManager.GetAllOnline())
+                        {
+                            if (killer.DoTOwnerGuid != 0)
+                            {
+                                if (p.Guid.Full == killer.DoTOwnerGuid)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(killer.Name))
+                                        killerName = p.Name.TrimStart('+');  // vtank requires + to be stripped for regex matching.
+
+                                    KillerId = p.Guid.Full;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -520,6 +537,12 @@ namespace ACE.Server.WorldObjects
             else
             {                
                 corpse.IsMonster = true;
+
+                if (killer.DoTOwnerGuid != 0)
+                {
+                    corpse.KillerId = (uint?)killer.DoTOwnerGuid;
+                }
+
                 if (killer.IsPlayer)
                 GenerateTreasure(killer, corpse);
 

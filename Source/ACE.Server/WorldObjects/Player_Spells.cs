@@ -1533,9 +1533,6 @@ namespace ACE.Server.WorldObjects
                 });
                 actionChain.EnqueueChain();                
             }
-                
-
-
         }
 
         public void CreateSentinelBuffPlayers(IEnumerable<Player> players, bool self = false, ulong maxLevel = 8)

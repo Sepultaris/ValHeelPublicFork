@@ -1490,6 +1490,180 @@ namespace ACE.Server.WorldObjects
             set { if (!value) RemoveProperty(PropertyBool.IsHoTTicking); else SetProperty(PropertyBool.IsHoTTicking, value); }
         }
 
+        public bool IsWarChanneling
+        {
+            get => GetProperty(PropertyBool.IsWarChanneling) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsWarChanneling); else SetProperty(PropertyBool.IsWarChanneling, value); }
+        }
+
+        public bool Hot1
+        {
+            get => GetProperty(PropertyBool.Hot1) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hot1); else SetProperty(PropertyBool.Hot1, value); }
+        }
+
+        public bool Hot2
+        {
+            get => GetProperty(PropertyBool.Hot2) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hot2); else SetProperty(PropertyBool.Hot2, value); }
+        }
+
+        public bool Hot3
+        {
+            get => GetProperty(PropertyBool.Hot3) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hot3); else SetProperty(PropertyBool.Hot3, value); }
+        }
+
+        public bool Hot4
+        {
+            get => GetProperty(PropertyBool.Hot4) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hot4); else SetProperty(PropertyBool.Hot4, value); }
+        }
+
+        public bool Hot5
+        {
+            get => GetProperty(PropertyBool.Hot5) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hot5); else SetProperty(PropertyBool.Hot5, value); }
+        }
+
+        public bool Hot6
+        {
+            get => GetProperty(PropertyBool.Hot6) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hot6); else SetProperty(PropertyBool.Hot6, value); }
+        }
+
+        public bool Hot7
+        {
+            get => GetProperty(PropertyBool.Hot7) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hot7); else SetProperty(PropertyBool.Hot7, value); }
+        }
+
+        public bool Hot8
+        {
+            get => GetProperty(PropertyBool.Hot8) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Hot8); else SetProperty(PropertyBool.Hot8, value); }
+        }
+
+        public bool Sot1
+        {
+            get => GetProperty(PropertyBool.Sot1) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Sot1); else SetProperty(PropertyBool.Sot1, value); }
+        }
+
+        public bool Sot2
+        {
+            get => GetProperty(PropertyBool.Sot2) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Sot2); else SetProperty(PropertyBool.Sot2, value); }
+        }
+
+        public bool Sot3
+        {
+            get => GetProperty(PropertyBool.Sot3) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Sot3); else SetProperty(PropertyBool.Sot3, value); }
+        }
+
+        public bool Sot4
+        {
+            get => GetProperty(PropertyBool.Sot4) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Sot4); else SetProperty(PropertyBool.Sot4, value); }
+        }
+
+        public bool Sot5
+        {
+            get => GetProperty(PropertyBool.Sot5) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Sot5); else SetProperty(PropertyBool.Sot5, value); }
+        }
+
+        public bool Sot6
+        {
+            get => GetProperty(PropertyBool.Sot6) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Sot6); else SetProperty(PropertyBool.Sot6, value); }
+        }
+
+        public bool Sot7
+        {
+            get => GetProperty(PropertyBool.Sot7) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Sot7); else SetProperty(PropertyBool.Sot7, value); }
+        }
+
+        public bool Sot8
+        {
+            get => GetProperty(PropertyBool.Sot8) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Sot8); else SetProperty(PropertyBool.Sot8, value); }
+        }
+
+        public double HoTTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.HoTTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.HoTTimestamp); else SetProperty(PropertyFloat.HoTTimestamp, value); }
+        }
+
+        public int HoTTicks
+        {
+            get => GetProperty(PropertyInt.HoTTicks) ?? 3;
+            set { if (value == 0) RemoveProperty(PropertyInt.HoTTicks); else SetProperty(PropertyInt.HoTTicks, value); }
+        }
+
+        public int HoTDuration
+        {
+            get => GetProperty(PropertyInt.HoTDuration) ?? 15;
+            set { if (value == 0) RemoveProperty(PropertyInt.HoTDuration); else SetProperty(PropertyInt.HoTDuration, value); }
+        }
+
+        public int MaxHoTTicks
+        {
+            get => GetProperty(PropertyInt.MaxHoTTicks) ?? 3;
+            set { if (value == 0) RemoveProperty(PropertyInt.MaxHoTTicks); else SetProperty(PropertyInt.MaxHoTTicks, value); }
+        }
+
+        public int MaxHoTDuration
+        {
+            get => GetProperty(PropertyInt.MaxHoTDuration) ?? 15;
+            set { if (value == 0) RemoveProperty(PropertyInt.MaxHoTDuration); else SetProperty(PropertyInt.MaxHoTDuration, value); }
+        }
+
+        public double LastHoTTickTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastHoTTickTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastHoTTickTimestamp); else SetProperty(PropertyFloat.LastHoTTickTimestamp, value); }
+        }
+
+        public double LastWarChannelTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastWarChannelTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastWarChannelTimestamp); else SetProperty(PropertyFloat.LastWarChannelTimestamp, value); }
+        }
+
+        public double WarChannelChance
+        {
+            get => (double)(GetProperty(PropertyFloat.WarChannelChance) ?? 0.05);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.WarChannelChance); else SetProperty(PropertyFloat.WarChannelChance, value); }
+        }
+
+        public double MeleeDoTChance
+        {
+            get => (double)(GetProperty(PropertyFloat.MeleeDoTChance) ?? 0.25);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.MeleeDoTChance); else SetProperty(PropertyFloat.MeleeDoTChance, value); }
+        }
+
+        public int WarChannelTimerDuration
+        {
+            get => GetProperty(PropertyInt.WarChannelTimerDuration) ?? 10;
+            set { if (value == 0) RemoveProperty(PropertyInt.WarChannelTimerDuration); else SetProperty(PropertyInt.WarChannelTimerDuration, value); }
+        }
+
+        public double MissileAoEChance
+        {
+            get => (double)(GetProperty(PropertyFloat.MissileAoEChance) ?? 0.25);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.MissileAoEChance); else SetProperty(PropertyFloat.MissileAoEChance, value); }
+        }
+
+        public int NumOfChannelCasts
+        {
+            get => GetProperty(PropertyInt.NumOfChannelCasts) ?? 1;
+            set { if (value == 0) RemoveProperty(PropertyInt.NumOfChannelCasts); else SetProperty(PropertyInt.NumOfChannelCasts, value); }
+        }
+
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

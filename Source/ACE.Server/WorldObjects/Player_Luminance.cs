@@ -53,7 +53,16 @@ namespace ACE.Server.WorldObjects
 
             if (available == maximum)
             {
-                BankedLuminance = BankedLuminance + amount;
+                if (BankedLuminance == null)
+                    BankedLuminance = amount;
+                else
+                    BankedLuminance = BankedLuminance + amount;
+
+                if (xpType == XpType.Quest)
+                    Session.Network.EnqueueSend(new GameMessageSystemChat($"{amount:N0} Luminance has been deposited into your bank account.", ChatMessageType.Broadcast));
+
+                UpdateLuminance();
+
                 return;
             }
 

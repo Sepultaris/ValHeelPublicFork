@@ -211,7 +211,7 @@ namespace ACE.Server.WorldObjects.Managers
         /// <summary>
         /// Builds an enchantment registry entry from a spell ID
         /// </summary>
-        private PropertiesEnchantmentRegistry BuildEntry(Spell spell, WorldObject caster = null, WorldObject weapon = null, bool equip = false)
+        public PropertiesEnchantmentRegistry BuildEntry(Spell spell, WorldObject caster = null, WorldObject weapon = null, bool equip = false)
         {
             var entry = new PropertiesEnchantmentRegistry();
 

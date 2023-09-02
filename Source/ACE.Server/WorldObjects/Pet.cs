@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Numerics;
-
 using log4net;
-
 using ACE.Common;
 using ACE.DatLoader;
 using ACE.DatLoader.FileTypes;
@@ -13,8 +10,6 @@ using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Managers;
 using ACE.Server.Physics.Animation;
-using ACE.Entity.Enum.Properties;
-using ACE.Server.Command.Handlers;
 
 namespace ACE.Server.WorldObjects
 {

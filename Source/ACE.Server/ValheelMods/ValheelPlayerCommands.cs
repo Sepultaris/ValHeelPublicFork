@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using ACE.Server.Entity;
 using System.Text;
 using System.Linq;
+using ACE.Entity.Models;
 
 namespace ACE.Server.Command.Handlers
 {
@@ -149,12 +150,19 @@ namespace ACE.Server.Command.Handlers
             allHcPlayers.AddRange(onlineHcPlayers);
             allHcPlayers.AddRange(offlineHcPlayers);
 
+            List<IPlayer> playersToRemove = new List<IPlayer>();
+
             foreach (var p in allHcPlayers)
             {
                 if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 2_629_746)
                 {
-                    allHcPlayers.Remove(p);
+                    playersToRemove.Add(p);
                 }
+            }
+
+            foreach (var p in playersToRemove)
+            {
+                allHcPlayers.Remove(p);
             }
 
             List<IPlayer> top10Players = allHcPlayers.OrderByDescending(p => p.HcScore).Take(10).ToList();
@@ -174,10 +182,10 @@ namespace ACE.Server.Command.Handlers
 
             string finalResult = result.ToString();
 
-            if (finalResult == null)
-                return;
-            else
+            if (!string.IsNullOrEmpty(finalResult))
+            {
                 session.Network.EnqueueSend(new GameMessageSystemChat($"{finalResult}", ChatMessageType.x1B));
+            }
         }
 
         public static long CalculateHcPlayerAge(IPlayer player, double currentUnxiTime)
@@ -252,7 +260,21 @@ namespace ACE.Server.Command.Handlers
             {
                 if (parameters[0].Equals("reset", StringComparison.OrdinalIgnoreCase))
                 {
-                    foreach(var creature in session.Player.PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                    List<Creature> creatures = new List<Creature>();
+                    var landlbockCreatures = session.Player.CurrentLandblock.GetAllWorldObjectsForDiagnostics().OfType<Creature>().ToList();
+
+                    foreach (var creature in session.Player.PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                    {
+                        if (creature.IsCombatPet)
+                        {
+                            if (creature.PetOwner == session.Player.Guid.Full)
+                            {
+                                creatures.Add(creature);
+                            }
+                        }
+                    }
+
+                    foreach(var creature in creatures)
                     {
                         if (creature.IsCombatPet)
                         {
@@ -267,6 +289,12 @@ namespace ACE.Server.Command.Handlers
                             }
                         }
                     }
+
+                    if (landlbockCreatures.Count(c => c.PetOwner == session.Player.Guid.Full) == 0)
+                    {
+                        session.Player.NumberOfPets = 0;
+                    }
+
                     return;
                 }
                 if (parameters[0].Equals("kill", StringComparison.OrdinalIgnoreCase))
@@ -2890,266 +2918,55 @@ namespace ACE.Server.Command.Handlers
             }
             if (parameters[0].Equals("prestige"))
             {
-                var prestige = player.QuestManager.GetCurrentSolves("Prestige");
-                var reputation = player.QuestManager.GetCurrentSolves("Reputation");
-                var lumAugDamageRating = player.GetProperty(PropertyInt.LumAugDamageRating);
-                var lumAugDamageReductionRating = player.GetProperty(PropertyInt.LumAugDamageReductionRating);
-                var lumAugCritDamageRating = player.GetProperty(PropertyInt.LumAugCritDamageRating);
-                var lumAugCritReductionRating = player.GetProperty(PropertyInt.LumAugCritReductionRating);
+                string prestigeType = "Prestige";
+                string reputationType = "Reputation";
 
-                if (prestige <= 9)
-                {
-                    for (int i = 0; i < result; i++)
-                    {
-                        if (reputation <5000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 5000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        if (player.QuestManager.GetCurrentSolves("Reputation") < 5000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 5000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        player.QuestManager.Decrement("Reputation", 5000);
-                        player.QuestManager.Increment("Prestige", 1);
-                        player.LumAugDamageRating += 1;
-                        player.LumAugDamageReductionRating += 1;
-                        player.LumAugCritDamageRating += 1;
-                        player.LumAugCritReductionRating += 1;
-                    }
-                    var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
-                    var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
-                    player.QuestManager.Stamp("PrestigeComplete");
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
-                    ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newprestige, newreputation), ChatMessageType.Broadcast);
-                    player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
-                    player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
-                    player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
-                    return;
-                }
-                if (prestige >= 10 && prestige <= 24)
-                {                                            
-                    for (int i = 0; i < result; i++)
-                    {
-                        if (reputation < 10000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 10000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        if (player.QuestManager.GetCurrentSolves("Reputation") < 10000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 10000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }   
-                        player.QuestManager.Decrement("Reputation", 10000);
-                        player.QuestManager.Increment("Prestige", 1);
-                        player.LumAugDamageRating += 2;
-                        player.LumAugDamageReductionRating += 2;
-                        player.LumAugCritDamageRating += 2;
-                        player.LumAugCritReductionRating += 2;
+                int[] prestigeThresholds = { 10, 25, 50, 75, 100, 150 };
+                int[] reputationRequirements = { 5000, 10000, 25000, 35000, 50000, 100000, 250000 };
 
-                    }
-                    var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
-                    var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
-                    player.QuestManager.Stamp("PrestigeComplete10");
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
-                    ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newprestige, newreputation), ChatMessageType.Broadcast);
-                    player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
-                    player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
-                    player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);                    
-                    return;
-                }
-                if (prestige >= 25 && prestige <= 49)
-                {                  
-                    for (int i = 0; i < result; i++)
-                    {
-                        if (reputation < 25000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 25000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        if (player.QuestManager.GetCurrentSolves("Reputation") < 25000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 25000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        player.QuestManager.Decrement("Reputation", 25000);
-                        player.QuestManager.Increment("Prestige", 1);
-                        player.LumAugDamageRating += 3;
-                        player.LumAugDamageReductionRating += 3;
-                        player.LumAugCritDamageRating += 3;
-                        player.LumAugCritReductionRating += 3;
-                    }
-                    var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
-                    var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
-                    player.QuestManager.Stamp("PrestigeComplete25");
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
-                    ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newprestige, newreputation), ChatMessageType.Broadcast);
-                    player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
-                    player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
-                    player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
-                    return;
-                }
-                if (prestige >= 50 && prestige <= 74)
+                int prestige = player.QuestManager.GetCurrentSolves(prestigeType);
+                int reputation = player.QuestManager.GetCurrentSolves(reputationType);
+
+                int lumAugIncrement = 1;
+
+                if (prestige >= 10 && prestige <= 24) lumAugIncrement = 2;
+                else if (prestige >= 25 && prestige <= 49) lumAugIncrement = 3;
+                else if (prestige >= 50 && prestige <= 74) lumAugIncrement = 4;
+                else if (prestige >= 75) lumAugIncrement = 5;
+
+                for (int i = 0; i < result; i++)
                 {
-                    for (int i = 0; i < result; i++)
+                    int requiredReputation = reputationRequirements[Array.FindIndex(prestigeThresholds, threshold => prestige < threshold)];
+
+                    if (reputation < requiredReputation)
                     {
-                        if (reputation < 35000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 35000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        if (player.QuestManager.GetCurrentSolves("Reputation") < 35000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 35000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        player.QuestManager.Decrement("Reputation", 35000);
-                        player.QuestManager.Increment("Prestige", 1);
-                        player.LumAugDamageRating += 4;
-                        player.LumAugDamageReductionRating += 4;
-                        player.LumAugCritDamageRating += 4;
-                        player.LumAugCritReductionRating += 4;
+                        ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
+                        ChatPacket.SendServerMessage(session, $"Not enough reputation, {requiredReputation} reputation is required to increase prestige.", ChatMessageType.Broadcast);
+                        return;
                     }
-                    var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
-                    var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
-                    player.QuestManager.Stamp("PrestigeComplete50");
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
-                    ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newprestige, newreputation), ChatMessageType.Broadcast);
-                    player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
-                    player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
-                    player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
-                    return;
+
+                    player.QuestManager.Decrement(reputationType, requiredReputation);
+                    player.QuestManager.Increment(prestigeType, 1);
+                    player.LumAugDamageRating += lumAugIncrement;
+                    player.LumAugDamageReductionRating += lumAugIncrement;
+                    player.LumAugCritDamageRating += lumAugIncrement;
+                    player.LumAugCritReductionRating += lumAugIncrement;
                 }
-                if (prestige >= 75 && prestige <= 99)
-                {
-                    for (int i = 0; i < result; i++)
-                    {
-                        if (reputation < 50000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 50000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        if (player.QuestManager.GetCurrentSolves("Reputation") < 50000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 50000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        player.QuestManager.Decrement("Reputation", 50000);
-                        player.QuestManager.Increment("Prestige", 1);
-                        player.LumAugDamageRating += 5;
-                        player.LumAugDamageReductionRating += 5;
-                        player.LumAugCritDamageRating += 5;
-                        player.LumAugCritReductionRating += 5;
-                    }
-                    var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
-                    var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
-                    player.QuestManager.Stamp("PrestigeComplete75");
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
-                    ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newprestige, newreputation), ChatMessageType.Broadcast);
-                    player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
-                    player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
-                    player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
-                    return;
-                }
-                if (prestige >= 100 && prestige <= 149)
-                {
-                    for (int i = 0; i < result; i++)
-                    {
-                        if (reputation < 100000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 100000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        if (player.QuestManager.GetCurrentSolves("Reputation") < 100000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 100000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        player.QuestManager.Decrement("Reputation", 100000);
-                        player.QuestManager.Increment("Prestige", 1);
-                        player.LumAugDamageRating += 5;
-                        player.LumAugDamageReductionRating += 5;
-                        player.LumAugCritDamageRating += 5;
-                        player.LumAugCritReductionRating += 5;
-                    }
-                    var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
-                    var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
-                    player.QuestManager.Stamp("PrestigeComplete100");
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
-                    ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newprestige, newreputation), ChatMessageType.Broadcast);
-                    player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
-                    player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
-                    player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
-                    return;
-                }
-                if (prestige >= 150)
-                {
-                    for (int i = 0; i < result; i++)
-                    {
-                        if (reputation < 250000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 250,000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        if (player.QuestManager.GetCurrentSolves("Reputation") < 250000)
-                        {
-                            ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}.", i), ChatMessageType.Broadcast);
-                            ChatPacket.SendServerMessage(session, "Not enough reputation, 250,000 reputation to increase prestige.", ChatMessageType.Broadcast);
-                            return;
-                        }
-                        player.QuestManager.Decrement("Reputation", 250000);
-                        player.QuestManager.Increment("Prestige", 1);
-                        player.LumAugDamageRating += 5;
-                        player.LumAugDamageReductionRating += 5;
-                        player.LumAugCritDamageRating += 5;
-                        player.LumAugCritReductionRating += 5;
-                    }
-                    var newreputation = player.QuestManager.GetCurrentSolves("Reputation");
-                    var newprestige = player.QuestManager.GetCurrentSolves("Prestige");
-                    player.QuestManager.Stamp("PrestigeComplete150");
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
-                    player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
-                    ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newprestige, newreputation), ChatMessageType.Broadcast);
-                    player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
-                    player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
-                    player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
-                    return;
-                }
+
+                var newReputation = player.QuestManager.GetCurrentSolves(reputationType);
+                var newPrestige = player.QuestManager.GetCurrentSolves(prestigeType);
+
+                player.QuestManager.Stamp($"PrestigeComplete{prestige}");
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, player.LumAugDamageRating));
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, player.LumAugDamageReductionRating));
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritDamageRating, player.LumAugCritDamageRating));
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugCritReductionRating, player.LumAugCritReductionRating));
+
+                ChatPacket.SendServerMessage(session, string.Format("Your Prestige has been increased by {0}. And is now {1}. You have {2} Reputation remaining.", result, newPrestige, newReputation), ChatMessageType.Broadcast);
+
+                player.PlayParticleEffect(PlayScript.TransUpWhite, player.Guid);
+                player.PlayParticleEffect(PlayScript.AetheriaLevelUp, player.Guid);
+                player.PlayParticleEffect(PlayScript.VitaeUpWhite, player.Guid);
                 return;
             }
             if (parameters[0].Equals("stam"))
@@ -3514,6 +3331,110 @@ namespace ACE.Server.Command.Handlers
             player.RaisedHealth++;
             HandleRaiseHealth(player, session, result - 1);
         }
+
+        // This command is used to raise attributes and vitals
+        /*[CommandHandler("raise", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Raises attributes and vitals.")]
+        public static void HandleRaiseCommand(Player player, Session session, params string[] parameters)
+        {
+            if (parameters.Length < 2)
+            {
+                ChatPacket.SendServerMessage(session, "Usage: /raise <attribute> <amount>", ChatMessageType.Broadcast);
+                return;
+            }
+            int result;
+            if (!int.TryParse(parameters[1], out result))
+            {
+                ChatPacket.SendServerMessage(session, "Invalid amount, must be a number.", ChatMessageType.Broadcast);
+                return;
+            }
+            if (result <= 0)
+            {
+                ChatPacket.SendServerMessage(session, "Invalid amount, must be greater than 0.", ChatMessageType.Broadcast);
+                return;
+            }
+            if (result > 100)
+            {
+                ChatPacket.SendServerMessage(session, "Invalid amount, must be less than 100.", ChatMessageType.Broadcast);
+                return;
+            }
+            if (parameters[0].Equals("Strength"))
+            {
+                HandleRaiseAttribute(player, session, result, PropertyAttribute.Strength);
+            }
+            else if (parameters[0].Equals("Endurance"))
+            {
+                HandleRaiseAttribute(player, session, result, PropertyAttribute.Endurance);
+            }
+            else if (parameters[0].Equals("Coordination"))
+            {
+                HandleRaiseAttribute(player, session, result, PropertyAttribute.Coordination);
+            }
+            else if (parameters[0].Equals("Quickness"))
+            {
+                HandleRaiseAttribute(player, session, result, PropertyAttribute.Quickness);
+            }
+            else if (parameters[0].Equals("Focus"))
+            {
+                HandleRaiseAttribute(player, session, result, PropertyAttribute.Focus);
+            }
+            else if (parameters[0].Equals("Self"))
+            {
+                HandleRaiseAttribute(player, session, result, PropertyAttribute.Self);
+            }
+            else if (parameters[0].Equals("Health"))
+            {
+                HandleRaiseVital(player, session, result, PropertyAttribute2nd.MaxHealth, PropertyAttribute2nd.Health);
+            }
+            else if (parameters[0].Equals("Stamina"))
+            {
+                HandleRaiseVital(player, session, result, PropertyAttribute2nd.MaxStamina, PropertyAttribute2nd.Stamina);
+            }
+            else if (parameters[0].Equals("Mana"))
+            {
+                HandleRaiseVital(player, session, result, PropertyAttribute2nd.MaxMana, PropertyAttribute2nd.Mana);
+            }
+            else
+            {
+                ChatPacket.SendServerMessage(session, "Invalid Attribute, valid values are: Strength,Endurance,Coordination,Quickness,Focus,Self,Health,Stamina,Mana", ChatMessageType.Broadcast);
+            }
+        }
+
+        // This is the HandleRaiseVital method
+        public static void HandleRaiseVital(Player player, Session session, int amount, PropertyAttribute2nd maxVital, PropertyAttribute2nd vital)
+        {
+            if (amount <= 0)
+            {
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[maxVital]));
+                ChatPacket.SendServerMessage(player.Session, string.Format("Your Maximum {0} has been increased by {1}.", maxVital, player.RaisedHealth), ChatMessageType.Broadcast);
+                return;
+            }
+            if (20000000000L > player.AvailableExperience)
+            {
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[maxVital]));
+                ChatPacket.SendServerMessage(player.Session, string.Format("Your Maximum {0} has been increased by {1}.", maxVital, player.RaisedHealth), ChatMessageType.Broadcast);
+                ChatPacket.SendServerMessage(player.Session, "Not enough experience for remaining points, you require 20 billion(20,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                return;
+            }
+        }
+
+        // This is the HandleRaiseAttribute method
+        public static void HandleRaiseAttribute(Player player, Session session, int amount, PropertyAttribute attribute)
+        {
+            // This is the HandleRaiseAttribute method
+            if (amount <= 0)
+            {
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Attributes[attribute]));
+                ChatPacket.SendServerMessage(player.Session, string.Format("Your {0} has been increased by {1}.", attribute, player.RaisedHealth), ChatMessageType.Broadcast);
+                return;
+            }
+            if (20000000000L > player.AvailableExperience)
+            {
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Attributes[attribute]));
+                ChatPacket.SendServerMessage(player.Session, string.Format("Your {0} has been increased by {1}.", attribute, player.RaisedHealth), ChatMessageType.Broadcast);
+                ChatPacket.SendServerMessage(player.Session, "Not enough experience for remaining points, you require 20 billion(20,000,000,000) XP per point.", ChatMessageType.Broadcast);
+                return;
+            }
+        }*/
 
         [CommandHandler("vassalxp", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Shows full experience from vassals.")]
         public static void HandleShowVassalXp(Session session, params string[] parameters)

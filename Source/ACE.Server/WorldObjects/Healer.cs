@@ -218,6 +218,37 @@ namespace ACE.Server.WorldObjects
 
             healer.Session.Network.EnqueueSend(message, stackSize);
 
+            var fellows = target.GetFellowshipTargets();
+            var fellowHealAmount = (int)(healAmount * .25);
+            double currentUnixTime = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+
+            if (healingSkill.AdvancementClass > SkillAdvancementClass.Trained && healer.IsHealer && vital.Vital == PropertyAttribute2nd.MaxHealth)
+            {
+                foreach (var fellow in fellows)
+                {
+                    if (healer.GetDistance(fellow) < 30)
+                    {
+                        fellow.SetProperty(PropertyBool.Hot5, true);
+                        fellow.SetProperty(PropertyFloat.HoTTimestamp, currentUnixTime);
+                        fellow.SetProperty(PropertyInt.HoTDuration, fellow.MaxHoTDuration);
+                        fellow.SetProperty(PropertyInt.HoTTicks, fellow.MaxHoTTicks);
+                    }
+                }
+            }
+            if (healingSkill.AdvancementClass > SkillAdvancementClass.Trained && healer.IsHealer && vital.Vital == PropertyAttribute2nd.MaxStamina)
+            {
+                foreach (var fellow in fellows)
+                {
+                    if (healer.GetDistance(fellow) < 30)
+                    {
+                        fellow.SetProperty(PropertyBool.Sot5, true);
+                        fellow.SetProperty(PropertyFloat.HoTTimestamp, currentUnixTime);
+                        fellow.SetProperty(PropertyInt.HoTDuration, fellow.MaxHoTDuration);
+                        fellow.SetProperty(PropertyInt.HoTTicks, fellow.MaxHoTTicks);
+                    }
+                }
+            }
+
             if (healer != target)
                 target.Session.Network.EnqueueSend(new GameMessageSystemChat($"{healer.Name} heals you for {healAmount} {BoosterEnum.ToString()} points.", ChatMessageType.Broadcast));
 
@@ -238,7 +269,7 @@ namespace ACE.Server.WorldObjects
 
             var combatMod = healer.CombatMode == CombatMode.NonCombat ? 1.0f : 1.1f;
 
-            var effectiveSkill = (int)Math.Round((healingSkill.Current + BoostValue) * trainedMod);
+            var effectiveSkill = (int)Math.Round((healingSkill.Current + BoostValue) * trainedMod * 2.8);
             difficulty = (int)Math.Round((vital.MaxValue - vital.Current) * 2 * combatMod);
 
             var skillCheck = SkillCheck.GetSkillChance(effectiveSkill, difficulty);
@@ -283,7 +314,7 @@ namespace ACE.Server.WorldObjects
             // low stam = less vital healed. I don't have exact numbers for it. Working through forum archive.
 
             // stamina cost: 1 stamina per 5 vital healed 
-            staminaCost = (uint)Math.Round(healAmount / 50.0f);
+            staminaCost = (uint)Math.Round(healAmount / 5.0f);
             if (staminaCost > healer.Stamina.Current)
             {
                 staminaCost = healer.Stamina.Current;

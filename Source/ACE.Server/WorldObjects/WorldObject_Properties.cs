@@ -3184,5 +3184,11 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyFloat.ACValue) ?? 1;
             set { if (value == 0) RemoveProperty(PropertyFloat.ACValue); else SetProperty(PropertyFloat.ACValue, (double)value); }
         }
+
+        public int DoTOwnerGuid
+        {
+            get => GetProperty(PropertyInt.DoTOwnerGuid) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.DoTOwnerGuid); else SetProperty(PropertyInt.DoTOwnerGuid, value); }
+        }
     }
 }

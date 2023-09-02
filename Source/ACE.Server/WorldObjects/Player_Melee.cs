@@ -11,6 +11,11 @@ using ACE.Server.Physics;
 using ACE.Server.Physics.Animation;
 using ACE.Entity.Enum.Properties;
 using System.Numerics;
+using ACE.Server.Factories;
+using ACE.Common;
+using ACE.Entity;
+using ACE.Entity.Models;
+using ACE.Database;
 
 namespace ACE.Server.WorldObjects
 {
@@ -190,7 +195,7 @@ namespace ACE.Server.WorldObjects
         }
 
         public static readonly float GunBladeDistance = 80.0f;
-        public static readonly float MeleeDistance  = 4.0f;
+        public static readonly float MeleeDistance = 4.0f;
         public static readonly float StickyDistance = 4.0f;
         public static readonly float RepeatDistance = 16.0f;
 
@@ -198,7 +203,7 @@ namespace ACE.Server.WorldObjects
         {
             var dist = GetCylinderDistance(target);
 
-            var weapon = GetEquippedMeleeWeapon();           
+            var weapon = GetEquippedMeleeWeapon();
 
             if (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(target))
             {
@@ -215,8 +220,8 @@ namespace ACE.Server.WorldObjects
                 }
                 else
                     Attack(target, attackSequence);
-            }            
-            else 
+            }
+            else
             {
                 // turn / move to required
                 if (GetCharacterOption(CharacterOption.UseChargeAttack))
@@ -285,7 +290,7 @@ namespace ACE.Server.WorldObjects
                 else
                 {
                     var actionChain = new ActionChain();
-                    
+
                     Rotate(target);
                     actionChain.AddAction(this, () =>
                     {
@@ -307,16 +312,16 @@ namespace ACE.Server.WorldObjects
                 if (angle > PropertyManager.GetDouble("melee_max_angle").Item)
                 {
                     var rotateTime = Rotate(target);
-                    var actionChain = new ActionChain();                    
+                    var actionChain = new ActionChain();
 
-                    actionChain.AddDelaySeconds(rotateTime);                    
+                    actionChain.AddDelaySeconds(rotateTime);
                     Rotate(target);
                     actionChain.AddAction(this, () =>
                     {
                         Attack(target, attackSequence);
-                    }); 
+                    });
                     actionChain.EnqueueChain();
-                    
+
                 }
                 else
                 {
@@ -328,13 +333,13 @@ namespace ACE.Server.WorldObjects
                         Attack(target, attackSequence);
                     });
                     actionChain.EnqueueChain();
-                    
+
                 }
-                   
+
 
             }
             else if (dist <= MeleeDistance && ammo == null)
-            {               
+            {
                 var angle = GetAngle(target);
                 if (angle > PropertyManager.GetDouble("melee_max_angle").Item)
                 {
@@ -345,7 +350,7 @@ namespace ACE.Server.WorldObjects
                     Rotate(target);
                     actionChain.AddAction(this, () =>
                     {
-                        Attack(target, attackSequence);                       
+                        Attack(target, attackSequence);
                     });
                     actionChain.EnqueueChain();
                 }
@@ -356,7 +361,7 @@ namespace ACE.Server.WorldObjects
                     Rotate(target);
                     actionChain.AddAction(this, () =>
                     {
-                        Attack(target, attackSequence);                        
+                        Attack(target, attackSequence);
                     });
                     actionChain.EnqueueChain();
                 }
@@ -365,8 +370,8 @@ namespace ACE.Server.WorldObjects
             }
             else OnAttackDone();
 
-            
-            
+
+
         }
 
         public void OnAttackDone(WeenieError error = WeenieError.None)
@@ -474,7 +479,7 @@ namespace ACE.Server.WorldObjects
 
             var prevTime = 0.0f;
             bool targetProc = false;
-            
+
             for (var i = 0; i < numStrikes; i++)
             {
                 // are there animation hooks for damage frames?
@@ -543,9 +548,9 @@ namespace ACE.Server.WorldObjects
                                 DamageTarget(cleaveHit, weapon);
 
                             }
-                                                       
+
                         }
-                    }                   
+                    }
 
                     if (weapon != null && weapon.IsGunblade == true && ammo != null)
                     {
@@ -581,6 +586,7 @@ namespace ACE.Server.WorldObjects
 
                 var nextRefillTime = PowerLevel * refillMod;
                 NextRefillTime = DateTime.UtcNow.AddSeconds(nextRefillTime);
+                var dotRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
 
                 var dist = GetCylinderDistance(target);
 
@@ -593,8 +599,21 @@ namespace ACE.Server.WorldObjects
                     nextAttack.AddDelaySeconds(nextRefillTime);
                     nextAttack.AddAction(this, () => Attack(target, attackSequence, true));
                     nextAttack.EnqueueChain();
+
+                    if (QuestManager.HasQuestCompletes("DPSClass"))
+                    {
+                        if (MeleeDoTChance >= dotRoll)
+                        {
+                            //var dot = DatabaseManager.World.GetCachedWeenie(300501);
+                            var dotTarget = target as Creature;
+                            var targets = GetDoTTarget(dotTarget);
+                            //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
+
+                            CreateDoTSpot(this, targets);
+                        }
+                    }
                 }
-                else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) &&  IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon.IsGunblade == true)
+                else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon.IsGunblade == true)
                 {
                     // client starts refilling power meter
                     Session.Network.EnqueueSend(new GameEventAttackDone(Session));
@@ -603,6 +622,19 @@ namespace ACE.Server.WorldObjects
                     nextAttack.AddDelaySeconds(nextRefillTime);
                     nextAttack.AddAction(this, () => Attack(target, attackSequence, true));
                     nextAttack.EnqueueChain();
+
+                    if (IsDps)
+                    {
+                        if (MeleeDoTChance >= dotRoll)
+                        {
+                            //var dot = DatabaseManager.World.GetCachedWeenie(300501);
+                            var dotTarget = target as Creature;
+                            var targets = GetDoTTarget(dotTarget);
+                            //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
+
+                            CreateDoTSpot(this, targets);
+                        }
+                    }
                 }
 
                 else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(target)) && !IsBusy && !AttackCancelled)
@@ -614,7 +646,20 @@ namespace ACE.Server.WorldObjects
                     nextAttack.AddDelaySeconds(nextRefillTime);
                     nextAttack.AddAction(this, () => Attack(target, attackSequence, true));
                     nextAttack.EnqueueChain();
-                }                
+
+                    if (IsDps)
+                    {
+                        if (MeleeDoTChance >= dotRoll)
+                        {
+                            //var dot = DatabaseManager.World.GetCachedWeenie(300501);
+                            var dotTarget = target as Creature;
+                            var targets = GetDoTTarget(dotTarget);
+                            //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
+
+                            CreateDoTSpot(this, targets);
+                        }
+                    }
+                }
                 else
                     OnAttackDone();
             });
@@ -623,6 +668,32 @@ namespace ACE.Server.WorldObjects
 
             if (UnderLifestoneProtection)
                 LifestoneProtectionDispel();
+        }
+
+        public void CreateDoTSpot(Player player, List<Creature> targets)
+        {
+            if (targets != null)
+            {
+                var dot = DatabaseManager.World.GetCachedWeenie(300501);
+
+                List<WorldObject> dotObjects = new List<WorldObject>();
+
+                foreach (var m in targets)
+                {
+                    var newDot = WorldObjectFactory.CreateNewWorldObject(dot);
+
+                    dotObjects.Add(newDot);
+                }
+
+                for (int i = 0; i < dotObjects.Count; i++)
+                {
+                    dotObjects[i].DoTOwnerGuid = (int)player.Guid.Full;
+                    dotObjects[i].Damage = (int)(targets[i].Health.Current * 0.005f);
+                    dotObjects[i].Location = targets[i].Location;
+                    dotObjects[i].Location.LandblockId = new LandblockId(dotObjects[i].Location.GetCell());
+                    dotObjects[i].EnterWorld();
+                }
+            }
         }
 
         public void GunBladeAttack(WorldObject target, int attackSequence, bool subsequent = false)
@@ -763,6 +834,7 @@ namespace ACE.Server.WorldObjects
 
                 var nextRefillTime = PowerLevel * refillMod;
                 NextRefillTime = DateTime.UtcNow.AddSeconds(nextRefillTime);
+                var dotRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
 
                 var dist = GetCylinderDistance(target);
 
@@ -775,6 +847,19 @@ namespace ACE.Server.WorldObjects
                     nextAttack.AddDelaySeconds(nextRefillTime);
                     nextAttack.AddAction(this, () => GunBladeAttack(target, attackSequence, true));
                     nextAttack.EnqueueChain();
+
+                    if (IsDps)
+                    {
+                        if (MeleeDoTChance >= dotRoll)
+                        {
+                            //var dot = DatabaseManager.World.GetCachedWeenie(300501);
+                            var dotTarget = target as Creature;
+                            var targets = GetDoTTarget(dotTarget);
+                            //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
+
+                            CreateDoTSpot(this, targets);
+                        }
+                    }
                 }
 
                 else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled)
@@ -786,6 +871,19 @@ namespace ACE.Server.WorldObjects
                     nextAttack.AddDelaySeconds(nextRefillTime);
                     nextAttack.AddAction(this, () => GunBladeAttack(target, attackSequence, true));
                     nextAttack.EnqueueChain();
+
+                    if (IsDps)
+                    {
+                        if (MeleeDoTChance >= dotRoll)
+                        {
+                            //var dot = DatabaseManager.World.GetCachedWeenie(300501);
+                            var dotTarget = target as Creature;
+                            var targets = GetDoTTarget(dotTarget);
+                            //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
+
+                            CreateDoTSpot(this, targets);
+                        }
+                    }
                 }
                 else
                     OnAttackDone();
@@ -851,13 +949,13 @@ namespace ACE.Server.WorldObjects
                 {
                     motion.Persist(CurrentMotionState);
                 }
-                motion.MotionState.TurnSpeed = 2.25f;                
+                motion.MotionState.TurnSpeed = 2.25f;
                 motion.TargetGuid = target.Guid;
                 CurrentMotionState = motion;
 
                 EnqueueBroadcastMotion(motion);
             }
-            
+
 
             if (FastTick)
                 PhysicsObj.stick_to_object(target.Guid.Full);

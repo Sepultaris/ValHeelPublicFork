@@ -901,14 +901,15 @@ namespace ACE.Server.Managers
 
                 if (target != null && itemType == 1)
                 {
-                    if (target.GunBlade == true)
+                    /*if (target.GunBlade == true)
                     {
                         player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} has already been converted.", ChatMessageType.Craft));
                         player.SendUseDoneEvent();
                         return;
-                    }
+                    }*/
 
                     target.GunBlade = true;
+                    target.AmmoType = AmmoType.GunBladeAmmo;
 
                     player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You've converted the {target.Name} into a gunblade.", ChatMessageType.Craft));
 

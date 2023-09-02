@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-
+using ACE.Common;
 using ACE.Entity.Enum;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Network.GameEvent.Events;
@@ -259,6 +259,9 @@ namespace ACE.Server.WorldObjects
                         TryProcEquippedItems(this, cleaveHit, false, weapon);
                     }
                 }
+
+                if (IsDps)
+                    LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
             });       
 
             // ammo remaining?
@@ -314,6 +317,22 @@ namespace ACE.Server.WorldObjects
                     // perform next attack
                     nextAttack.AddAction(this, () => { LaunchMissile(target, attackSequence, stance, true); });
                     nextAttack.EnqueueChain();
+
+                    if (IsDps)
+                    {
+                        // AoE Missile Attack
+                        var aoeRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                        var aoeTarget = target as Creature;
+
+                        if (aoeRoll <= MissileAoEChance && aoeTarget != null)
+                        {
+                            foreach (var m in GetMissileAoETarget(aoeTarget, weapon))
+                            {
+                                LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
+                            }
+                        }
+                    }
                 }
                 else
                     OnAttackDone();
@@ -428,66 +447,7 @@ namespace ACE.Server.WorldObjects
 
                 var projectile = LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
                 UpdateAmmoAfterLaunch(ammo);
-                
             });
-
-            // ammo remaining?
-            /*if (!ammo.UnlimitedUse && (ammo.StackSize == null || ammo.StackSize <= 1))
-            {
-                actionChain.AddAction(this, () =>
-                {
-                    Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, "You are out of ammunition!"));
-                    SetCombatMode(CombatMode.NonCombat);
-                    Attacking = false;
-                    OnAttackDone();
-                });
-
-                actionChain.EnqueueChain();
-                return;
-            }
-
-            // reload animation
-            var animSpeed = GetAnimSpeed();
-            var reloadTime = EnqueueMotionPersist(actionChain, stance, MotionCommand.Reload, animSpeed);
-
-            // reset for next projectile
-            EnqueueMotionPersist(actionChain, stance, MotionCommand.Ready);
-            var linkTime = MotionTable.GetAnimationLength(MotionTableId, stance, MotionCommand.Reload, MotionCommand.Ready);
-            //var cycleTime = MotionTable.GetCycleLength(MotionTableId, CurrentMotionState.Stance, MotionCommand.Ready);
-
-            actionChain.AddAction(this, () =>
-            {
-                if (CombatMode == CombatMode.Missile)
-                    EnqueueBroadcast(new GameMessageParentEvent(this, ammo, ACE.Entity.Enum.ParentLocation.RightHand, ACE.Entity.Enum.Placement.RightHandCombat));
-            });
-
-            actionChain.AddDelaySeconds(linkTime);
-
-            actionChain.AddAction(this, () =>
-            {
-                Attacking = false;
-
-                if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && !IsBusy && !AttackCancelled)
-                {
-                    // client starts refilling accuracy bar
-                    Session.Network.EnqueueSend(new GameEventAttackDone(Session));
-
-                    AccuracyLevel = AttackQueue.Fetch();
-
-                    // can be cancelled, but cannot be pre-empted with another attack
-                    var nextAttack = new ActionChain();
-                    var nextRefillTime = AccuracyLevel;
-
-                    NextRefillTime = DateTime.UtcNow.AddSeconds(nextRefillTime);
-                    nextAttack.AddDelaySeconds(nextRefillTime);
-
-                    // perform next attack
-                    nextAttack.AddAction(this, () => { LaunchMissile(target, attackSequence, stance, true); });
-                    nextAttack.EnqueueChain();
-                }
-                else
-                    OnAttackDone();
-            });*/
 
             actionChain.EnqueueChain();
 
@@ -578,6 +538,50 @@ namespace ACE.Server.WorldObjects
                 // only cleave in front of attacker
                 var angle = GetAngle(creature);
                 if (Math.Abs(angle) > MissileCleaveAngle / 2.0f)
+                    continue;
+
+                // found cleavable object
+                cleaveTargets.Add(creature);
+                if (cleaveTargets.Count == totalCleaves)
+                    break;
+            }
+            return cleaveTargets;
+        }
+
+        public List<Creature> GetMissileAoETarget(Creature target, WorldObject weapon)
+        {
+            var player = this as Player;
+
+            // sort visible objects by ascending distance
+            var visible = PhysicsObj.ObjMaint.GetVisibleObjectsValuesWhere(o => o.WeenieObj.WorldObject != null);
+            visible.Sort(DistanceComparator);
+
+            var cleaveTargets = new List<Creature>();
+            var totalCleaves = weapon.CleaveTargets;
+
+            foreach (var obj in visible)
+            {
+                // only cleave creatures
+                var creature = obj.WeenieObj.WorldObject as Creature;
+                if (creature == null || creature.Teleporting || creature.IsDead) continue;
+
+                if (player != null && player.CheckPKStatusVsTarget(creature, null) != null)
+                    continue;
+
+                if (!creature.Attackable && creature.TargetingTactic == TargetingTactic.None || creature.Teleporting)
+                    continue;
+
+                if (creature is CombatPet && (player != null || this is CombatPet))
+                    continue;
+
+                // no objects in cleave range
+                var cylDist = GetCylinderDistance(creature);
+                if (cylDist > MissileAoECylRange)
+                    return cleaveTargets;
+
+                // only cleave in front of attacker
+                var angle = GetAngle(creature);
+                if (Math.Abs(angle) > MissileAoEAngle)
                     continue;
 
                 // found cleavable object

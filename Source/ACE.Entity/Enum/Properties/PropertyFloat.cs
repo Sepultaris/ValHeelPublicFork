@@ -247,6 +247,13 @@ namespace ACE.Entity.Enum.Properties
         MMDValue                       = 8032,
         [ServerOnly]
         ACValue                        = 8033,
+        [ServerOnly]
+        HoTTimestamp                   = 8034,
+        LastHoTTickTimestamp           = 8035,
+        LastWarChannelTimestamp        = 8036,
+        WarChannelChance               = 8037,
+        MeleeDoTChance                 = 8038,
+        MissileAoEChance               = 8039,
 
     }
 

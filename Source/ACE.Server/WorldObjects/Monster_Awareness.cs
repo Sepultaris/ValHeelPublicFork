@@ -186,6 +186,11 @@ namespace ACE.Server.WorldObjects
                         var lastDamager = DamageHistory.LastDamager?.TryGetAttacker() as Creature;
                         if (lastDamager != null)
                             AttackTarget = lastDamager;
+                        else
+                        {
+                            var newTargetDistances = BuildTargetDistance(visibleTargets);
+                            AttackTarget = SelectWeightedDistance(newTargetDistances);
+                        }
                         break;
 
                     case TargetingTactic.TopDamager:
@@ -216,6 +221,39 @@ namespace ACE.Server.WorldObjects
 
                         var nearest = BuildTargetDistance(visibleTargets);
                         AttackTarget = nearest[0].Target;
+                        break;
+
+                    case TargetingTactic.HasShield:
+
+                        var hasShieldIsTank = visibleTargets.Where(p => p.GetEquippedShield() != null && IsTank).ToList();
+                        var noShieldIsTank = visibleTargets.Where(p => p.GetEquippedShield() == null && IsTank).ToList();
+                        var hasShield = visibleTargets.Where(p => p.GetEquippedShield() != null).ToList();
+                        if (hasShieldIsTank.Count > 0)
+                        {
+                            var shieldDistances = BuildTargetDistance(hasShieldIsTank);
+                            AttackTarget = SelectWeightedDistance(shieldDistances);
+                        }
+                        else if (noShieldIsTank.Count > 0)
+                        {
+                            var noShieldDistances = BuildTargetDistance(noShieldIsTank);
+                            AttackTarget = SelectWeightedDistance(noShieldDistances);
+                        }
+                        else if (hasShield.Count > 0)
+                        {
+                            var shieldDistances = BuildTargetDistance(hasShield);
+                            AttackTarget = SelectWeightedDistance(shieldDistances);
+                        }
+                        else if (hasShieldIsTank.Count == 0 && hasShield.Count == 0 && noShieldIsTank.Count == 0)
+                        {
+                            var topDamager1 = DamageHistory.TopDamager?.TryGetAttacker() as Creature;
+                            if (topDamager1 != null)
+                                AttackTarget = topDamager1;
+                            else
+                            {
+                                var nearest1 = BuildTargetDistance(visibleTargets);
+                                AttackTarget = nearest1[0].Target;
+                            }
+                        }
                         break;
                 }
 

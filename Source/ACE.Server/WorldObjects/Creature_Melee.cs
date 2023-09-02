@@ -111,6 +111,12 @@ namespace ACE.Server.WorldObjects
         public static readonly float MagicCleaveCylRange = 4.0f;
         public static readonly float MissileCleaveCylRange = 4.0f;
 
+        public static readonly float MissileAoECylRange = 30.0f;
+        public static readonly float MissileAoEAngle = 45.0f;
+
+        public static readonly float DoTSpotAngle = 359;
+        public static readonly float DoTSpotCylRange = 4;
+
         /// <summary>
         /// Performs a cleaving attack for two-handed weapons
         /// </summary>
@@ -160,6 +166,49 @@ namespace ACE.Server.WorldObjects
                 // found cleavable object
                 cleaveTargets.Add(creature);
                 if (cleaveTargets.Count == totalCleaves)
+                    break;
+            }
+            return cleaveTargets;
+        }
+
+        public List<Creature> GetDoTTarget(Creature target)
+        {
+            var player = this as Player;
+
+            // sort visible objects by ascending distance
+            var visible = PhysicsObj.ObjMaint.GetVisibleObjectsValuesWhere(o => o.WeenieObj.WorldObject != null);
+            visible.Sort(DistanceComparator);
+
+            var cleaveTargets = new List<Creature>();
+
+            foreach (var obj in visible)
+            {
+                // only cleave creatures
+                var creature = obj.WeenieObj.WorldObject as Creature;
+                if (creature == null || creature.Teleporting || creature.IsDead) continue;
+
+                if (player != null && player.CheckPKStatusVsTarget(creature, null) != null)
+                    continue;
+
+                if (!creature.Attackable && creature.TargetingTactic == TargetingTactic.None || creature.Teleporting)
+                    continue;
+
+                if (creature is CombatPet && (player != null || this is CombatPet))
+                    continue;
+
+                // no objects in cleave range
+                var cylDist = GetCylinderDistance(creature);
+                if (cylDist > DoTSpotCylRange)
+                    return cleaveTargets;
+
+                // only cleave in front of attacker
+                var angle = GetAngle(creature);
+                if (Math.Abs(angle) > DoTSpotAngle)
+                    continue;
+
+                // found cleavable object
+                cleaveTargets.Add(creature);
+                if (cleaveTargets.Count == 8)
                     break;
             }
             return cleaveTargets;

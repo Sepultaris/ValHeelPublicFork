@@ -673,7 +673,15 @@ namespace ACE.Entity.Enum.Properties
         HcPyrealsWonMilestones = 9047,
         HcScoreMilestones = 9048,
         LevelMilestones = 9049,
-        PrestigeMilestones = 9050
+        PrestigeMilestones = 9050,
+        [ServerOnly]
+        HoTTicks = 9051,
+        HoTDuration = 9052,
+        MaxHoTTicks = 9053,
+        MaxHoTDuration = 9054,
+        WarChannelTimerDuration = 9055,
+        DoTOwnerGuid = 9056,
+        NumOfChannelCasts = 9057,
     }
 
     public static class PropertyIntExtensions

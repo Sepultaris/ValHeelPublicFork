@@ -37,7 +37,7 @@ namespace ACE.Server.ValheelMods
         private static ConcurrentQueue<string> hcLeaderboardMessages;
         private static Timer messageTimer;
         private static Timer hcLeaderboardTimer;
-        private static double HC_LEADERBOARD_INTERVAL = 60000;//14400000;
+        private static double HC_LEADERBOARD_INTERVAL = 14400000;
         private const int MAX_MESSAGE_LENGTH = 10000;
         private const double MESSAGE_INTERVAL = 10000;
         private const string PREFIX = "~";
@@ -134,6 +134,9 @@ namespace ACE.Server.ValheelMods
         //Relay messages from Discord
         private static Task OnDiscordChat(SocketMessage msg)
         {
+            if (msg is null)
+                return Task.CompletedTask;
+
             //Ignore bot chat and incorrect channels
             if (msg.Author.IsBot || msg.Channel.Id != RELAY_CHANNEL_ID)
                 return Task.CompletedTask;
@@ -146,6 +149,9 @@ namespace ACE.Server.ValheelMods
                 return Task.CompletedTask;
 
             if (msg.Content is not string)
+                return Task.CompletedTask;
+
+            if (msg.Content.Length > 255)
                 return Task.CompletedTask;
 
             Console.WriteLine($"Received message: {msg.Content}");
@@ -195,7 +201,7 @@ namespace ACE.Server.ValheelMods
                 QueueMessageForDiscord($"[{chatType}] {senderName}: {message}");
         }
 
-        private static async void SendHcLeaderboard(object sender, ElapsedEventArgs e)
+        public static async void SendHcLeaderboard(object sender, ElapsedEventArgs e)
         {
             if (hcchannel is null)
                 return;
@@ -219,12 +225,93 @@ namespace ACE.Server.ValheelMods
             allHcPlayers.AddRange(onlineHcPlayers);
             allHcPlayers.AddRange(offlineHcPlayers);
 
+            List<IPlayer> playersToRemove = new List<IPlayer>();
+
             foreach (var p in allHcPlayers)
             {
                 if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 2_629_746)
                 {
-                    allHcPlayers.Remove(p);
+                    playersToRemove.Add(p);
                 }
+            }
+
+            foreach (var p in playersToRemove)
+            {
+                allHcPlayers.Remove(p);
+            }
+
+            List<IPlayer> top10Players = allHcPlayers.OrderByDescending(p => p.HcScore).Take(10).ToList();
+
+            StringBuilder result = new StringBuilder();
+            int rank = 1;
+
+            int maxRankLength = Math.Max(4, top10Players.Count.ToString().Length);
+            int maxNameLength = Math.Max(26, top10Players.Max(player => player.Name.Length));
+            int maxLevelLength = Math.Max(7, top10Players.Max(player => player.Level.ToString().Length));
+            int maxAgeLength = Math.Max(15, top10Players.Max(player => player.HcAge.ToString().Length));
+            int maxCreatureKillsLength = Math.Max(16, top10Players.Max(player => player.CreatureKills.ToString().Length));
+            int maxPyrealsWonLength = Math.Max(16, top10Players.Max(player => player.HcPyrealsWon.ToString().Length));
+            int maxScoreLength = Math.Max(11, top10Players.Max(player => player.HcScore.ToString().Length));
+
+            // Format the string using the calculated maximum lengths
+            int headerWidth = maxRankLength + maxNameLength + maxLevelLength + maxAgeLength + maxCreatureKillsLength + maxPyrealsWonLength + maxScoreLength + 26;
+
+            // Now, use the constants to format the string
+            result.AppendLine("```fix");
+            result.AppendLine($"{"Hardcore Top Ten!".PadLeft(headerWidth / 2 + 16)}\n\n");
+            result.AppendLine($"{"Rank".PadRight(maxRankLength)} | {"Name".PadRight(maxNameLength)} | {"Level".PadRight(maxLevelLength)} | {"Age".PadRight(maxAgeLength)} | {"Creature Kills".PadRight(maxCreatureKillsLength)} | {"Pyreals Won".PadRight(maxPyrealsWonLength)} | {"Score".PadRight(maxScoreLength)}");
+            result.AppendLine($"{"".PadRight(maxRankLength, '-')}-+-{"".PadRight(maxNameLength, '-')}-+-{"".PadRight(maxLevelLength, '-')}-+-{"".PadRight(maxAgeLength, '-')}-+-{"".PadRight(maxCreatureKillsLength, '-')}-+-{"".PadRight(maxPyrealsWonLength, '-')}-+-{"".PadRight(maxScoreLength, '-')}");
+
+            foreach (var player in top10Players)
+            {
+                result.AppendLine($"{rank.ToString().PadRight(maxRankLength)} | {player.Name.PadRight(maxNameLength)} | {player.Level.ToString().PadRight(maxLevelLength)} | {player.HcAge.ToString().PadRight(maxAgeLength)} | {player.CreatureKills.ToString().PadRight(maxCreatureKillsLength)} | {player.HcPyrealsWon.ToString().PadRight(maxPyrealsWonLength)} | {player.HcScore.ToString().PadRight(maxScoreLength)}");
+                rank++;
+            }
+
+            result.AppendLine("```");
+
+            string finalResult = result.ToString();
+
+            await hcchannel.SendMessageAsync(finalResult);
+        }
+
+        public static async void UpdateHcLeaderboard()
+        {
+            if (hcchannel is null)
+                return;
+
+            List<Player> onlineHcPlayers = new List<Player>();
+            List<OfflinePlayer> offlineHcPlayers = new List<OfflinePlayer>();
+
+            foreach (var p in PlayerManager.GetAllOnline())
+            {
+                if (p.Hardcore == true)
+                    onlineHcPlayers.Add(p);
+            }
+
+            foreach (var i in PlayerManager.GetAllOffline())
+            {
+                if (i.Hardcore == true)
+                    offlineHcPlayers.Add(i);
+            }
+
+            List<IPlayer> allHcPlayers = new List<IPlayer>();
+            allHcPlayers.AddRange(onlineHcPlayers);
+            allHcPlayers.AddRange(offlineHcPlayers);
+
+            List<IPlayer> playersToRemove = new List<IPlayer>();
+
+            foreach (var p in allHcPlayers)
+            {
+                if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 2_629_746)
+                {
+                    playersToRemove.Add(p);
+                }
+            }
+
+            foreach (var p in playersToRemove)
+            {
+                allHcPlayers.Remove(p);
             }
 
             List<IPlayer> top10Players = allHcPlayers.OrderByDescending(p => p.HcScore).Take(10).ToList();

@@ -17,5 +17,6 @@ namespace ACE.Entity.Enum
         Weakest     = 0x10,   // target the lowest level player
         Strongest   = 0x20,   // target the highest level player
         Nearest     = 0x40,   // target the player in closest proximity
+        HasShield   = 0x80,   // target the player with a shield
     }
 }

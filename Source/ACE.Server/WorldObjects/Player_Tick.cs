@@ -78,6 +78,9 @@ namespace ACE.Server.WorldObjects
                 else if (houseRentWarnTimestamp == 0)
                     houseRentWarnTimestamp = Time.GetFutureUnixTime(houseRentWarnInterval);
             }
+
+            HoTCheckHandler(currentUnixTime);
+            SoTCheckHandler(currentUnixTime);
         }
         public static void CalculatePlayerAge(Player player, double currentUnixTime)
         {
@@ -212,63 +215,57 @@ namespace ACE.Server.WorldObjects
                     session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
                     CommandHandlerHelper.WriteOutputInfo(session, $"WARNING:You have entered a Player Killer area: {session.Player.PlayerKillerStatus.ToString()}", ChatMessageType.Broadcast);
 
-                    async Task RunActionChainAsync()
+                    int randomNum = new Random().Next(1, 7);
+
+                    switch (randomNum)
                     {
-                        int randomNum = new Random().Next(1, 7);
-
-                        switch (randomNum)
-                        {
-                            case 1:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder1Sound);
-                                break;
-                            case 2:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder2Sound);
-                                break;
-                            case 3:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder3Sound);
-                                break;
-                            case 4:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder4Sound);
-                                break;
-                            case 5:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder5Sound);
-                                break;
-                            case 6:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.Thunder6Sound);
-                                break;
-                            default:
-                                break;
-                        }
-
-                        await Task.Delay(1000); // 1 second delay
-
-                        int randomNum2 = new Random().Next(1, 7);
-
-                        switch (randomNum2)
-                        {
-                            case 1:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.RoarSound);
-                                break;
-                            case 2:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.Chant2Sound);
-                                break;
-                            case 3:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.Chant1Sound);
-                                break;
-                            case 4:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.LostSoulsSound);
-                                break;
-                            case 5:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.DarkWhispers1Sound);
-                                break;
-                            case 6:
-                                LandblockManager.DoEnvironChange(EnvironChangeType.DarkWindSound);
-                                break;
-                            default:
-                                break;
-                        }
+                        case 1:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder1Sound);
+                            break;
+                        case 2:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder2Sound);
+                            break;
+                        case 3:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder3Sound);
+                            break;
+                        case 4:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder4Sound);
+                            break;
+                        case 5:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder5Sound);
+                            break;
+                        case 6:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder6Sound);
+                            break;
+                        default:
+                            break;
                     }
-                    _ = RunActionChainAsync();
+
+                    int randomNum2 = new Random().Next(1, 7);
+
+                    switch (randomNum2)
+                    {
+                        case 1:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.RoarSound);
+                            break;
+                        case 2:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Chant2Sound);
+                            break;
+                        case 3:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Chant1Sound);
+                            break;
+                        case 4:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.LostSoulsSound);
+                            break;
+                        case 5:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.DarkWhispers1Sound);
+                            break;
+                        case 6:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.DarkWindSound);
+                            break;
+                        default:
+                            break;
+                    }
 
                     ApplyVisualEffects(PlayScript.VisionDownBlack);
                     ApplyVisualEffects(PlayScript.BaelZharonSmite);
@@ -294,7 +291,7 @@ namespace ACE.Server.WorldObjects
             }
 
             if (IsOnSpeedRunLandblock)
-            {               
+            {
                 if (player.SpeedRunning == false)
                 {
                     HandleSpeedRun(player, currentUnixTime);
@@ -328,42 +325,359 @@ namespace ACE.Server.WorldObjects
             }
 
             if (player.BankAccountNumber != null)
-            Player_Bank.HandleInterestPayments(player);
-
-            /*var visibleCreatureList = PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature();
-
-            foreach (var creature in visibleCreatureList)
-            {
-                if (creature != null && creature.IsCombatPet && creature.PetOwner == player.Guid.Full && !CombatPets.Contains(creature))
-                {
-                    CombatPets.Add(creature);
-                    player.NumberOfPets = CombatPets.Count;
-                }
-            }
-            
-            for (int i = CombatPets.Count - 1; i >= 0; i--)
-            {
-                var combatPet = CombatPets[i];
-                if (!visibleCreatureList.Contains(combatPet))
-                {
-                    CombatPets.RemoveAt(i);
-                    player.NumberOfPets = CombatPets.Count;
-                }
-            }
-
-            if (visibleCreatureList.Count > 4)
-            {
-                if (CombatPets.Count > 0)
-                {
-                    var combatPetToRemove = CombatPets[0];
-                    combatPetToRemove.Die();
-                    CombatPets.RemoveAt(0);
-                }
-            }*/
+                Player_Bank.HandleInterestPayments(player);
 
             base.Heartbeat(currentUnixTime);
 
             MonitorCombatPets(CombatPets, player);
+        }
+
+        /// <summary>
+        /// This is the handler for the HoT spell. It will check if the spell is active and if so, it will cast the spell every 3 seconds for the duration of the spell.
+        /// </summary>
+        /// <param name="currentUnixTime"></param>
+        public void HoTCheckHandler(double currentUnixTime)
+        {
+            if (Hot8)
+            {
+                var spell = new Spell(SpellId.HealSelf8);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Hot8 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this,spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Hot7)
+            {
+                var spell = new Spell(SpellId.HealSelf7);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Hot7 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Hot6)
+            {
+                var spell = new Spell(SpellId.HealSelf6);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Hot6 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Hot5)
+            {
+                var spell = new Spell(SpellId.HealSelf5);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Hot5 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Hot4)
+            {
+                var spell = new Spell(SpellId.HealSelf4);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Hot4 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Hot3)
+            {
+                var spell = new Spell(SpellId.HealSelf3);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Hot3 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Hot2)
+            {
+                var spell = new Spell(SpellId.HealSelf2);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Hot2 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Hot1)
+            {
+                var spell = new Spell(SpellId.HealSelf1);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Hot1 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+        }
+
+        public void SoTCheckHandler(double currentUnixTime)
+        {
+            if (Sot8)
+            {
+                var spell = new Spell(SpellId.RevitalizeSelf8);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Sot8 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Sot7)
+            {
+                var spell = new Spell(SpellId.RevitalizeSelf7);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Sot7 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Sot6)
+            {
+                var spell = new Spell(SpellId.RevitalizeSelf6);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Sot6 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Sot5)
+            {
+                var spell = new Spell(SpellId.RevitalizeSelf5);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Sot5 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Sot4)
+            {
+                var spell = new Spell(SpellId.RevitalizeSelf4);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Sot4 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Sot3)
+            {
+                var spell = new Spell(SpellId.RevitalizeSelf3);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Sot3 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Sot2)
+            {
+                var spell = new Spell(SpellId.RevitalizeSelf2);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Sot2 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
+            else if (Sot1)
+            {
+                var spell = new Spell(SpellId.RevitalizeSelf1);
+                var castTime = HoTTimestamp;
+                var duration = HoTDuration;
+                int timePast = (int)(currentUnixTime - castTime);
+
+                if (currentUnixTime - castTime >= duration)
+                {
+                    Sot1 = false;
+                    IsHoTTicking = false;
+                    return;
+                }
+                else if (currentUnixTime - castTime < duration && HoTTicks > 0 && timePast % 3 == 0 && currentUnixTime - LastHoTTickTimestamp >= 3)
+                {
+                    IsHoTTicking = true;
+                    CreatePlayerSpell(this, spell, false);
+                    HoTTicks--;
+                    LastHoTTickTimestamp = currentUnixTime;
+                }
+            }
         }
 
         public void MonitorCombatPets(List<Creature> CombatPets, Player player)

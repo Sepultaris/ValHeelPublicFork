@@ -1965,7 +1965,7 @@ namespace ACE.Server.WorldObjects.Managers
             {
                 string firstWord = words[0].ToLower(); // Convert to lowercase for case-insensitive comparison
 
-                if (firstWord == "bounty" && creature.Name == "Bounty Board")
+                if (firstWord == "bounty" && creature.Name == "Bounty Ledger")
                 {
                     if (words.Length > 2 && long.TryParse(words[words.Length - 1], out long amount))
                     {
