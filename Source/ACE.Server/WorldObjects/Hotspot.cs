@@ -217,9 +217,9 @@ namespace ACE.Server.WorldObjects
 
                         foreach (var p in PlayerManager.GetAllOnline())
                         {
-                            if (DoTOwnerGuid == p.Guid.Full)
+                            if (DoTOwnerGuid == p.Guid.Full && iDoTAmount != 0)
                             {
-                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"You bleed {creature.Name} for {-iDoTAmount} of {DamageType} Damage.", ChatMessageType.CombatSelf));
+                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"** You bleed {creature.Name} for {-iDoTAmount} of {DamageType} Damage. **", ChatMessageType.CombatSelf));
                             }
                         }
 
@@ -230,9 +230,9 @@ namespace ACE.Server.WorldObjects
 
                         foreach (var p in PlayerManager.GetAllOnline())
                         {
-                            if (DoTOwnerGuid == p.Guid.Full)
+                            if (DoTOwnerGuid == p.Guid.Full && iDoTAmount != 0)
                             {
-                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"You bleed {creature.Name} for {-iDoTAmount} of {DamageType} Damage.", ChatMessageType.CombatSelf));
+                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"** You bleed {creature.Name} for {-iDoTAmount} of {DamageType} Damage. **", ChatMessageType.CombatSelf));
                             }
                         }
 
@@ -250,7 +250,7 @@ namespace ACE.Server.WorldObjects
 
                         foreach (var p in PlayerManager.GetAllOnline())
                         {
-                            if (DoTOwnerGuid == p.Guid.Full)
+                            if (DoTOwnerGuid == p.Guid.Full && iDoTAmount != 0)
                             {
                                 p.Session.Network.EnqueueSend(new GameMessageSystemChat($"** You bleed {creature.Name} for {-iDoTAmount} of {DamageType} Damage. **", ChatMessageType.CombatSelf));
                             }

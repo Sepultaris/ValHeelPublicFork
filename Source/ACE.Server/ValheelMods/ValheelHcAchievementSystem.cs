@@ -62,6 +62,9 @@ namespace ACE.Server.ValheelMods
 
         private static void CheckMonsterKillsAchievements(Player player)
         {
+            if (player.MonsterKillsMilestones > 100)
+                player.MonsterKillsMilestones = 0;
+
             if (player.MonsterKillsMilestones >= 6)
                 return;
 
@@ -71,16 +74,28 @@ namespace ACE.Server.ValheelMods
                 {
                     long winnings = 250000 * (((player.MonsterKillsMilestones * player.MonsterKillsMilestones) * 2) * 10);
 
+                    if (winnings < 250000)
+                    {
+                        winnings = 250000 * 40;
+                    }
+
                     GrantAchievement($"Monster Slayer {player.MonsterKillsMilestones + 1}", player, winnings);
                     player.MonsterKillsMilestones++;
                     if (player.BankedPyreals == null)
                         player.BankedPyreals = (long)player.HcPyrealsWon;
                     player.BankedPyreals = player.BankedPyreals + winnings;
+
                     var wo = WorldObjectFactory.CreateNewWorldObject(802614);
                     var amount = (((player.MonsterKillsMilestones * player.MonsterKillsMilestones) * 2) * 10);
-                    wo.SetStackSize(amount);
-                    player.TryCreateInInventoryWithNetworking(wo);
-                    player.GrantLevelProportionalXp(0.75, 1000, 1000000000000, false);
+
+                    long maxStackForWo = 500; // Adjust this as needed
+                    while (amount > 0)
+                    {
+                        var stackAmount = Math.Min(maxStackForWo, amount);
+                        wo.SetStackSize((int)stackAmount);
+                        player.TryCreateInInventoryWithNetworking(wo); // Clone the object for each stack
+                        amount -= (int)stackAmount;
+                    }
                 }
             }
         }
@@ -103,11 +118,18 @@ namespace ACE.Server.ValheelMods
                         player.BankedPyreals = (long)player.HcPyrealsWon;
 
                     player.BankedPyreals = player.BankedPyreals + winnings;
+
                     var wo = WorldObjectFactory.CreateNewWorldObject(802759);
                     var amount = (((player.HcPyrealsWonMilestones * player.HcPyrealsWonMilestones) * 2) * 10);
-                    wo.SetStackSize(amount);
-                    player.TryCreateInInventoryWithNetworking(wo);
-                    player.GrantLevelProportionalXp(0.75, 1000, 1000000000000, false);
+
+                    long maxStackForWo = 500; // Adjust this as needed
+                    while (amount > 0)
+                    {
+                        var stackAmount = Math.Min(maxStackForWo, amount);
+                        wo.SetStackSize((int)stackAmount);
+                        player.TryCreateInInventoryWithNetworking(wo); // Clone the object for each stack
+                        amount -= (int)stackAmount;
+                    }
                 }
             }
         }

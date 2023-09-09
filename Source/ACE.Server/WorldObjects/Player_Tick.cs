@@ -81,6 +81,7 @@ namespace ACE.Server.WorldObjects
 
             HoTCheckHandler(currentUnixTime);
             SoTCheckHandler(currentUnixTime);
+            CheckTankDefense(this, currentUnixTime);
         }
         public static void CalculatePlayerAge(Player player, double currentUnixTime)
         {
@@ -330,6 +331,37 @@ namespace ACE.Server.WorldObjects
             base.Heartbeat(currentUnixTime);
 
             MonitorCombatPets(CombatPets, player);
+        }
+
+        public void CheckTankDefense(Player player, double currentUnixTime)
+        {
+            if (currentUnixTime - LastTankBuffTimestamp > 30 && IsTankBuffed && GetEquippedShield() != null)
+            {
+                int playerDefenseRating = player.LumAugDamageReductionRating;
+                int ratingIncreaseAmount = playerDefenseRating * 4;
+                int finalRatingAmount = playerDefenseRating + ratingIncreaseAmount;
+
+                player.TankDefenseRatingIncrease = ratingIncreaseAmount;
+                player.LumAugDamageReductionRating = finalRatingAmount;
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, finalRatingAmount));
+                LastTankBuffTimestamp = currentUnixTime;
+                player.PlayParticleEffect(PlayScript.ShieldUpGrey, Guid);
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You've activated Bastion increaing you damage reduction rating for 10 seconds.", ChatMessageType.Broadcast));
+                TankBuffedTimer = true;
+            }
+            if (currentUnixTime - LastTankBuffTimestamp >= 10 && TankBuffedTimer == true)
+            {
+                var returnValue = player.LumAugDamageReductionRating - player.TankDefenseRatingIncrease;
+
+                player.LumAugDamageReductionRating = returnValue;
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, returnValue));
+                player.PlayParticleEffect(PlayScript.ShieldDownGrey, Guid);
+                TankBuffedTimer = false;
+            }
+            if (currentUnixTime - LastTankBuffTimestamp >= 29 && IsTankBuffed == true)
+            {
+                IsTankBuffed = false;
+            }
         }
 
         /// <summary>

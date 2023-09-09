@@ -261,7 +261,22 @@ namespace ACE.Server.WorldObjects
                 }
 
                 if (IsDps)
+                {
                     LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
+
+                    // AoE Missile Attack
+                    var aoeRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                    var aoeTarget = target as Creature;
+
+                    if (aoeRoll <= MissileAoEChance && aoeTarget != null)
+                    {
+                        foreach (var m in GetMissileAoETarget(aoeTarget, weapon))
+                        {
+                            LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
+                        }
+                    }
+                }  
             });       
 
             // ammo remaining?
@@ -317,22 +332,6 @@ namespace ACE.Server.WorldObjects
                     // perform next attack
                     nextAttack.AddAction(this, () => { LaunchMissile(target, attackSequence, stance, true); });
                     nextAttack.EnqueueChain();
-
-                    if (IsDps)
-                    {
-                        // AoE Missile Attack
-                        var aoeRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
-
-                        var aoeTarget = target as Creature;
-
-                        if (aoeRoll <= MissileAoEChance && aoeTarget != null)
-                        {
-                            foreach (var m in GetMissileAoETarget(aoeTarget, weapon))
-                            {
-                                LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
-                            }
-                        }
-                    }
                 }
                 else
                     OnAttackDone();

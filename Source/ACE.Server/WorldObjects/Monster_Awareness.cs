@@ -184,7 +184,7 @@ namespace ACE.Server.WorldObjects
                     case TargetingTactic.LastDamager:
 
                         var lastDamager = DamageHistory.LastDamager?.TryGetAttacker() as Creature;
-                        if (lastDamager != null)
+                        if (lastDamager != null && lastDamager is Player || lastDamager != null && lastDamager.IsCombatPet)
                             AttackTarget = lastDamager;
                         else
                         {
@@ -196,8 +196,13 @@ namespace ACE.Server.WorldObjects
                     case TargetingTactic.TopDamager:
 
                         var topDamager = DamageHistory.TopDamager?.TryGetAttacker() as Creature;
-                        if (topDamager != null)
+                        if (topDamager != null && topDamager is Player || topDamager != null && topDamager.IsCombatPet)
                             AttackTarget = topDamager;
+                        else
+                        {
+                            var nearest = BuildTargetDistance(visibleTargets);
+                            AttackTarget = nearest[0].Target;
+                        }
                         break;
 
                     // these below don't seem to be used in PY16 yet...
@@ -219,8 +224,8 @@ namespace ACE.Server.WorldObjects
 
                     case TargetingTactic.Nearest:
 
-                        var nearest = BuildTargetDistance(visibleTargets);
-                        AttackTarget = nearest[0].Target;
+                        var nearest1 = BuildTargetDistance(visibleTargets);
+                        AttackTarget = nearest1[0].Target;
                         break;
 
                     case TargetingTactic.HasShield:
@@ -246,12 +251,12 @@ namespace ACE.Server.WorldObjects
                         else if (hasShieldIsTank.Count == 0 && hasShield.Count == 0 && noShieldIsTank.Count == 0)
                         {
                             var topDamager1 = DamageHistory.TopDamager?.TryGetAttacker() as Creature;
-                            if (topDamager1 != null)
+                            if (topDamager1 != null && topDamager1 is Player || topDamager1 != null && topDamager1.IsCombatPet)
                                 AttackTarget = topDamager1;
                             else
                             {
-                                var nearest1 = BuildTargetDistance(visibleTargets);
-                                AttackTarget = nearest1[0].Target;
+                                var nearest2 = BuildTargetDistance(visibleTargets);
+                                AttackTarget = nearest2[0].Target;
                             }
                         }
                         break;

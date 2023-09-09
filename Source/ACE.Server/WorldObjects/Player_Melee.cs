@@ -600,7 +600,7 @@ namespace ACE.Server.WorldObjects
                     nextAttack.AddAction(this, () => Attack(target, attackSequence, true));
                     nextAttack.EnqueueChain();
 
-                    if (QuestManager.HasQuestCompletes("DPSClass"))
+                    if (IsDps)
                     {
                         if (MeleeDoTChance >= dotRoll)
                         {
@@ -610,6 +610,15 @@ namespace ACE.Server.WorldObjects
                             //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
 
                             CreateDoTSpot(this, targets);
+                        }
+                    }
+                    if (IsTank)
+                    {
+                        var chanceRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                        if (chanceRoll < 0.33f)
+                        {
+                            IsTankBuffed = true;
                         }
                     }
                 }
@@ -635,6 +644,15 @@ namespace ACE.Server.WorldObjects
                             CreateDoTSpot(this, targets);
                         }
                     }
+                    if (IsTank)
+                    {
+                        var chanceRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                        if (chanceRoll < 0.33f)
+                        {
+                            IsTankBuffed = true;
+                        }
+                    }
                 }
 
                 else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && (dist <= MeleeDistance || dist <= StickyDistance && IsMeleeVisible(target)) && !IsBusy && !AttackCancelled)
@@ -657,6 +675,15 @@ namespace ACE.Server.WorldObjects
                             //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
 
                             CreateDoTSpot(this, targets);
+                        }
+                    }
+                    if (IsTank)
+                    {
+                        var chanceRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                        if (chanceRoll < 0.33f)
+                        {
+                            IsTankBuffed = true;
                         }
                     }
                 }
@@ -860,6 +887,15 @@ namespace ACE.Server.WorldObjects
                             CreateDoTSpot(this, targets);
                         }
                     }
+                    if (IsTank)
+                    {
+                        var chanceRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                        if (chanceRoll < 0.33f)
+                        {
+                            IsTankBuffed = true;
+                        }
+                    }
                 }
 
                 else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled)
@@ -882,6 +918,15 @@ namespace ACE.Server.WorldObjects
                             //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
 
                             CreateDoTSpot(this, targets);
+                        }
+                    }
+                    if (IsTank)
+                    {
+                        var chanceRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                        if (chanceRoll < 0.33f)
+                        {
+                            IsTankBuffed = true;
                         }
                     }
                 }

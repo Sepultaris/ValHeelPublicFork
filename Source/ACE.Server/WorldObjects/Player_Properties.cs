@@ -1664,6 +1664,30 @@ namespace ACE.Server.WorldObjects
             set { if (value == 0) RemoveProperty(PropertyInt.NumOfChannelCasts); else SetProperty(PropertyInt.NumOfChannelCasts, value); }
         }
 
+        public bool IsTankBuffed
+        {
+            get => GetProperty(PropertyBool.IsTankBuffed) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsTankBuffed); else SetProperty(PropertyBool.IsTankBuffed, value); }
+        }
+
+        public double LastTankBuffTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastTankBuffTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastTankBuffTimestamp); else SetProperty(PropertyFloat.LastTankBuffTimestamp, value); }
+        }
+
+        public int TankDefenseRatingIncrease
+        {
+            get => GetProperty(PropertyInt.TankDefenseRatingIncrease) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.TankDefenseRatingIncrease); else SetProperty(PropertyInt.TankDefenseRatingIncrease, value); }
+        }
+
+        public bool TankBuffedTimer
+        {
+            get => GetProperty(PropertyBool.TankBuffedTimer) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.TankBuffedTimer); else SetProperty(PropertyBool.TankBuffedTimer, value); }
+        }
+
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

@@ -1121,7 +1121,7 @@ namespace ACE.Server.WorldObjects
                         // Add cleaving at level 200
                         if (itemLevel >= 20)
                         {
-                            if (attacktype > 34)
+                            if (attacktype == 34 || attacktype == 36 || attacktype == 128 || attacktype == 130)
                             {
                                 item.SetProperty(PropertyInt.Cleaving, 5);                                
                             }

@@ -234,6 +234,8 @@ namespace ACE.Entity.Enum.Properties
         IsDps                            = 9038,
         IsTank                           = 9039,
         IsHealer                         = 9040,
+        IsTankBuffed                     = 9041,
+        TankBuffedTimer                  = 9042,
     }
 
     public static class PropertyBoolExtensions

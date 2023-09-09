@@ -121,27 +121,31 @@ namespace ACE.Server.WorldObjects
                         }
                     }
                 }
-            }
-            /*if (topDamager != null && IsCombatPet)
-            {
-                var owner = topDamager.TryGetPetOwner();
-
-                if (owner != null)
+                if (topDamager.PetOwner != null)
                 {
-                    KillerId = owner.Guid.Full;
+                    var topDamagerPet = topDamager.TryGetAttacker();
 
-                    owner.CreatureKills++;
-
-                    if (owner.Hardcore)
+                    if (topDamagerPet != null && topDamagerPet.PetOwner != null)
                     {
-                        if (owner.BankedPyreals == null)
-                            owner.BankedPyreals = 0;
+                        var ownerId = topDamagerPet.PetOwner;
+                        var topDamagerPetOwner = PlayerManager.FindByGuid((uint)ownerId);
 
-                        owner.BankedPyreals += 133;
-                        owner.HcPyrealsWon += 133;
+                        if (topDamagerPetOwner != null)
+                        {
+                            topDamagerPetOwner.CreatureKills++;
+
+                            if (topDamagerPetOwner.Hardcore)
+                            {
+                                if (topDamagerPetOwner.BankedPyreals == null)
+                                    topDamagerPetOwner.BankedPyreals = 0;
+
+                                topDamagerPetOwner.BankedPyreals += 133;
+                                topDamagerPetOwner.HcPyrealsWon += 133;
+                            }
+                        }
                     }
                 }
-            }*/
+            }
             if (IsCombatPet)
             {
                 CurrentMotionState = new Motion(MotionStance.NonCombat, MotionCommand.Ready);

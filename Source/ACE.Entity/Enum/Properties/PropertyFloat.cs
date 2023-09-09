@@ -254,6 +254,7 @@ namespace ACE.Entity.Enum.Properties
         WarChannelChance               = 8037,
         MeleeDoTChance                 = 8038,
         MissileAoEChance               = 8039,
+        LastTankBuffTimestamp          = 8040,
 
     }
 

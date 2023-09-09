@@ -682,6 +682,7 @@ namespace ACE.Entity.Enum.Properties
         WarChannelTimerDuration = 9055,
         DoTOwnerGuid = 9056,
         NumOfChannelCasts = 9057,
+        TankDefenseRatingIncrease = 9058,
     }
 
     public static class PropertyIntExtensions

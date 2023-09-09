@@ -356,6 +356,8 @@ namespace ACE.Server.Entity
                 var weaponDamage = damageSource.ProjectileLauncher.Damage.Value;
                 Damage = Damage + weaponDamage;
             }
+            if (defender is Player pDefender && pDefender.Hardcore)
+                Damage = Damage + Damage * 0.33f;
 
             // Class Damage Modifiers
 
@@ -378,7 +380,7 @@ namespace ACE.Server.Entity
             }
             else if (defender.IsDps)
             {
-                Damage = Damage + Damage * 0.3f;
+                Damage = Damage + Damage * 0.33f;
                 return Damage;
             }
             // Healer

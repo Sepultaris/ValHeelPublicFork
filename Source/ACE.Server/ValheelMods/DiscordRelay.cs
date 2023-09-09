@@ -104,7 +104,7 @@ namespace ACE.Server.ValheelMods
             messageTimer.Enabled = true;
 
             //Say hi
-            //QueueMessageForDiscord("Valheel Chat Relay is online.");
+            QueueMessageForDiscord("Valheel Chat Relay is online.");
 
             IsInitialized = true;
 
@@ -229,7 +229,7 @@ namespace ACE.Server.ValheelMods
 
             foreach (var p in allHcPlayers)
             {
-                if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 2_629_746)
+                if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 5_184_000 && p.Level >= 10000)
                 {
                     playersToRemove.Add(p);
                 }
@@ -303,7 +303,7 @@ namespace ACE.Server.ValheelMods
 
             foreach (var p in allHcPlayers)
             {
-                if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 2_629_746)
+                if (CalculateHcPlayerAge(p, GetCurrentUnixTime()) >= 5_184_000 && p.Level >= 10000)
                 {
                     playersToRemove.Add(p);
                 }
