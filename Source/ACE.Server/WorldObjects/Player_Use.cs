@@ -181,7 +181,10 @@ namespace ACE.Server.WorldObjects
                     killPets.EnqueueChain();
                 }
 
-                if (item.CurrentLandblock != null && !item.Visibility && item.Guid != LastOpenedContainerId)
+                if (item.IsAbilityItem)
+                    DoAbility(this, item);
+
+                if (item.CurrentLandblock != null && !item.Visibility && item.Guid != LastOpenedContainerId && !item.IsAbilityItem)
                 {
                     if (IsBusy)
                     {

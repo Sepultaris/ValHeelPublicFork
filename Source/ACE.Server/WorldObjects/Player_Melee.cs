@@ -514,7 +514,6 @@ namespace ACE.Server.WorldObjects
                         {
                             // target procs don't happen for cleaving
                             DamageTarget(cleaveHit, weapon);
-                            TryProcEquippedItems(this, cleaveHit, false, weapon);
                         }
                     }
 
@@ -537,7 +536,6 @@ namespace ACE.Server.WorldObjects
                                 var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
 
                                 DamageTarget(cleaveHit, weapon);
-                                TryProcEquippedItems(this, cleaveHit, false, weapon);
                                 LaunchProjectile(weapon, ammo, target, origin, orientation, velocity);
 
                                 if (ammo.StackSize != null)
@@ -826,7 +824,6 @@ namespace ACE.Server.WorldObjects
                         {
                             // target procs don't happen for cleaving
                             DamageTarget(cleaveHit, weapon);
-                            TryProcEquippedItems(this, cleaveHit, false, weapon);
                             if (ammo != null)
                             {
                                 LaunchProjectile(weapon, ammo, cleaveHit, origin, orientation, velocity);

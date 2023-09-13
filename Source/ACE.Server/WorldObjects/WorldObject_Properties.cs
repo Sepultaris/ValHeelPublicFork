@@ -3190,5 +3190,11 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyInt.DoTOwnerGuid) ?? 0;
             set { if (value == 0) RemoveProperty(PropertyInt.DoTOwnerGuid); else SetProperty(PropertyInt.DoTOwnerGuid, value); }
         }
+
+        public bool IsAbilityItem
+        {
+            get => GetProperty(PropertyBool.IsAbilityItem) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsAbilityItem); else SetProperty(PropertyBool.IsAbilityItem, value); }
+        }
     }
 }

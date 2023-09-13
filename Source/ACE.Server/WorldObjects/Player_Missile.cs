@@ -254,9 +254,13 @@ namespace ACE.Server.WorldObjects
                         // target procs don't happen for cleaving
                         /*DamageTarget(cleaveHit, weapon);*/
                         /*LaunchCleaveMissile(cleaveHit, attackSequence, stance, subsequent = false);*/
-                        LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
+                        var projectileSpeed = GetProjectileSpeed();
+                        var aimVelocity = GetAimVelocity(cleaveHit, projectileSpeed);
+                        var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+                        var velocity = CalculateProjectileVelocity(localOrigin, cleaveHit, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+                        LaunchProjectile(launcher, ammo, cleaveHit, origin, orientation, velocity);
                         UpdateAmmoAfterLaunch(ammo);
-                        TryProcEquippedItems(this, cleaveHit, false, weapon);
                     }
                 }
 
@@ -273,7 +277,12 @@ namespace ACE.Server.WorldObjects
                     {
                         foreach (var m in GetMissileAoETarget(aoeTarget, weapon))
                         {
-                            LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
+                            var projectileSpeed = GetProjectileSpeed();
+                            var aimVelocity = GetAimVelocity(m, projectileSpeed);
+                            var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+                            var velocity = CalculateProjectileVelocity(localOrigin, m, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+                            LaunchProjectile(launcher, ammo, m, origin, orientation, velocity);
                         }
                     }
                 }  

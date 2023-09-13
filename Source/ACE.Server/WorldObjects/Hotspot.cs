@@ -168,16 +168,19 @@ namespace ACE.Server.WorldObjects
         {
             foreach (var creatureGuid in Creatures.ToList())
             {
-                var creature = CurrentLandblock.GetObject(creatureGuid) as Creature;
-
-                // verify current state of collision here
-                if (creature == null || !creature.PhysicsObj.is_touching(PhysicsObj))
+                if (CurrentLandblock != null)
                 {
-                    //Console.WriteLine($"{Name} ({Guid}).OnCollideObjectEnd({creature?.Name})");
-                    Creatures.Remove(creatureGuid);
-                    continue;
+                    var creature = CurrentLandblock.GetObject(creatureGuid) as Creature;
+
+                    // verify current state of collision here
+                    if (creature == null || !creature.PhysicsObj.is_touching(PhysicsObj))
+                    {
+                        //Console.WriteLine($"{Name} ({Guid}).OnCollideObjectEnd({creature?.Name})");
+                        Creatures.Remove(creatureGuid);
+                        continue;
+                    }
+                    Activate(creature);
                 }
-                Activate(creature);
             }
         }
 

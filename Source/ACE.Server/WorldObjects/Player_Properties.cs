@@ -1688,6 +1688,36 @@ namespace ACE.Server.WorldObjects
             set { if (!value) RemoveProperty(PropertyBool.TankBuffedTimer); else SetProperty(PropertyBool.TankBuffedTimer, value); }
         }
 
+        public bool IsMonk
+        {
+            get => GetProperty(PropertyBool.IsMonk) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsMonk); else SetProperty(PropertyBool.IsMonk, value); }
+        }
+
+        public double LastDamageBuffTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastDamageBuffTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastDamageBuffTimestamp); else SetProperty(PropertyFloat.LastDamageBuffTimestamp, value); }
+        }
+
+        public bool IsDamageBuffed
+        {
+            get => GetProperty(PropertyBool.IsDamageBuffed) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsDamageBuffed); else SetProperty(PropertyBool.IsDamageBuffed, value); }
+        }
+
+        public int DamageRatingIncrease
+        {
+            get => GetProperty(PropertyInt.DamageRatingIncrease) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.DamageRatingIncrease); else SetProperty(PropertyInt.DamageRatingIncrease, value); }
+        }
+
+        public bool DamageBuffedTimer
+        {
+            get => GetProperty(PropertyBool.DamageBuffedTimer) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.DamageBuffedTimer); else SetProperty(PropertyBool.DamageBuffedTimer, value); }
+        }
+
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

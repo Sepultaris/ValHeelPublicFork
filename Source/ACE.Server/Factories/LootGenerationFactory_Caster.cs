@@ -220,6 +220,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.3f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.2f);
                 wo.SetProperty(PropertyBool.Empowered, true);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 396);
             }
             if (profile.Tier == 9 && isMagical && hasdamagemod > 0 && profile.TreasureType == 4111)
             {
@@ -242,7 +243,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
                 wo.SetProperty(PropertyBool.Proto, true);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 400);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 589);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -280,7 +281,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.3f);
                 wo.Arramoran = true;
-                wo.SetProperty(PropertyInt.WieldDifficulty, 415);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 984);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 

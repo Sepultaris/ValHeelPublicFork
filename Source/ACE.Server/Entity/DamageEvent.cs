@@ -11,6 +11,8 @@ using ACE.Entity.Models;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
+using ACE.Server.Factories;
+using ACE.Database;
 
 namespace ACE.Server.Entity
 {
@@ -149,8 +151,19 @@ namespace ACE.Server.Entity
             var damageEvent = new DamageEvent();
             damageEvent.AttackMotion = attackMotion;
             damageEvent.AttackHook = attackHook;
-            if (damageSource == null)
+            if (damageSource == null && attacker is Player player && player.IsMonk)
+            {
+                var newMonkWeaponWeenie = DatabaseManager.World.GetCachedWeenie(300502);
+                var monkWeapon = WorldObjectFactory.CreateNewWorldObject(newMonkWeaponWeenie);
+
+                monkWeapon.Damage = (int?)(attacker.GetCreatureSkill(Skill.FinesseWeapons).Current / 10.0f);
+
+                damageSource = monkWeapon;
+            }
+            else if (damageSource == null)
+            {
                 damageSource = attacker;
+            }
 
             var damage = damageEvent.DoCalculateDamage(attacker, defender, damageSource);
 
@@ -369,7 +382,9 @@ namespace ACE.Server.Entity
             }
             else if (defender.IsTank)
             {
-                Damage = Damage - Damage * 0.2f;
+                var newDamage = Damage - Damage * 0.50f;
+
+                Damage = newDamage;
                 return Damage;
             }
             // DPS
@@ -380,7 +395,9 @@ namespace ACE.Server.Entity
             }
             else if (defender.IsDps)
             {
-                Damage = Damage + Damage * 0.33f;
+                var newDamage = Damage - Damage * 0.25f;
+
+                Damage = newDamage;
                 return Damage;
             }
             // Healer
@@ -391,12 +408,18 @@ namespace ACE.Server.Entity
             }
             else if (defender.IsHealer)
             {
-                Damage = Damage + Damage * 0.2f;
+                var newDamage = Damage - Damage * 0.35f;
+
+                Damage = newDamage;
                 return Damage;
             }
             else
+            {
+                var newDamage = Damage - Damage * 0.35f;
 
-            return Damage;
+                Damage = newDamage;
+                return Damage;
+            }
         }
 
         public Quadrant GetQuadrant(Creature defender, Creature attacker, AttackHeight attackHeight, WorldObject damageSource)

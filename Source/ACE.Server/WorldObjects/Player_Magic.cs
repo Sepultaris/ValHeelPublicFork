@@ -1392,7 +1392,6 @@ namespace ACE.Server.WorldObjects
                             foreach (var cleaveHit in cleave)
                             {
                                 WarMagic(cleaveHit, spell, caster, isWeaponSpell);
-                                TryProcEquippedItems(this, cleaveHit, false, caster);
                             }
                             if (IsDps && warChannelChance >= warChannelRoll)
                             {
@@ -1432,7 +1431,6 @@ namespace ACE.Server.WorldObjects
                             {
 
                                 VoidMagic(cleaveHit, spell, caster, isWeaponSpell);
-                                TryProcEquippedItems(this, cleaveHit, false, caster);
                             }
                             break;
                         }

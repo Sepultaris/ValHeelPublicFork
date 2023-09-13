@@ -1140,14 +1140,14 @@ namespace ACE.Server.Factories
                     wo.SetProperty(PropertyBool.Empowered, true);
                     wo.SetProperty(PropertyString.Name, name);
                     wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                    wo.SetProperty(PropertyInt.WieldDifficulty, 350);
+                    wo.SetProperty(PropertyInt.WieldDifficulty, 275);
                 }
                 if (profile.TreasureType == 4111)
                 {
                     wo.SetProperty(PropertyBool.Proto, true);
                     wo.SetProperty(PropertyString.Name, name);
                     wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                    wo.SetProperty(PropertyInt.WieldDifficulty, 425);
+                    wo.SetProperty(PropertyInt.WieldDifficulty, 700);
                 }
 
             }
@@ -1171,7 +1171,7 @@ namespace ACE.Server.Factories
                     wo.SetProperty(PropertyBool.Arramoran, true);
                     wo.SetProperty(PropertyString.Name, name);
                     wo.SetProperty(PropertyInt.WieldRequirements, 7);
-                    wo.SetProperty(PropertyInt.WieldDifficulty, 600);
+                    wo.SetProperty(PropertyInt.WieldDifficulty, 1500);
                     AssignMagic(wo, profile, roll, true);
                 }
 

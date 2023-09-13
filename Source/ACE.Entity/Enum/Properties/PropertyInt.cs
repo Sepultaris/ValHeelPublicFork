@@ -683,6 +683,7 @@ namespace ACE.Entity.Enum.Properties
         DoTOwnerGuid = 9056,
         NumOfChannelCasts = 9057,
         TankDefenseRatingIncrease = 9058,
+        DamageRatingIncrease = 9059,
     }
 
     public static class PropertyIntExtensions

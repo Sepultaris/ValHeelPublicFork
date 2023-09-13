@@ -584,14 +584,14 @@ namespace ACE.Server.WorldObjects
                 finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod;
                 return finalDamage;
             }
-            if (sourceCreature.Overpower != null)
+            /*if (sourceCreature.Overpower != null)
             {
                 finalDamage = finalDamage * ((int)(sourceCreature.Overpower * 0.16f + 1) + ((int)(sourceCreature.Level * 0.005f) * 20.1f));
             }
             if (target.Overpower != null)
             {
                 finalDamage = finalDamage / ((int)(target.OverpowerResist * 0.16f + 1) + ((int)(target.Level * 0.005f) * 20.1f));
-            }
+            }*/
             return finalDamage;
         }
 

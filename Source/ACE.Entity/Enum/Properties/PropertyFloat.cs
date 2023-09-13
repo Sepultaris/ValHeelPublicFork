@@ -255,7 +255,7 @@ namespace ACE.Entity.Enum.Properties
         MeleeDoTChance                 = 8038,
         MissileAoEChance               = 8039,
         LastTankBuffTimestamp          = 8040,
-
+        LastDamageBuffTimestamp        = 8041,
     }
 
     public static class PropertyFloatExtensions

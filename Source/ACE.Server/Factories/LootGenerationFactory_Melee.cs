@@ -192,6 +192,7 @@ namespace ACE.Server.Factories
                 if (cleavingRoll <= 0.1f)
                     wo.SetProperty(PropertyInt.Cleaving, 3);
                 wo.Empowered = true;
+                wo.SetProperty(PropertyInt.WieldDifficulty, 453);
             }
             if (profile.Tier == 9 && empowered <= 0.5f && isMagical && attacktype > 25 && profile.TreasureType == 3111 && wo.Empowered == false || profile.Tier == 9 && isMagical && attacktype > 25 && profile.TreasureType == 3112 && wo.Empowered == false)
             {
@@ -214,6 +215,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.3f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.2f);
                 wo.Empowered = true;
+                wo.SetProperty(PropertyInt.WieldDifficulty, 453);
             }
             if (profile.Tier == 9 && empowered <= 0.5f && isMagical && profile.TreasureType == 3111 && wo.Empowered == false || profile.Tier == 9 && isMagical && profile.TreasureType == 3112 && wo.Empowered == false)
             {
@@ -236,6 +238,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.3f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.2f);
                 wo.Empowered = true;
+                wo.SetProperty(PropertyInt.WieldDifficulty, 453);
             }
             if (profile.Tier == 9 && empowered <= 0.5f && isMagical && profile.TreasureType == 3111 && wo.Empowered == false && wo.WieldSkillType == 41 && !wo.IsCleaving || profile.Tier == 9 && isMagical && profile.TreasureType == 3112 && wo.Empowered == false && wo.WieldSkillType == 41 && !wo.IsCleaving)
             {
@@ -258,6 +261,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.3f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.2f);
                 wo.Empowered = true;
+                wo.SetProperty(PropertyInt.WieldDifficulty, 453);
             }
             // Proto Weapons
             if (profile.Tier == 9 && isMagical && cleaving > 1 && profile.TreasureType == 4111)
@@ -281,7 +285,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
                 wo.SetProperty(PropertyInt.Cleaving, 3);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 450);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 651);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -317,7 +321,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 450);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 651);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -357,7 +361,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 450);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 651);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -397,7 +401,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyInt.Damage, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 450);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 651);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -436,7 +440,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.3f);
                 wo.SetProperty(PropertyInt.Cleaving, 3);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 480);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 1046);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -540,7 +544,7 @@ namespace ACE.Server.Factories
                 wo.Sockets = 1;
                 wo.SetProperty(PropertyString.Name, name);                
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);              
-                wo.SetProperty(PropertyInt.WieldDifficulty, 480);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 1046);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
