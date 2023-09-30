@@ -181,6 +181,7 @@ namespace ACE.Server.WorldObjects
                     killPets.EnqueueChain();
                 }
 
+                // Ability Items
                 if (item.IsAbilityItem)
                     DoAbility(this, item);
 

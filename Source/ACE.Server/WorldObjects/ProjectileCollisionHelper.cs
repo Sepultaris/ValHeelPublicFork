@@ -41,20 +41,14 @@ namespace ACE.Server.WorldObjects
                     // player damage monster or player
                     damageEvent = sourcePlayer.DamageTarget(targetCreature, worldObject);
 
-                    
-                    
-
                     if (damageEvent != null && damageEvent.HasDamage)
                         worldObject.EnqueueBroadcast(new GameMessageSound(worldObject.Guid, Sound.Collision, 1.0f));
+
                     if (worldObject.ProcSpell.HasValue)
                     {
                         var spell = new Spell(worldObject.ProcSpell.Value);
-                        worldObject.TryCastSpell(spell, targetCreature, worldObject, null);
+                        worldObject.TryCastSpell(spell, targetCreature);
                     }
-                        
-
-
-
                 }
                 else if (sourceCreature != null && sourceCreature.AttackTarget != null)
                 {

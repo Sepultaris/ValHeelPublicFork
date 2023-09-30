@@ -341,9 +341,27 @@ namespace ACE.Server.WorldObjects
                     // perform next attack
                     nextAttack.AddAction(this, () => { LaunchMissile(target, attackSequence, stance, true); });
                     nextAttack.EnqueueChain();
+
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
                 }
                 else
+                {
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
+
                     OnAttackDone();
+                }
             });
 
             actionChain.EnqueueChain();

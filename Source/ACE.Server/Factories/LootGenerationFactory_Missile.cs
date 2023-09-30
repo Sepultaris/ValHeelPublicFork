@@ -175,7 +175,7 @@ namespace ACE.Server.Factories
                 if (cleavingRoll <= 0.1f)
                     wo.SetProperty(PropertyInt.Cleaving, 2);
                 wo.Empowered = true;
-                wo.SetProperty(PropertyInt.WieldDifficulty, 401);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 392);
 
             }
             // Proto Missile Weapons
@@ -201,7 +201,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 594);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 497);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 
@@ -241,7 +241,7 @@ namespace ACE.Server.Factories
                 wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
                 wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);
                 wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.3f);
-                wo.SetProperty(PropertyInt.WieldDifficulty, 989);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 697);
 
                 wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
 

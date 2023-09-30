@@ -272,60 +272,112 @@ namespace ACE.Server.WorldObjects
 
                 return;
             }
-
-            if (!IsHot && WeenieClassId != 300501) return;
-
-            var amount = DamageNext;
-            var iAmount = (int)Math.Round(amount);
-
-            var player = creature as Player;
-
-            switch (DamageType)
+            if (WeenieClassId == 300503)
             {
-                default:
+                var amount1 = DamageNext;
+                var iAmount1 = (int)Math.Round(amount1);
 
-                    if (creature.Invincible) return;
+                var player1 = creature as Player;
 
-                    amount *= creature.GetResistanceMod(DamageType, this, null);
+                switch (DamageType)
+                {
+                    default:
 
-                    if (player != null)
-                        iAmount = player.TakeDamage(this, DamageType, amount, Server.Entity.BodyPart.Foot);
-                    else
-                        iAmount = (int)creature.TakeDamage(this, DamageType, amount);
+                        if (creature.Invincible) return;
 
-                    if (creature.IsDead && Creatures.Contains(creature.Guid))
-                        Creatures.Remove(creature.Guid);
+                        amount1 *= creature.GetResistanceMod(DamageType, this, null);
 
-                    break;
+                        if (player1 != null)
+                            iAmount1 = player1.TakeDamage(this, DamageType, amount1, Server.Entity.BodyPart.Foot);
+                        else
+                            iAmount1 = (int)creature.TakeDamage(this, DamageType, amount1);
 
-                case DamageType.Mana:
-                    iAmount = creature.UpdateVitalDelta(creature.Mana, -iAmount);
-                    break;
+                        if (creature.IsDead && Creatures.Contains(creature.Guid))
+                            Creatures.Remove(creature.Guid);
 
-                case DamageType.Stamina:
-                    iAmount = creature.UpdateVitalDelta(creature.Stamina, -iAmount);
-                    break;
+                        break;
 
-                case DamageType.Health:
-                    iAmount = creature.UpdateVitalDelta(creature.Health, -iAmount);
+                    case DamageType.Mana:
+                        iAmount1 = creature.UpdateVitalDelta(creature.Mana, -iAmount1);
+                        break;
 
-                    if (iAmount > 0)
-                        creature.DamageHistory.OnHeal((uint)iAmount);
-                    else
-                        creature.DamageHistory.Add(this, DamageType.Health, (uint)-iAmount);
+                    case DamageType.Stamina:
+                        iAmount1 = creature.UpdateVitalDelta(creature.Stamina, -iAmount1);
+                        break;
 
-                    break;
+                    case DamageType.Health:
+                        iAmount1 = creature.UpdateVitalDelta(creature.Health, -iAmount1);
+
+                        foreach (var p in PlayerManager.GetAllOnline())
+                        {
+                            if (DoTOwnerGuid == p.Guid.Full && iAmount1 != 0)
+                            {
+                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"** Life Well heals {creature.Name} for {iAmount1} points of Health. **", ChatMessageType.CombatSelf));
+                            }
+                        }
+
+                        if (iAmount1 > 0)
+                            creature.DamageHistory.OnHeal((uint)iAmount1);
+                        else
+                            creature.DamageHistory.Add(this, DamageType.Health, (uint)-iAmount1);
+
+                        break;
+                }
             }
+            else
+            {
+                var amount = DamageNext;
+                var iAmount = (int)Math.Round(amount);
 
-            if (!Visibility)
-                EnqueueBroadcast(new GameMessageSound(Guid, Sound.TriggerActivated, 1.0f));
+                var player = creature as Player;
 
-            if (player != null && !string.IsNullOrWhiteSpace(ActivationTalk) && iAmount != 0)
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat(ActivationTalk.Replace("%i", Math.Abs(iAmount).ToString()), ChatMessageType.Broadcast));
+                switch (DamageType)
+                {
+                    default:
 
-            // perform activation emote
-            if (ActivationResponse.HasFlag(ActivationResponse.Emote))
-                OnEmote(creature);
+                        if (creature.Invincible) return;
+
+                        amount *= creature.GetResistanceMod(DamageType, this, null);
+
+                        if (player != null)
+                            iAmount = player.TakeDamage(this, DamageType, amount, Server.Entity.BodyPart.Foot);
+                        else
+                            iAmount = (int)creature.TakeDamage(this, DamageType, amount);
+
+                        if (creature.IsDead && Creatures.Contains(creature.Guid))
+                            Creatures.Remove(creature.Guid);
+
+                        break;
+
+                    case DamageType.Mana:
+                        iAmount = creature.UpdateVitalDelta(creature.Mana, -iAmount);
+                        break;
+
+                    case DamageType.Stamina:
+                        iAmount = creature.UpdateVitalDelta(creature.Stamina, -iAmount);
+                        break;
+
+                    case DamageType.Health:
+                        iAmount = creature.UpdateVitalDelta(creature.Health, -iAmount);
+
+                        if (iAmount > 0)
+                            creature.DamageHistory.OnHeal((uint)iAmount);
+                        else
+                            creature.DamageHistory.Add(this, DamageType.Health, (uint)-iAmount);
+
+                        break;
+                }
+
+                if (!Visibility)
+                    EnqueueBroadcast(new GameMessageSound(Guid, Sound.TriggerActivated, 1.0f));
+
+                if (player != null && !string.IsNullOrWhiteSpace(ActivationTalk) && iAmount != 0)
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat(ActivationTalk.Replace("%i", Math.Abs(iAmount).ToString()), ChatMessageType.Broadcast));
+
+                // perform activation emote
+                if (ActivationResponse.HasFlag(ActivationResponse.Emote))
+                    OnEmote(creature);
+            }
         }
     }
 }

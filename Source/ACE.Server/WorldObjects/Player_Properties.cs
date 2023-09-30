@@ -1718,6 +1718,48 @@ namespace ACE.Server.WorldObjects
             set { if (!value) RemoveProperty(PropertyBool.DamageBuffedTimer); else SetProperty(PropertyBool.DamageBuffedTimer, value); }
         }
 
+        public int HoTsTicked
+        {
+            get => GetProperty(PropertyInt.HoTsTicked) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.HoTsTicked); else SetProperty(PropertyInt.HoTsTicked, value); }
+        }
+
+        public bool Brutalize
+        {
+            get => GetProperty(PropertyBool.Brutalize) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Brutalize); else SetProperty(PropertyBool.Brutalize, value); }
+        }
+
+        public double LastBrutalizeTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastBrutalizeTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastBrutalizeTimestamp); else SetProperty(PropertyFloat.LastBrutalizeTimestamp, value); }
+        }
+
+        public bool DoBrutalizeAttack
+        {
+            get => GetProperty(PropertyBool.DoBrutalizeAttack) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.DoBrutalizeAttack); else SetProperty(PropertyBool.DoBrutalizeAttack, value); }
+        }
+
+        public double BrutalizeTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.BrutalizeTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.BrutalizeTimestamp); else SetProperty(PropertyFloat.BrutalizeTimestamp, value); }
+        }
+
+        public double LastLifeWellTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastLifeWellTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastLifeWellTimestamp); else SetProperty(PropertyFloat.LastLifeWellTimestamp, value); }
+        }
+
+        public bool LifeWell
+        {
+            get => GetProperty(PropertyBool.LifeWell) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.LifeWell); else SetProperty(PropertyBool.LifeWell, value); }
+        }
+
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

@@ -855,8 +855,11 @@ namespace ACE.Server.WorldObjects
                 TryBurnComponents(spell);
 
             // check windup move distance cap
-            var dist = StartPos.Distance(PhysicsObj.Position);
-
+            var dist = 0;
+            if (StartPos == null)
+                dist = 0;
+            else
+                dist = (int)StartPos.Distance(PhysicsObj.Position);
             // only PKs affected by these caps?
             if (dist > Windup_MaxMove && PlayerKillerStatus != PlayerKillerStatus.NPK)
             {

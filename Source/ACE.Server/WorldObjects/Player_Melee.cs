@@ -16,6 +16,7 @@ using ACE.Common;
 using ACE.Entity;
 using ACE.Entity.Models;
 using ACE.Database;
+using ACE.DatLoader.Entity;
 
 namespace ACE.Server.WorldObjects
 {
@@ -619,6 +620,13 @@ namespace ACE.Server.WorldObjects
                             IsTankBuffed = true;
                         }
                     }
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
                 }
                 else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon.IsGunblade == true)
                 {
@@ -650,6 +658,13 @@ namespace ACE.Server.WorldObjects
                         {
                             IsTankBuffed = true;
                         }
+                    }
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
                     }
                 }
 
@@ -684,9 +699,26 @@ namespace ACE.Server.WorldObjects
                             IsTankBuffed = true;
                         }
                     }
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
                 }
                 else
+                {
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
+
                     OnAttackDone();
+                }
             });
 
             actionChain.EnqueueChain();
@@ -893,6 +925,13 @@ namespace ACE.Server.WorldObjects
                             IsTankBuffed = true;
                         }
                     }
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
                 }
 
                 else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled)
@@ -926,9 +965,26 @@ namespace ACE.Server.WorldObjects
                             IsTankBuffed = true;
                         }
                     }
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
                 }
                 else
+                {
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
+
                     OnAttackDone();
+                }
             });
 
             actionChain.EnqueueChain();

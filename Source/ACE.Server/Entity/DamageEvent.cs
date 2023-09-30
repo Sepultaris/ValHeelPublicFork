@@ -372,7 +372,37 @@ namespace ACE.Server.Entity
             if (defender is Player pDefender && pDefender.Hardcore)
                 Damage = Damage + Damage * 0.33f;
 
-            // Class Damage Modifiers
+            // Brutalize damage mod
+            if (attacker is Player pAttacker && pAttacker.DoBrutalizeAttack)
+            {
+                var ammo = pAttacker.GetEquippedAmmo();
+                var launcher = pAttacker.GetEquippedMissileLauncher();
+                var caster = pAttacker.GetEquippedWand();
+
+                // Melee
+                if (damageSource == pAttacker.GetEquippedWeapon())
+                {
+                    var burtalizeDamage = Damage * 5.0f;
+
+                    Damage = burtalizeDamage;
+                }
+                // Missile
+                if (ammo != null && launcher != null && damageSource.ProjectileLauncher == launcher)
+                {
+                    var burtalizeDamage = Damage * 5.0f;
+
+                    Damage = burtalizeDamage;
+                }
+                // Magic
+                if (caster != null && damageSource.ProjectileSource == pAttacker.GetEquippedWand())
+                {
+                    var burtalizeDamage = Damage * 5.0f;
+
+                    Damage = burtalizeDamage;
+                }
+            }
+
+            /// Class Damage Modifiers
 
             // Tank
             if (attacker.IsTank)

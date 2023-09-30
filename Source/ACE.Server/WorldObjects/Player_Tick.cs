@@ -18,6 +18,7 @@ using ACE.Server.Network.Structure;
 using ACE.Server.Physics;
 using ACE.Server.Physics.Common;
 using ACE.Server.ValheelMods;
+using Google.Protobuf.WellKnownTypes;
 
 namespace ACE.Server.WorldObjects
 {
@@ -337,6 +338,12 @@ namespace ACE.Server.WorldObjects
         {
             var session = Session;
             var visibleCreatures = PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature();
+            var currentLandblock = player.CurrentLandblock;
+
+            foreach (var creature in visibleCreatures)
+            {
+                
+            }
 
             // Remove combat pets that are no longer visible and decrease player's pet count
             for (int i = CombatPets.Count - 1; i >= 0; i--)

@@ -388,6 +388,9 @@ namespace ACE.Server.WorldObjects
             if (source == null || !target.IsAlive || targetPlayer != null && targetPlayer.Invincible)
                 return null;
 
+            if (source.CombatUse == ACE.Entity.Enum.CombatUse.Ammo && source.ProjectileLauncher != null)
+                sourcePlayer = (Player)source.ProjectileLauncher.Wielder;
+
             // check lifestone protection
             if (targetPlayer != null && targetPlayer.UnderLifestoneProtection)
             {
@@ -584,6 +587,19 @@ namespace ACE.Server.WorldObjects
                 finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod;
                 return finalDamage;
             }
+            // Brutalize Mod
+            if (sourcePlayer != null && sourcePlayer.DoBrutalizeAttack)
+            {
+                var burtalizeDamage = finalDamage * 5.0f;
+                var currentUnixTime = Time.GetUnixTime();
+
+                sourcePlayer.DoBrutalizeAttack = false;
+                sourcePlayer.LastBrutalizeTimestamp = currentUnixTime;
+                sourcePlayer.PlayParticleEffect(PlayScript.EnchantDownRed, sourcePlayer.Guid);
+
+                finalDamage = burtalizeDamage;
+            }
+
             /*if (sourceCreature.Overpower != null)
             {
                 finalDamage = finalDamage * ((int)(sourceCreature.Overpower * 0.16f + 1) + ((int)(sourceCreature.Level * 0.005f) * 20.1f));

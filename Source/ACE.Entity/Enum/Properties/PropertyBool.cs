@@ -240,6 +240,9 @@ namespace ACE.Entity.Enum.Properties
         IsDamageBuffed                   = 9044,
         DamageBuffedTimer                = 9045,
         IsAbilityItem                    = 9046,
+        Brutalize                        = 9047,
+        DoBrutalizeAttack                = 9048,
+        LifeWell                         = 9049,
     }
 
     public static class PropertyBoolExtensions

@@ -684,6 +684,7 @@ namespace ACE.Entity.Enum.Properties
         NumOfChannelCasts = 9057,
         TankDefenseRatingIncrease = 9058,
         DamageRatingIncrease = 9059,
+        HoTsTicked = 9060,
     }
 
     public static class PropertyIntExtensions
