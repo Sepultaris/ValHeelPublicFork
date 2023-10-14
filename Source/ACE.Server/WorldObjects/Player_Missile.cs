@@ -264,7 +264,7 @@ namespace ACE.Server.WorldObjects
                     }
                 }
 
-                if (IsDps)
+                if (DoMissileAoE)
                 {
                     LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
 
@@ -285,6 +285,8 @@ namespace ACE.Server.WorldObjects
                             LaunchProjectile(launcher, ammo, m, origin, orientation, velocity);
                         }
                     }
+
+                    DoMissileAoE = false;
                 }  
             });       
 

@@ -1760,6 +1760,78 @@ namespace ACE.Server.WorldObjects
             set { if (!value) RemoveProperty(PropertyBool.LifeWell); else SetProperty(PropertyBool.LifeWell, value); }
         }
 
+        public bool Stealth
+        {
+            get => GetProperty(PropertyBool.Stealth) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Stealth); else SetProperty(PropertyBool.Stealth, value); }
+        }
+
+        public bool IsSneaking
+        {
+            get => GetProperty(PropertyBool.IsSneaking) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsSneaking); else SetProperty(PropertyBool.IsSneaking, value); }
+        }
+
+        public double LastSneakTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastSneakTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastSneakTimestamp); else SetProperty(PropertyFloat.LastSneakTimestamp, value); }
+        }
+
+        public double LastTauntTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastTauntTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastTauntTimestamp); else SetProperty(PropertyFloat.LastTauntTimestamp, value); }
+        }
+
+        public bool TauntTimerActive
+        {
+            get => GetProperty(PropertyBool.TauntTimerActive) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.TauntTimerActive); else SetProperty(PropertyBool.TauntTimerActive, value); }
+        }
+
+        public bool IsHoTCasting
+        {
+            get => GetProperty(PropertyBool.IsHoTCasting) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsHoTCasting); else SetProperty(PropertyBool.IsHoTCasting, value); }
+        }
+
+        public bool IsSoTCasting
+        {
+            get => GetProperty(PropertyBool.IsSoTCasting) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsSoTCasting); else SetProperty(PropertyBool.IsSoTCasting, value); }
+        }
+
+        public double LastHoTCastTimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastHoTCastTimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastHoTCastTimestamp); else SetProperty(PropertyFloat.LastHoTCastTimestamp, value); }
+        }
+
+        public int HoTLevel
+        {
+            get => GetProperty(PropertyInt.HoTLevel) ?? 1;
+            set { if (value == 0) RemoveProperty(PropertyInt.HoTLevel); else SetProperty(PropertyInt.HoTLevel, value); }
+        }
+
+        public bool MissileAoE
+        {
+            get => GetProperty(PropertyBool.MissileAoE) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.MissileAoE); else SetProperty(PropertyBool.MissileAoE, value); }
+        }
+
+        public double LastMissileAoETimestamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LastMissileAoETimestamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LastMissileAoETimestamp); else SetProperty(PropertyFloat.LastMissileAoETimestamp, value); }
+        }
+
+        public bool DoMissileAoE
+        {
+            get => GetProperty(PropertyBool.DoMissileAoE) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.DoMissileAoE); else SetProperty(PropertyBool.DoMissileAoE, value); }
+        }
+
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

@@ -15,6 +15,7 @@ namespace ACE.Server.Entity
         public readonly int DoTOwnerGuid;
 
         public float TotalDamage;
+        public float TotalThreat;
 
         public readonly WeakReference<Player> PetOwner;
 
@@ -29,6 +30,22 @@ namespace ACE.Server.Entity
             DoTOwnerGuid = attacker.DoTOwnerGuid;
 
             TotalDamage = totalDamage;
+            TotalThreat = totalDamage;
+
+            var tankTotalThreatMod = 5.0f;
+
+            if (attacker is Player player)
+            {
+                if (player.IsTank)
+                {
+                    if (player.TauntTimerActive)
+                        tankTotalThreatMod = 10.0f;
+
+                    TotalThreat *= tankTotalThreatMod;
+                }
+                else
+                    TotalThreat *= totalDamage * 0.5f;
+            }
 
             if (attacker is CombatPet combatPet && combatPet.P_PetOwner != null)
                 PetOwner = new WeakReference<Player>(combatPet.P_PetOwner);

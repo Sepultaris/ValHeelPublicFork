@@ -102,6 +102,8 @@ namespace ACE.Server.Entity
 
         public float DamageMitigated;
 
+        public float Threat;
+
         // creature attacker
         public MotionCommand? AttackMotion;
         public AttackHook AttackHook;
@@ -151,21 +153,22 @@ namespace ACE.Server.Entity
             var damageEvent = new DamageEvent();
             damageEvent.AttackMotion = attackMotion;
             damageEvent.AttackHook = attackHook;
-            if (damageSource == null && attacker is Player player && player.IsMonk)
-            {
-                var newMonkWeaponWeenie = DatabaseManager.World.GetCachedWeenie(300502);
-                var monkWeapon = WorldObjectFactory.CreateNewWorldObject(newMonkWeaponWeenie);
 
-                monkWeapon.Damage = (int?)(attacker.GetCreatureSkill(Skill.FinesseWeapons).Current / 10.0f);
-
-                damageSource = monkWeapon;
-            }
-            else if (damageSource == null)
-            {
+            if (damageSource == null)
                 damageSource = attacker;
-            }
 
             var damage = damageEvent.DoCalculateDamage(attacker, defender, damageSource);
+
+            // Threat calculation
+            if (attacker is Player p && p.IsTank)
+            {
+                if (p.TauntTimerActive)
+                    damageEvent.Threat += damage * 10.0f;
+                else
+                    damageEvent.Threat += damage * 5.0f;
+            }
+            else
+                damageEvent.Threat += damage * 0.5f;
 
             damageEvent.HandleLogging(attacker, defender);
 
@@ -256,7 +259,7 @@ namespace ACE.Server.Entity
             if (playerDefender != null && (playerDefender.IsLoggingOut || playerDefender.PKLogout))
                 CriticalChance = 1.0f;
 
-            if (CriticalChance > ThreadSafeRandom.Next(0.0f, 1.0f))
+            if (CriticalChance > ThreadSafeRandom.Next(0.0f, 1.0f) || playerAttacker != null && playerAttacker.IsSneaking)
             {
                 if (playerDefender != null && playerDefender.AugmentationCriticalDefense > 0)
                 {
@@ -399,6 +402,33 @@ namespace ACE.Server.Entity
                     var burtalizeDamage = Damage * 5.0f;
 
                     Damage = burtalizeDamage;
+                }
+            }
+
+            /// Global Damage Modifiers
+
+            //monster damage mod
+            if (playerDefender != null)
+            {
+                if (attacker != null && attacker.IsMonster)
+                {
+                    double globalDamageMod = PropertyManager.GetDouble("global_monster_damage_mod").Item;
+                    Damage = Damage * (float)globalDamageMod;
+                }
+            }
+            //player damage mod
+            if (playerAttacker != null)
+            {
+                if (defender != null && defender.IsMonster)
+                {
+                    double globalDamageMod = PropertyManager.GetDouble("global_player_damage_mod").Item;
+                    Damage = Damage * (float)globalDamageMod;
+                }
+                //pvp damage mod
+                if (defender != null && defender is Player)
+                {
+                    double globalDamageMod = PropertyManager.GetDouble("global_pvp_damage_mod").Item;
+                    Damage = Damage * (float)globalDamageMod;
                 }
             }
 

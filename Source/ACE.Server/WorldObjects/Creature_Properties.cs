@@ -373,5 +373,11 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyBool.IsHealer) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.IsHealer); else SetProperty(PropertyBool.IsHealer, value); }
         }
+
+        public bool IsTaunting
+        {
+            get => GetProperty(PropertyBool.IsTaunting) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsTaunting); else SetProperty(PropertyBool.IsTaunting, value); }
+        }
     }
 }

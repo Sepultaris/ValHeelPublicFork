@@ -268,8 +268,8 @@ namespace ACE.Server
             log.Info("Initializing EventManager...");
             EventManager.Initialize();
 
-            log.Info("Initializing Discord Relay...");
-            ValheelMods.DiscordRelay.Initialize();
+            //log.Info("Initializing Discord Relay...");
+            //ValheelMods.DiscordRelay.Initialize();
 
             log.Info("Initializing ValHeel Currency Market...");
             ValheelMods.ValHeelCurrencyMarket.InitializeCurrencyValues();

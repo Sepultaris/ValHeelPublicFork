@@ -259,6 +259,10 @@ namespace ACE.Entity.Enum.Properties
         LastBrutalizeTimestamp         = 8042,
         BrutalizeTimestamp             = 8043,
         LastLifeWellTimestamp          = 8044,
+        LastSneakTimestamp             = 8045,
+        LastTauntTimestamp             = 8046,
+        LastHoTCastTimestamp           = 8047,
+        LastMissileAoETimestamp        = 8048,
     }
 
     public static class PropertyFloatExtensions

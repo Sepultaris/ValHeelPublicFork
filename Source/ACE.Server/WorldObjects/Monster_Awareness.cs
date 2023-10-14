@@ -260,6 +260,24 @@ namespace ACE.Server.WorldObjects
                             }
                         }
                         break;
+
+                    case TargetingTactic.HighestThreat:
+
+                        var highestThreat = DamageHistory.HighestThreat?.TryGetAttacker() as Creature;
+                        var topThreatDamager = DamageHistory.TopDamager?.TryGetAttacker() as Creature;
+                        if (DamageHistory.HighestThreat != null && DamageHistory.TopDamager != null)
+                        {
+                            if (DamageHistory.HighestThreat.TotalThreat > DamageHistory.TopDamager.TotalDamage)
+                                AttackTarget = highestThreat;
+                            else
+                                AttackTarget = topThreatDamager;
+                        }
+                        else
+                        {
+                            var nearestThreat = BuildTargetDistance(visibleTargets);
+                            AttackTarget = nearestThreat[0].Target;
+                        }
+                        break;
                 }
 
                 //Console.WriteLine($"{Name}.FindNextTarget = {AttackTarget.Name}");

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ACE.Common;
@@ -8,6 +9,7 @@ using ACE.DatLoader;
 using ACE.DatLoader.Entity;
 using ACE.Entity;
 using ACE.Entity.Enum;
+using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
@@ -951,6 +953,14 @@ namespace ACE.Server.WorldObjects
                     WarMagicChannel(this, (Creature)target, procSpell, numCasts, false);
                     LastWarChannelTimestamp = currentUnixTime;
                 }
+            }
+
+            if (IsSneaking == true)
+            {
+                IsSneaking = false;
+                UnSneak();
+                SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
             }
 
             if (pk_error != null && spell.NumProjectiles == 0)

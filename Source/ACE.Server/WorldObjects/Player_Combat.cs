@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common;
+using ACE.Database;
 using ACE.DatLoader.Entity;
 using ACE.Entity;
 using ACE.Entity.Enum;
@@ -13,6 +14,7 @@ using ACE.Server.Entity.Actions;
 using ACE.Server.Network.Enum;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.Factories;
 
 namespace ACE.Server.WorldObjects
 {

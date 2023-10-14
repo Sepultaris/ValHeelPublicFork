@@ -8,6 +8,7 @@ using ACE.Entity;
 using ACE.Server.Factories;
 using System.Collections.Generic;
 using ACE.Server.Command.Handlers;
+using System;
 
 namespace ACE.Server.WorldObjects
 {
@@ -18,20 +19,319 @@ namespace ACE.Server.WorldObjects
             if (abilityItem == null || player == null)
                 return;
 
-            if (abilityItem.WeenieClassId == 802918)
+            if (abilityItem.WeenieClassId == 802941)
+                player.IsDamageBuffed = true;
+
+            if (abilityItem.WeenieClassId == 802942)
                 player.Brutalize = true;
+
+            if (abilityItem.WeenieClassId == 802943)
+                player.IsTankBuffed = true;
+
+            if (abilityItem.WeenieClassId == 802944)
+                player.IsHoTCasting = true;
+
+            if (abilityItem.WeenieClassId == 802945)
+                player.IsSoTCasting = true;
+
+            if (abilityItem.WeenieClassId == 802946)
+                player.LifeWell = true;
         }
 
         public void ValHeelAbilityManager(Player player)
         {
             var currentUnixTime = Time.GetUnixTime();
 
-            player.HoTBuffHandler(currentUnixTime);
-            player.SoTBuffHandler(currentUnixTime);
-            player.DefenseRatingBuffHandler(player, currentUnixTime);
-            player.DamageRatingBuffHandler(player, currentUnixTime);
-            player.BrutalizeHandler(player, currentUnixTime);
-            player.LifeWellHandler(player, currentUnixTime);
+            player.HoTBuffHandler(currentUnixTime); // HoTs 1-8
+            player.SoTBuffHandler(currentUnixTime); // SoTs 1-8
+            player.DefenseRatingBuffHandler(player, currentUnixTime); // Bastion
+            player.DamageRatingBuffHandler(player, currentUnixTime); // Power Attack
+            player.BrutalizeHandler(player, currentUnixTime); // Brutalize
+            player.LifeWellHandler(player, currentUnixTime); // Life Well
+            player.StealthHandler(player, currentUnixTime); // Stealth
+            player.Taunting(player, currentUnixTime); // Taunt
+            player.HoTCastHandler(player, currentUnixTime); // HoT Cast
+            player.SoTCastHandler(player, currentUnixTime); // SoT Cast
+            player.MissileAoEHandler(player, currentUnixTime); // Missile AoE
+        }
+
+        public void MissileAoEHandler(Player player, double currentUnixTime)
+        {
+            if (MissileAoE == true && currentUnixTime - LastMissileAoETimestamp < 30)
+            {
+                MissileAoE = false;
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You can't use this ability yet.", ChatMessageType.Broadcast));
+            }
+
+            if (MissileAoE == true && currentUnixTime - LastMissileAoETimestamp >= 30)
+            {
+                MissileAoE = false;
+                DoMissileAoE = true;
+                LastMissileAoETimestamp = currentUnixTime;
+            }
+
+            if (DoMissileAoE == true && currentUnixTime - LastMissileAoETimestamp >= 10)
+            {
+                DoMissileAoE = false;
+            }
+        }
+
+        public void HoTCastHandler (Player player, double currentUnixTime)
+        {
+            if (player.IsHoTCasting == true && currentUnixTime - player.LastHoTCastTimestamp < 30)
+            {
+                player.IsHoTCasting = false;
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You can't use this ability yet.", ChatMessageType.Broadcast));
+            }
+
+            if (player.IsHoTCasting == true && currentUnixTime - player.LastHoTCastTimestamp >= 30)
+            {
+                player.IsHoTCasting = false;
+                player.LastHoTCastTimestamp = currentUnixTime;
+
+                var spellLevel = GetHoTLevel(player);
+
+                LifeMagicHot(player, spellLevel);
+            }
+        }
+
+        public void SoTCastHandler(Player player, double currentUnixTime)
+        {
+            if (player.IsSoTCasting == true && currentUnixTime - player.LastHoTCastTimestamp < 30)
+            {
+                player.IsSoTCasting = false;
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You can't use this ability yet.", ChatMessageType.Broadcast));
+            }
+
+            if (player.IsSoTCasting == true && currentUnixTime - player.LastHoTCastTimestamp >= 30)
+            {
+                player.IsSoTCasting = false;
+                player.LastHoTCastTimestamp = currentUnixTime;
+
+                var spellLevel = GetHoTLevel(player);
+
+                LifeMagicSot(player, spellLevel);
+            }
+        }
+
+        public int GetHoTLevel(Player player)
+        {
+            int hotLevel = (int)player.GetCreatureSkill(Skill.LifeMagic).Base / 10;
+
+            if (hotLevel <= 0)
+                hotLevel = 1;
+            if (hotLevel > 8)
+                hotLevel = 8;
+
+            return hotLevel;
+        }
+
+        public void LifeMagicHot(Player caster, int spell)
+        {
+            // This sets the HoT flag on the target
+            var fellows = caster.GetFellowshipTargets();
+            double currentUnixTime = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+
+            if (fellows != null)
+            {
+                foreach (var fellow in fellows)
+                {
+                    if (caster.GetDistance(fellow) < 30.0f)
+                    {
+                        if (spell == 8)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot8, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 7)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot7, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 6)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot6, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 5)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot5, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 4)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot4, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 3)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot3, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 2)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot2, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 1)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot1, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void LifeMagicSot(Player caster, int spell)
+        {
+            // This sets the HoT flag on the target
+            var fellows = caster.GetFellowshipTargets();
+            double currentUnixTime = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+
+            if (fellows != null)
+            {
+                foreach (var fellow in fellows)
+                {
+                    if (caster.GetDistance(fellow) < 30.0f)
+                    {
+                        if (spell == 8)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot8, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 7)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot7, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 6)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot6, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 5)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot5, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 4)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot4, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 3)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot3, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 2)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot2, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                        else if (spell == 1)
+                        {
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot1, true);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, MaxHoTDuration);
+                            fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, MaxHoTTicks);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void Taunting(Player player, double currentUnixtime)
+        {
+            if (player.IsTaunting && TauntTimerActive == true && currentUnixtime - player.LastTauntTimestamp < 30)
+            {
+                player.IsTaunting = false;
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You can't use this ability yet.", ChatMessageType.Broadcast));
+            }
+
+            if (player.IsTaunting == true && TauntTimerActive == false && currentUnixtime - player.LastTauntTimestamp >= 30)
+            {
+                var visibleCreatures = PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature();
+
+                foreach (var m in visibleCreatures)
+                {
+                    if (m == null)
+                        continue;
+
+                    if (!m.IsMonster)
+                        visibleCreatures.Remove(m);
+
+                    if (player.GetCylinderDistance(m) < 10)
+                    {
+                        m.AttackTarget = player;
+                        m.PlayParticleEffect(PlayScript.EnchantUpRed, m.Guid);
+                    }
+                }
+                player.LastTauntTimestamp = currentUnixtime;
+                player.TauntTimerActive = true;
+                player.IsTaunting = false;
+            }
+            if (player.TauntTimerActive == true && currentUnixtime - player.LastTauntTimestamp >= 10)
+            {
+                player.IsTaunting = false;
+                player.TauntTimerActive = false;
+            }
+        }
+
+        public void StealthHandler(Player player, double currentUnixTime)
+        {
+            if (player.Stealth == true && currentUnixTime - player.LastSneakTimestamp > 30)
+            {
+                player.Stealth = false;
+                player.IsSneaking = true;
+                player.LastSneakTimestamp = currentUnixTime;
+                player.HandleSneak();
+                player.SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.On);
+                player.PlayParticleEffect(PlayScript.EnchantDownGreen, Guid);
+            }
+            if (player.IsSneaking == true && currentUnixTime - player.LastSneakTimestamp > 10)
+            {
+                player.IsSneaking = false;
+                player.UnSneak();
+                player.SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                player.PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
+            }
+            if (player.Stealth == true && currentUnixTime - player.LastSneakTimestamp < 30)
+            {   
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You can't use Sneak yet.", ChatMessageType.Broadcast));
+                player.Stealth = false;
+            }
         }
 
         public void LifeWellHandler(Player player, double currentUnixtime)

@@ -183,6 +183,10 @@ namespace ACE.Server.Command.Handlers
                 player.Brutalize = true;
             if (parameters[0] == "lw")
                 player.LifeWell = true;
+            if (parameters[0] == "st")
+                player.Stealth = true;
+            if (parameters[0] == "th")
+                player.IsTaunting = true;
             else
             {
                 session.Network.EnqueueSend(new GameMessageSystemChat($"Could not find ability {parameters[0]}", ChatMessageType.Broadcast));
@@ -522,7 +526,7 @@ namespace ACE.Server.Command.Handlers
             }
         }
 
-        [CommandHandler("spendsc", AccessLevel.Player, CommandHandlerFlag.None, "Handles all skill credit spending.", "")]        
+        [CommandHandler("spendsc", AccessLevel.Admin, CommandHandlerFlag.None, "Handles all skill credit spending.", "")]        
         public static void HandleSpendSC(Session session, params string[] parameters)
         {
             if (parameters.Length == 0)

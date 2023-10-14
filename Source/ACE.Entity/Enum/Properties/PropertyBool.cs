@@ -243,6 +243,14 @@ namespace ACE.Entity.Enum.Properties
         Brutalize                        = 9047,
         DoBrutalizeAttack                = 9048,
         LifeWell                         = 9049,
+        Stealth                          = 9050,
+        IsSneaking                       = 9051,
+        IsTaunting                       = 9052,
+        TauntTimerActive                 = 9052,
+        IsHoTCasting                     = 9053,
+        IsSoTCasting                     = 9054,
+        MissileAoE                       = 9055,
+        DoMissileAoE                     = 9056,
     }
 
     public static class PropertyBoolExtensions

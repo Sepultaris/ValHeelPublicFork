@@ -219,6 +219,74 @@ namespace ACE.Server.WorldObjects
             actionChain.EnqueueChain();
         }
 
+        public void UnSneak()
+        {
+            if (CloakStatus == CloakStatus.Off)
+                return;
+
+            var actionChain = new ActionChain();
+
+            actionChain.AddAction(this, () =>
+            {
+                EnqueueBroadcast(false, new GameMessageDeleteObject(this));
+            });
+            actionChain.AddAction(this, () =>
+            {
+                NoDraw = true;
+                EnqueueBroadcastPhysicsState();
+                Visibility = false;
+            });
+            actionChain.AddDelaySeconds(.5);
+            actionChain.AddAction(this, () =>
+            {
+                EnqueueBroadcast(false, new GameMessageCreateObject(this));
+            });
+            actionChain.AddDelaySeconds(.5);
+            actionChain.AddAction(this, () =>
+            {
+                Cloaked = false;
+                Ethereal = false;
+                NoDraw = false;
+                ReportCollisions = true;
+                EnqueueBroadcastPhysicsState();
+            });
+
+            actionChain.EnqueueChain();
+        }
+
+        public void HandleSneak()
+        {
+            if (CloakStatus == CloakStatus.On)
+                return;
+
+            var actionChain = new ActionChain();
+
+            actionChain.AddAction(this, () =>
+            {
+                Cloaked = true;
+                Ethereal = false;
+                NoDraw = true;
+                ReportCollisions = true;
+                EnqueueBroadcastPhysicsState();
+            });
+            actionChain.AddAction(this, () =>
+            {
+                EnqueueBroadcast(false, new GameMessageDeleteObject(this));
+            });
+            actionChain.AddDelaySeconds(.5);
+            actionChain.AddAction(this, () =>
+            {
+                Visibility = true;
+            });
+            actionChain.AddDelaySeconds(.5);
+            actionChain.AddAction(this, () =>
+            {
+                EnqueueBroadcast(false, new GameMessageCreateObject(this, true, true));
+            });
+
+            actionChain.EnqueueChain();
+        }
+
         public void HandlePreTeleportVisibility(ACE.Entity.Position newPosition)
         {
             // repro steps without this function:

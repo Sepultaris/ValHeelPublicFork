@@ -685,6 +685,7 @@ namespace ACE.Entity.Enum.Properties
         TankDefenseRatingIncrease = 9058,
         DamageRatingIncrease = 9059,
         HoTsTicked = 9060,
+        HoTLevel = 9061,
     }
 
     public static class PropertyIntExtensions

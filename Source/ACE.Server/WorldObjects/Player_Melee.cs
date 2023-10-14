@@ -627,6 +627,13 @@ namespace ACE.Server.WorldObjects
                         LastBrutalizeTimestamp = currentUnixTime;
                         PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
                     }
+                    if (IsSneaking == true)
+                    {
+                        IsSneaking = false;
+                        UnSneak();
+                        SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                        PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
+                    }
                 }
                 else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled && weapon.IsGunblade == true)
                 {
@@ -665,6 +672,13 @@ namespace ACE.Server.WorldObjects
                         DoBrutalizeAttack = false;
                         LastBrutalizeTimestamp = currentUnixTime;
                         PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
+                    if (IsSneaking == true)
+                    {
+                        IsSneaking = false;
+                        UnSneak();
+                        SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                        PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
                     }
                 }
 
@@ -706,6 +720,13 @@ namespace ACE.Server.WorldObjects
                         LastBrutalizeTimestamp = currentUnixTime;
                         PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
                     }
+                    if (IsSneaking == true)
+                    {
+                        IsSneaking = false;
+                        UnSneak();
+                        SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                        PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
+                    }
                 }
                 else
                 {
@@ -715,6 +736,13 @@ namespace ACE.Server.WorldObjects
                         DoBrutalizeAttack = false;
                         LastBrutalizeTimestamp = currentUnixTime;
                         PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
+                    if (IsSneaking == true)
+                    {
+                        IsSneaking = false;
+                        UnSneak();
+                        SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                        PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
                     }
 
                     OnAttackDone();
@@ -932,6 +960,13 @@ namespace ACE.Server.WorldObjects
                         LastBrutalizeTimestamp = currentUnixTime;
                         PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
                     }
+                    if (IsSneaking == true)
+                    {
+                        IsSneaking = false;
+                        UnSneak();
+                        SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                        PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
+                    }
                 }
 
                 else if (creature.IsAlive && GetCharacterOption(CharacterOption.AutoRepeatAttacks) && IsMeleeVisible(target) && !IsBusy && !AttackCancelled)
@@ -972,6 +1007,13 @@ namespace ACE.Server.WorldObjects
                         LastBrutalizeTimestamp = currentUnixTime;
                         PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
                     }
+                    if (IsSneaking == true)
+                    {
+                        IsSneaking = false;
+                        UnSneak();
+                        SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                        PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
+                    }
                 }
                 else
                 {
@@ -981,6 +1023,13 @@ namespace ACE.Server.WorldObjects
                         DoBrutalizeAttack = false;
                         LastBrutalizeTimestamp = currentUnixTime;
                         PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
+                    if (IsSneaking == true)
+                    {
+                        IsSneaking = false;
+                        UnSneak();
+                        SetProperty(PropertyInt.CloakStatus, (int)CloakStatus.Off);
+                        PlayParticleEffect(PlayScript.EnchantUpGreen, Guid);
                     }
 
                     OnAttackDone();
