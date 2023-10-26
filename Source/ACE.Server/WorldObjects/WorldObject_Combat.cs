@@ -2,7 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Entity.Enum;
+using ACE.Entity.Enum.Properties;
+using ACE.Server.Factories;
 using ACE.Server.Entity;
+using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.WorldObjects;
+using ACE.DatLoader.Entity;
 
 namespace ACE.Server.WorldObjects
 {
@@ -18,7 +23,7 @@ namespace ACE.Server.WorldObjects
             // player attacker restrictions handled in override
             return null;
         }
-
+                
         /// <summary>
         /// Tries to proc any relevant items for the attack
         /// </summary>
@@ -30,7 +35,7 @@ namespace ACE.Server.WorldObjects
             {
                 // projectile
                 // monster
-                TryProcItem(attacker, target, selfTarget);
+                TryProcItem(attacker, target);
             }
 
             // handle proc spells for weapon
@@ -38,25 +43,36 @@ namespace ACE.Server.WorldObjects
             if (weapon != null && weapon.HasProc && weapon.ProcSpellSelfTargeted == selfTarget)
             {
                 // weapon
-                weapon.TryProcItem(attacker, target, selfTarget);
+                weapon.TryProcItem(attacker, target);
             }
 
             if (attacker != this && attacker.HasProc && attacker.ProcSpellSelfTargeted == selfTarget)
             {
                 // handle special case -- missile projectiles from monsters w/ a proc directly on the mob
                 // monster
-                attacker.TryProcItem(attacker, target, selfTarget);
-            }
+                attacker.TryProcItem(attacker, target);
+            }            
 
             // handle aetheria procs
             if (attacker is Creature wielder)
             {
-                var equippedAetheria = wielder.EquippedObjects.Values.Where(i => Aetheria.IsAetheria(i.WeenieClassId) && i.HasProc && i.ProcSpellSelfTargeted == selfTarget);
-
+                var equippedAetheria = wielder.EquippedObjects.Values.Where(i => Aetheria.IsAetheria(i.WeenieClassId) && i.HasProc && i.ProcSpellSelfTargeted == selfTarget);                                                    
                 // aetheria
                 foreach (var aetheria in equippedAetheria)
-                    aetheria.TryProcItem(attacker, target, selfTarget);
+                    aetheria.TryProcItem(attacker, target);
+            }
+
+            // Handle jewelry procs
+            if (attacker is Creature wielder1)
+            {
+                var equippedJewelry = wielder1.EquippedObjects.Values.Where(l => l.HasProc && l.IsJewelry && l.ProcSpellSelfTargeted == selfTarget);
+                foreach (var jewelry in equippedJewelry)
+                    jewelry.TryProcItem(attacker, target);
             }
         }
+
+        public bool IsJewelry { get => GetProperty(PropertyInt.ItemType) == 8; }
+
+
     }
 }

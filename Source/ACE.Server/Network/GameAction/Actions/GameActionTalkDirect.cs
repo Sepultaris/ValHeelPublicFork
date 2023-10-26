@@ -43,11 +43,11 @@ namespace ACE.Server.Network.GameAction.Actions
                     return;
                 }
 
-                var tell = new GameEventTell(targetPlayer.Session, message, session.Player.GetNameWithSuffix(), session.Player.Guid.Full, targetPlayer.Guid.Full, ChatMessageType.Tell);
+                var tell = new GameEventTell(targetPlayer.Session, message, session.Player.Name, session.Player.Guid.Full, targetPlayer.Guid.Full, ChatMessageType.Tell);
                 targetPlayer.Session.Network.EnqueueSend(tell);
             }
             else
-                creature.EmoteManager.OnTalkDirect(session.Player, message);
+                creature.EmoteManager.OnTalkDirect(creature, session.Player, message);
         }
     }
 }

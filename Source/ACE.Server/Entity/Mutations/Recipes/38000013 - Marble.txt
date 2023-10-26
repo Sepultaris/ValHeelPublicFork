@@ -1,8 +1,0 @@
-0x38000013 Mutation #1:
-
-Tier chances: 1
-
-    - Chance: 100%:
-        ArmorModVsBludgeon += 0.2
-        NumTimesTinkered (>= 1 ? add : set) 1
-

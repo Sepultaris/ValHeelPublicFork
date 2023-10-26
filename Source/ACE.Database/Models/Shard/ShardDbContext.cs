@@ -2,8 +2,6 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-#nullable disable
-
 namespace ACE.Database.Models.Shard
 {
     public partial class ShardDbContext : DbContext
@@ -64,29 +62,28 @@ namespace ACE.Database.Models.Shard
             {
                 var config = Common.ConfigManager.Config.MySql.Shard;
 
-                var connectionString = $"server={config.Host};port={config.Port};user={config.Username};password={config.Password};database={config.Database};{config.ConnectionOptions}";
-
-                optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), builder =>
+                optionsBuilder.UseMySql($"server={config.Host};port={config.Port};user={config.Username};password={config.Password};database={config.Database};TreatTinyAsBoolean=False", builder =>
                 {
                     builder.EnableRetryOnFailure(10);
                 });
             }
+
+            optionsBuilder.EnableSensitiveDataLogging(true);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasCharSet("utf8")
-                .UseCollation("utf8_general_ci");
-
             modelBuilder.Entity<Biota>(entity =>
             {
                 entity.ToTable("biota");
 
                 entity.HasComment("Dynamic Weenies of a Shard/World");
 
-                entity.HasIndex(e => e.WeenieType, "biota_type_idx");
+                entity.HasIndex(e => e.WeenieClassId)
+                    .HasName("biota_wcid_idx");
 
-                entity.HasIndex(e => e.WeenieClassId, "biota_wcid_idx");
+                entity.HasIndex(e => e.WeenieType)
+                    .HasName("biota_type_idx");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
@@ -113,7 +110,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.ToTable("biota_properties_allegiance");
 
-                entity.HasIndex(e => e.CharacterId, "FK_allegiance_character_Id");
+                entity.HasIndex(e => e.CharacterId)
+                    .HasName("FK_allegiance_character_Id");
 
                 entity.Property(e => e.AllegianceId).HasColumnName("allegiance_Id");
 
@@ -140,7 +138,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Animation Part Changes (from PCAPs) of Weenies");
 
-                entity.HasIndex(e => e.ObjectId, "wcid_animpart_idx");
+                entity.HasIndex(e => e.ObjectId)
+                    .HasName("wcid_animpart_idx");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
@@ -244,7 +243,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Body Part Properties of Weenies");
 
-                entity.HasIndex(e => new { e.ObjectId, e.Key }, "wcid_bodypart_type_uidx")
+                entity.HasIndex(e => new { e.ObjectId, e.Key })
+                    .HasName("wcid_bodypart_type_uidx")
                     .IsUnique();
 
                 entity.Property(e => e.Id)
@@ -325,9 +325,9 @@ namespace ACE.Database.Models.Shard
                 entity.HasComment("Book Properties of Weenies");
 
                 entity.Property(e => e.ObjectId)
-                    .ValueGeneratedNever()
                     .HasColumnName("object_Id")
-                    .HasComment("Id of the object this property belongs to");
+                    .HasComment("Id of the object this property belongs to")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.MaxNumCharsPerPage)
                     .HasColumnName("max_Num_Chars_Per_Page")
@@ -349,7 +349,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Page Properties of Weenies");
 
-                entity.HasIndex(e => new { e.ObjectId, e.PageId }, "wcid_pageid_uidx")
+                entity.HasIndex(e => new { e.ObjectId, e.PageId })
+                    .HasName("wcid_pageid_uidx")
                     .IsUnique();
 
                 entity.Property(e => e.Id)
@@ -358,10 +359,12 @@ namespace ACE.Database.Models.Shard
 
                 entity.Property(e => e.AuthorAccount)
                     .IsRequired()
-                    .HasMaxLength(255)
                     .HasColumnName("author_Account")
+                    .HasColumnType("varchar(255)")
                     .HasDefaultValueSql("'prewritten'")
-                    .HasComment("Account Name of the Author of this page");
+                    .HasComment("Account Name of the Author of this page")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.AuthorId)
                     .HasColumnName("author_Id")
@@ -369,10 +372,12 @@ namespace ACE.Database.Models.Shard
 
                 entity.Property(e => e.AuthorName)
                     .IsRequired()
-                    .HasMaxLength(255)
                     .HasColumnName("author_Name")
+                    .HasColumnType("varchar(255)")
                     .HasDefaultValueSql("''")
-                    .HasComment("Character Name of the Author of this page");
+                    .HasComment("Character Name of the Author of this page")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.IgnoreAuthor)
                     .HasColumnName("ignore_Author")
@@ -388,9 +393,11 @@ namespace ACE.Database.Models.Shard
 
                 entity.Property(e => e.PageText)
                     .IsRequired()
-                    .HasColumnType("text")
                     .HasColumnName("page_Text")
-                    .HasComment("Text of the Page");
+                    .HasColumnType("text")
+                    .HasComment("Text of the Page")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.HasOne(d => d.Object)
                     .WithMany(p => p.BiotaPropertiesBookPageData)
@@ -432,7 +439,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("CreateList Properties of Weenies");
 
-                entity.HasIndex(e => e.ObjectId, "wcid_createlist");
+                entity.HasIndex(e => e.ObjectId)
+                    .HasName("wcid_createlist");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
@@ -506,7 +514,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Emote Properties of Weenies");
 
-                entity.HasIndex(e => e.ObjectId, "wcid_emote");
+                entity.HasIndex(e => e.ObjectId)
+                    .HasName("wcid_emote");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
@@ -529,8 +538,10 @@ namespace ACE.Database.Models.Shard
                     .HasComment("Probability of this EmoteSet being chosen");
 
                 entity.Property(e => e.Quest)
+                    .HasColumnName("quest")
                     .HasColumnType("text")
-                    .HasColumnName("quest");
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Style).HasColumnName("style");
 
@@ -552,7 +563,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("EmoteAction Properties of Weenies");
 
-                entity.HasIndex(e => new { e.EmoteId, e.Order }, "wcid_category_set_order_uidx")
+                entity.HasIndex(e => new { e.EmoteId, e.Order })
+                    .HasName("wcid_category_set_order_uidx")
                     .IsUnique();
 
                 entity.Property(e => e.Id)
@@ -598,8 +610,10 @@ namespace ACE.Database.Models.Shard
                 entity.Property(e => e.MaxDbl).HasColumnName("max_Dbl");
 
                 entity.Property(e => e.Message)
+                    .HasColumnName("message")
                     .HasColumnType("text")
-                    .HasColumnName("message");
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Min).HasColumnName("min");
 
@@ -644,8 +658,10 @@ namespace ACE.Database.Models.Shard
                 entity.Property(e => e.Stat).HasColumnName("stat");
 
                 entity.Property(e => e.TestString)
+                    .HasColumnName("test_String")
                     .HasColumnType("text")
-                    .HasColumnName("test_String");
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.TreasureClass).HasColumnName("treasure_Class");
 
@@ -681,7 +697,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Enchantment Registry Properties of Weenies");
 
-                entity.HasIndex(e => new { e.ObjectId, e.SpellId, e.LayerId }, "wcid_enchantmentregistry_objectId_spellId_layerId_uidx")
+                entity.HasIndex(e => new { e.ObjectId, e.SpellId, e.LayerId })
+                    .HasName("wcid_enchantmentregistry_objectId_spellId_layerId_uidx")
                     .IsUnique();
 
                 entity.Property(e => e.ObjectId)
@@ -816,7 +833,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Generator Properties of Weenies");
 
-                entity.HasIndex(e => e.ObjectId, "wcid_generator");
+                entity.HasIndex(e => e.ObjectId)
+                    .HasName("wcid_generator");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
@@ -897,7 +915,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("InstanceID Properties of Weenies");
 
-                entity.HasIndex(e => new { e.Type, e.Value }, "type_value_idx");
+                entity.HasIndex(e => new { e.Type, e.Value })
+                    .HasName("type_value_idx");
 
                 entity.Property(e => e.ObjectId)
                     .HasColumnName("object_Id")
@@ -979,7 +998,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Palette Changes (from PCAPs) of Weenies");
 
-                entity.HasIndex(e => e.ObjectId, "wcid_palette_idx");
+                entity.HasIndex(e => e.ObjectId)
+                    .HasName("wcid_palette_idx");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
@@ -1013,7 +1033,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Position Properties of Weenies");
 
-                entity.HasIndex(e => new { e.PositionType, e.ObjCellId }, "type_cell_idx");
+                entity.HasIndex(e => new { e.PositionType, e.ObjCellId })
+                    .HasName("type_cell_idx");
 
                 entity.Property(e => e.ObjectId)
                     .HasColumnName("object_Id")
@@ -1141,9 +1162,11 @@ namespace ACE.Database.Models.Shard
 
                 entity.Property(e => e.Value)
                     .IsRequired()
-                    .HasColumnType("text")
                     .HasColumnName("value")
-                    .HasComment("Value of this Property");
+                    .HasColumnType("text")
+                    .HasComment("Value of this Property")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.HasOne(d => d.Object)
                     .WithMany(p => p.BiotaPropertiesString)
@@ -1157,7 +1180,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Texture Map Changes (from PCAPs) of Weenies");
 
-                entity.HasIndex(e => e.ObjectId, "wcid_texturemap_idx");
+                entity.HasIndex(e => e.ObjectId)
+                    .HasName("wcid_texturemap_idx");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
@@ -1187,14 +1211,16 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("Int Properties of Weenies");
 
-                entity.HasIndex(e => e.AccountId, "character_account_idx");
+                entity.HasIndex(e => e.AccountId)
+                    .HasName("character_account_idx");
 
-                entity.HasIndex(e => e.Name, "character_name_idx");
+                entity.HasIndex(e => e.Name)
+                    .HasName("character_name_idx");
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
                     .HasColumnName("id")
-                    .HasComment("Id of the Biota for this Character");
+                    .HasComment("Id of the Biota for this Character")
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.AccountId)
                     .HasColumnName("account_Id")
@@ -1211,8 +1237,8 @@ namespace ACE.Database.Models.Shard
                     .HasComment("The character will be marked IsDeleted=True after this timestamp");
 
                 entity.Property(e => e.GameplayOptions)
-                    .HasColumnType("blob")
-                    .HasColumnName("gameplay_Options");
+                    .HasColumnName("gameplay_Options")
+                    .HasColumnType("blob");
 
                 entity.Property(e => e.HairTexture).HasColumnName("hair_Texture");
 
@@ -1229,7 +1255,10 @@ namespace ACE.Database.Models.Shard
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasColumnName("name")
-                    .HasComment("Name of Character");
+                    .HasColumnType("varchar(255)")
+                    .HasComment("Name of Character")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.SpellbookFilters)
                     .HasColumnName("spellbook_Filters")
@@ -1330,7 +1359,10 @@ namespace ACE.Database.Models.Shard
 
                 entity.Property(e => e.QuestName)
                     .HasColumnName("quest_Name")
-                    .HasComment("Unique Name of Quest");
+                    .HasColumnType("varchar(255)")
+                    .HasComment("Unique Name of Quest")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.LastTimeCompleted)
                     .HasColumnName("last_Time_Completed")
@@ -1356,7 +1388,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("ShortcutBar Properties of Weenies");
 
-                entity.HasIndex(e => e.CharacterId, "wcid_shortcutbar_idx");
+                entity.HasIndex(e => e.CharacterId)
+                    .HasName("wcid_shortcutbar_idx");
 
                 entity.Property(e => e.CharacterId)
                     .HasColumnName("character_Id")
@@ -1386,7 +1419,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.HasComment("SpellBar Properties of Weenies");
 
-                entity.HasIndex(e => e.SpellBarIndex, "spellBar_idx");
+                entity.HasIndex(e => e.SpellBarIndex)
+                    .HasName("spellBar_idx");
 
                 entity.Property(e => e.CharacterId)
                     .HasColumnName("character_Id")
@@ -1463,11 +1497,17 @@ namespace ACE.Database.Models.Shard
 
                 entity.ToTable("config_properties_boolean");
 
-                entity.Property(e => e.Key).HasColumnName("key");
+                entity.Property(e => e.Key)
+                    .HasColumnName("key")
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Description)
+                    .HasColumnName("description")
                     .HasColumnType("text")
-                    .HasColumnName("description");
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Value).HasColumnName("value");
             });
@@ -1479,11 +1519,17 @@ namespace ACE.Database.Models.Shard
 
                 entity.ToTable("config_properties_double");
 
-                entity.Property(e => e.Key).HasColumnName("key");
+                entity.Property(e => e.Key)
+                    .HasColumnName("key")
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Description)
+                    .HasColumnName("description")
                     .HasColumnType("text")
-                    .HasColumnName("description");
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Value).HasColumnName("value");
             });
@@ -1495,11 +1541,17 @@ namespace ACE.Database.Models.Shard
 
                 entity.ToTable("config_properties_long");
 
-                entity.Property(e => e.Key).HasColumnName("key");
+                entity.Property(e => e.Key)
+                    .HasColumnName("key")
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Description)
+                    .HasColumnName("description")
                     .HasColumnType("text")
-                    .HasColumnName("description");
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Value).HasColumnName("value");
             });
@@ -1511,16 +1563,24 @@ namespace ACE.Database.Models.Shard
 
                 entity.ToTable("config_properties_string");
 
-                entity.Property(e => e.Key).HasColumnName("key");
+                entity.Property(e => e.Key)
+                    .HasColumnName("key")
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Description)
+                    .HasColumnName("description")
                     .HasColumnType("text")
-                    .HasColumnName("description");
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.Value)
                     .IsRequired()
+                    .HasColumnName("value")
                     .HasColumnType("text")
-                    .HasColumnName("value");
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
             });
 
             modelBuilder.Entity<HousePermission>(entity =>
@@ -1531,7 +1591,8 @@ namespace ACE.Database.Models.Shard
 
                 entity.ToTable("house_permission");
 
-                entity.HasIndex(e => e.HouseId, "biota_Id_house_Id_idx");
+                entity.HasIndex(e => e.HouseId)
+                    .HasName("biota_Id_house_Id_idx");
 
                 entity.Property(e => e.HouseId)
                     .HasColumnName("house_Id")

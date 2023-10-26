@@ -53,7 +53,8 @@ namespace ACE.DatLoader
         LandBlockInfo           = 2, // DB_TYPE_LBI
 
         [DatDatabaseType(DatDatabaseType.Cell)]
-        EnvCell                    = 3, // DB_TYPE_CELL
+        [DatFileTypeIdRange(0x01010000, 0x013EFFFF)]
+        EnvCell                    = 3, // DB_TYPE_ENVCELL
 
         /// <summary>
         /// usage of this is currently unknown.  exists in the client, but has no discernable
@@ -380,7 +381,7 @@ namespace ACE.DatLoader
         String                  = 41, // DB_TYPE_STRING
 
         /// <summary>
-        /// indexed as "emt" in the client
+        /// inedexed as "emt" in the client
         /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
         [DatFileTypeExtension("emt")]
@@ -388,7 +389,7 @@ namespace ACE.DatLoader
         ParticleEmitter         = 42, // DB_TYPE_PARTICLE_EMITTER 
 
         /// <summary>
-        /// indexed as "pes" in the client
+        /// inedexed as "pes" in the client
         /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
         [DatFileTypeExtension("pes")]
@@ -396,7 +397,7 @@ namespace ACE.DatLoader
         PhysicsScript           = 43, // DB_TYPE_PHYSICS_SCRIPT 
 
         /// <summary>
-        /// indexed as "pet" in the client
+        /// inedexed as "pet" in the client
         /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
         [DatFileTypeExtension("pet")]
@@ -404,7 +405,7 @@ namespace ACE.DatLoader
         PhysicsScriptTable      = 44, // DB_TYPE_PHYSICS_SCRIPT_TABLE 
 
         /// <summary>
-        /// indexed as "emt/property" in the client
+        /// inedexed as "emt/property" in the client
         /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
         [DatFileTypeExtension("mpr")]
@@ -443,127 +444,67 @@ namespace ACE.DatLoader
         [DatFileTypeExtension("rendermesh")]
         [DatFileTypeIdRange(0x19000000, 0x19FFFFFF)]
         RenderMesh              = 67, // DB_TYPE_RENDER_MESH
-
+        
         // the following special files are called out in a different section of the decompiled client:
 
-        /// <summary>
-        /// indexed as "weenie/defaults" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("wdf")]
-        [DatFileTypeIdRange(0x00000001, 0x0000FFFF)]
-        WeenieDefaults          = 0x10000001, // DB_TYPE_WEENIE_DEF
+        [DatFileTypeIdRange(0x0E000001, 0x0E000001)]
+        WeenieDefaults          = 97, // DB_TYPE_WEENIE_DEF
 
-        /// <summary>
-        /// indexed as "weenie" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("cgd")]
         [DatFileTypeIdRange(0x0E000002, 0x0E000002)]
-        CharacterGenerator      = 0x10000002, // DB_TYPE_CHAR_GEN_0
+        CharacterGenerator      = 98, // DB_TYPE_CHAR_GEN_0
 
-        /// <summary>
-        /// indexed as "weenie/skills" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("wa2")]
         [DatFileTypeIdRange(0x0E000003, 0x0E000003)]
-        SecondaryAttributeTable = 0x10000003, // DB_TYPE_ATTRIBUTE_2ND_TABLE_0
+        SecondaryAttributeTable = 99, // DB_TYPE_ATTRIBUTE_2ND_TABLE_0
 
-        /// <summary>
-        /// indexed as "weenie/skills" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("wsk")]
         [DatFileTypeIdRange(0x0E000004, 0x0E000004)]
-        SkillTable              = 0x10000004, // DB_TYPE_SKILL_TABLE_0
+        SkillTable              = 100, // DB_TYPE_SKILL_TABLE_0
 
-        /// <summary>
-        /// indexed as "weenie/magic" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("spt")]
         [DatFileTypeIdRange(0x0E00000E, 0x0E00000E)]
-        SpellTable              = 0x10000005, // DB_TYPE_SPELL_TABLE_0
+        SpellTable              = 101, // DB_TYPE_SPELL_TABLE_0
 
-        /// <summary>
-        /// indexed as "weenie/magic" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("sct")]
         [DatFileTypeIdRange(0x0E00000F, 0x0E00000F)]
-        SpellComponentTable     = 0x10000006, // DB_TYPE_SPELLCOMPONENT_TABLE_0
+        SpellComponentTable     = 102, // DB_TYPE_SPELLCOMPONENT_TABLE_0
 
-        /// <summary>
-        /// indexed as "weenie/treasure" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("wts")]
-        [DatFileTypeIdRange(0x0E000011, 0x0E000011)]
-        TreasureTable           = 0x10000007, // DB_TYPE_W_TREASURE_SYSTEM
+        [DatFileTypeIdRange(0x0E000001, 0x0E000001)]
+        TreasureTable           = 103, // DB_TYPE_W_TREASURE_SYSTEM
 
-        /// <summary>
-        /// indexed as "weenie/craft" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("cft")]
         [DatFileTypeIdRange(0x0E000019, 0x0E000019)]
-        CraftTable              = 0x10000008, // DB_TYPE_W_CRAFT_TABLE
+        CraftTable              = 104, // DB_TYPE_W_CRAFT_TABLE
 
-        /// <summary>
-        /// indexed as "weenie/experience" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("xpt")]
         [DatFileTypeIdRange(0x0E000018, 0x0E000018)]
-        XpTable                 = 0x10000009, // DB_TYPE_XP_TABLE_0
+        XpTable                 = 105, // DB_TYPE_XP_TABLE_0
 
-        /// <summary>
-        /// indexed as "weenie" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("qdd")]
         [DatFileTypeIdRange(0x0E00001B, 0x0E00001B)]
-        Quests                  = 0x1000000A, // DB_TYPE_QUEST_DEF_DB_0
+        Quests                  = 106, // DB_TYPE_QUEST_DEF_DB_0
 
-        /// <summary>
-        /// indexed as "weenie" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("ged")]
         [DatFileTypeIdRange(0x0E00001C, 0x0E00001C)]
-        GameEventTable          = 0x1000000B, // DB_TYPE_GAME_EVENT_DB
+        GameEventTable          = 107, // DB_TYPE_GAME_EVENT_DB
 
-        /// <summary>
-        /// indexed as "weenie/filters" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("wqf")]
         [DatFileTypeIdRange(0x0E010000, 0x0E01FFFF)]
-        QualityFilter           = 0x1000000C, // DB_TYPE_QUALITY_FILTER_0
+        QualityFilter           = 108, // DB_TYPE_QUALITY_FILTER_0
 
-        /// <summary>
-        /// indexed as "weenie/combat_tables" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("wct")]
         [DatFileTypeIdRange(0x30000000, 0x3000FFFF)]
-        CombatTable             = 0x1000000D, // DB_TYPE_COMBAT_TABLE_0
+        CombatTable             = 109, // DB_TYPE_COMBAT_TABLE_0
 
-        /// <summary>
-        /// indexed as "weenie/ItemMutationFiles" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("imf")]
         [DatFileTypeIdRange(0x38000000, 0x3800FFFF)]
-        ItemMutation            = 0x1000000E, // DB_TYPE_MUTATE_FILTER
+        ItemMutation            = 110, // DB_TYPE_MUTATE_FILTER
 
-        /// <summary>
-        /// indexed as "weenie" in the client
-        /// </summary>
         [DatDatabaseType(DatDatabaseType.Portal)]
-        [DatFileTypeExtension("acc")]
         [DatFileTypeIdRange(0x0E00001D, 0x0E00001D)]
-        ContractTable           = 0x10000010, // DB_TYPE_CONTRACT_TABLE_0
+        ContractTable           = 111, // DB_TYPE_CONTRACT_TABLE_0
     }
 }

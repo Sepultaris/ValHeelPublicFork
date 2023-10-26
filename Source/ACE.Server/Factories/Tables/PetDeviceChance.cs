@@ -41,6 +41,7 @@ namespace ACE.Server.Factories.Tables
             ( 180, 0.10f ),
         };
 
+
         private static ChanceTable<int> T8_PetLevelChances = new ChanceTable<int>()
         {
             ( 100, 0.0125f ),
@@ -50,6 +51,25 @@ namespace ACE.Server.Factories.Tables
             ( 200, 0.4125f ),
         };
 
+        private static ChanceTable<int> T9_PetLevelChances = new ChanceTable<int>()
+        {
+            ( 100, 0.0125f ),
+            ( 125, 0.025f ),
+            ( 150, 0.05f ),
+            ( 180, 0.50f ),
+            ( 200, 0.4125f ),
+            ( 200, 0.4125f ),
+        };
+
+        private static ChanceTable<int> T10_PetLevelChances = new ChanceTable<int>()
+        {
+            ( 100, 0.0125f ),
+            ( 125, 0.025f ),
+            ( 150, 0.05f ),
+            ( 180, 0.50f ),
+            ( 200, 0.4125f ),
+            ( 200, 0.4125f ),
+        };
         private static readonly List<ChanceTable<int>> petLevelChances = new List<ChanceTable<int>>()
         {
             T1_T3_PetLevelChances,
@@ -60,6 +80,9 @@ namespace ACE.Server.Factories.Tables
             T6_PetLevelChances,
             T7_PetLevelChances,
             T8_PetLevelChances,
+            T9_PetLevelChances,
+            T10_PetLevelChances
+
         };
 
         /// <summary>

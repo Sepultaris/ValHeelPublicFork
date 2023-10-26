@@ -44,8 +44,8 @@ namespace ACE.Server.Factories.Tables.Wcids
         private static ChanceTable<WeenieClassName> T6_T8_Chances = new ChanceTable<WeenieClassName>()
         {
             ( WeenieClassName.peascarabsilver, 0.25f ),
-            ( WeenieClassName.peascarabgold,   0.50f ),
-            ( WeenieClassName.peascarabpyreal, 0.25f ),
+            ( WeenieClassName.peascarabgold,   0.65f ),
+            ( WeenieClassName.peascarabpyreal, 0.50f ),
         };
 
         private static readonly List<ChanceTable<WeenieClassName>> peaTiers = new List<ChanceTable<WeenieClassName>>()
@@ -88,9 +88,9 @@ namespace ACE.Server.Factories.Tables.Wcids
         private static ChanceTable<WeenieClassName> Quills = new ChanceTable<WeenieClassName>()
         {
             ( WeenieClassName.ace37363_quillofinfliction,    0.50f ),   // war/debuff (other)
-            ( WeenieClassName.ace37364_quillofintrospection, 0.35f ),   // beneficial (self)
-            ( WeenieClassName.ace37365_quillofbenevolence,   0.10f ),   // beneficial (other)
-            ( WeenieClassName.ace37362_quillofextraction,    0.05f ),   // drain (other)
+            ( WeenieClassName.ace37364_quillofintrospection, 0.50f ),   // beneficial (self)
+            ( WeenieClassName.ace37365_quillofbenevolence,   0.50f ),   // beneficial (other)
+            ( WeenieClassName.ace37362_quillofextraction,    0.50f ),   // drain (other)
         };
 
         private static ChanceTable<WeenieClassName> Inks = new ChanceTable<WeenieClassName>()

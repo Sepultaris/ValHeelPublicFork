@@ -41,8 +41,6 @@ namespace ACE.DatLoader.FileTypes
         public uint DefaultSoundTable { get; private set; }
         public uint DefaultScriptTable { get; private set; }
 
-        public bool HasMissileFlightPlacement { get; private set; } = false;
-
         public override void Unpack(BinaryReader reader)
         {
             Id = reader.ReadUInt32();
@@ -80,8 +78,6 @@ namespace ACE.DatLoader.FileTypes
                 var placementType = new PlacementType();
                 placementType.Unpack(reader, (uint)Parts.Count);
                 PlacementFrames.Add(key, placementType);
-                if (key == (int)Placement.MissileFlight)
-                    HasMissileFlightPlacement = true;
             }
 
             CylSpheres.Unpack(reader);

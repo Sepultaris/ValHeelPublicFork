@@ -23,7 +23,7 @@ namespace ACE.Server.Factories.Tables
             ( TreasureWeaponType.Bow,      0.04f ),
             ( TreasureWeaponType.Crossbow, 0.04f ),
             ( TreasureWeaponType.Atlatl,   0.04f ),
-            ( TreasureWeaponType.Caster,   0.04f ),
+            ( TreasureWeaponType.Caster,   0.05f ),
         };
 
         private static ChanceTable<TreasureWeaponType> T5_T6_Chances = new ChanceTable<TreasureWeaponType>()
@@ -62,7 +62,7 @@ namespace ACE.Server.Factories.Tables
             ( TreasureWeaponType.Bow,             0.07f ),
             ( TreasureWeaponType.Crossbow,        0.07f ),
             ( TreasureWeaponType.Atlatl,          0.06f ),
-            ( TreasureWeaponType.Caster,          0.07f ),
+            ( TreasureWeaponType.Caster,          0.08f ),
             ( TreasureWeaponType.TwoHandedWeapon, 0.10f ),      // see TreasureWeaponType for an explanation of why this is here,
                                                                 // and not deeper in WeaponWcids.cs
         };

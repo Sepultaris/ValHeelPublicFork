@@ -60,6 +60,8 @@ namespace ACE.Server.Factories
 
             // long desc
             wo.LongDesc = GetLongDesc(wo);
+
+            MutateDinnerware_ItemValue(wo);
         }
 
         private static void MutateDinnerware_ItemValue(WorldObject wo)

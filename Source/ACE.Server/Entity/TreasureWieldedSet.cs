@@ -132,7 +132,7 @@ namespace ACE.Server.Entity
                         if (item.ContinuesPreviousSet)
                         {
                             // ensure subset parsed
-                            if (node.Subset != null)    // why is this here? causing bugs with 178..
+                            if (node.Subset != null)
                             {
                                 node = new TreasureWieldedNode(items, idx);
                                 Items.Add(node);

@@ -21,7 +21,7 @@ namespace ACE.Server.WorldObjects
 {
     partial class Player
     {
-        private static readonly Position MarketplaceDrop = DatabaseManager.World.GetCachedWeenie("portalmarketplace")?.GetPosition(PositionType.Destination) ?? new Position(0x016C01BC, 49.206f, -31.935f, 0.005f, 0, 0, -0.707107f, 0.707107f);
+        private static readonly Position MarketplaceDrop = DatabaseManager.World.GetCachedWeenie("portalmarketplace").GetPosition(PositionType.Destination);
 
         /// <summary>
         /// Teleports the player to position
@@ -58,12 +58,6 @@ namespace ACE.Server.WorldObjects
 
         public void HandleActionTeleToHouse()
         {
-            if (IsOlthoiPlayer)
-            {
-                Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.OlthoiCanOnlyRecallToLifestone));
-                return;
-            }
-
             if (PKTimerActive)
             {
                 Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.YouHaveBeenInPKBattleTooRecently));
@@ -100,16 +94,40 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is recalling home.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.HouseRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.HouseRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
+
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == Guid.Full)
+                        {
+                            monster.Destroy();
+                            NumberOfPets--;
+                            if (NumberOfPets < 0)
+                            {
+                                NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
 
             // Wait for animation
             var actionChain = new ActionChain();
 
             // Then do teleport
-            var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.HouseRecall);
-            actionChain.AddDelaySeconds(animLength);
+            //var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.HouseRecall);
+            actionChain.AddDelaySeconds(1);
             IsBusy = true;
             actionChain.AddAction(this, () =>
             {
@@ -168,16 +186,40 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is recalling to the lifestone.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.LifestoneRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.LifestoneRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
+
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == Guid.Full)
+                        {
+                            monster.Destroy();
+                            NumberOfPets--;
+                            if (NumberOfPets < 0)
+                            {
+                                NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
 
             // Wait for animation
             ActionChain lifestoneChain = new ActionChain();
 
             // Then do teleport
             IsBusy = true;
-            lifestoneChain.AddDelaySeconds(DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.LifestoneRecall));
+
             lifestoneChain.AddAction(this, () =>
             {
                 IsBusy = false;
@@ -198,12 +240,6 @@ namespace ACE.Server.WorldObjects
 
         public void HandleActionTeleToMarketPlace()
         {
-            if (IsOlthoiPlayer)
-            {
-                Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.OlthoiCanOnlyRecallToLifestone));
-                return;
-            }
-
             if (PKTimerActive)
             {
                 Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.YouHaveBeenInPKBattleTooRecently));
@@ -232,15 +268,39 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is recalling to the marketplace.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.MarketplaceRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.MarketplaceRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
+
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == Guid.Full)
+                        {
+                            monster.Destroy();
+                            NumberOfPets--;
+                            if (NumberOfPets < 0)
+                            {
+                                NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
 
             // TODO: (OptimShi): Actual animation length is longer than in retail. 18.4s
             // float mpAnimationLength = MotionTable.GetAnimationLength((uint)MotionTableId, MotionCommand.MarketplaceRecall);
             // mpChain.AddDelaySeconds(mpAnimationLength);
             ActionChain mpChain = new ActionChain();
-            mpChain.AddDelaySeconds(14);
+            mpChain.AddDelaySeconds(1);
 
             // Then do teleport
             IsBusy = true;
@@ -266,13 +326,6 @@ namespace ACE.Server.WorldObjects
         public void HandleActionRecallAllegianceHometown()
         {
             //Console.WriteLine($"{Name}.HandleActionRecallAllegianceHometown()");
-
-            if (IsOlthoiPlayer)
-            {
-                Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.OlthoiCanOnlyRecallToLifestone));
-                return;
-            }
-
             if (PKTimerActive)
             {
                 Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.YouHaveBeenInPKBattleTooRecently));
@@ -305,17 +358,41 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is going to the Allegiance hometown.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.AllegianceHometownRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.AllegianceHometownRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
+
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == Guid.Full)
+                        {
+                            monster.Destroy();
+                            NumberOfPets--;
+                            if (NumberOfPets < 0)
+                            {
+                                NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
 
             // Wait for animation
             var actionChain = new ActionChain();
 
             // Then do teleport
             IsBusy = true;
-            var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.AllegianceHometownRecall);
-            actionChain.AddDelaySeconds(animLength);
+            //var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.AllegianceHometownRecall);
+            actionChain.AddDelaySeconds(1);
             actionChain.AddAction(this, () =>
             {
                 IsBusy = false;
@@ -358,14 +435,6 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public void HandleActionTeleToMansion()
         {
-            //Console.WriteLine($"{Name}.HandleActionTeleToMansion()");
-
-            if (IsOlthoiPlayer)
-            {
-                Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.OlthoiCanOnlyRecallToLifestone));
-                return;
-            }
-
             if (PKTimerActive)
             {
                 Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.YouHaveBeenInPKBattleTooRecently));
@@ -399,16 +468,40 @@ namespace ACE.Server.WorldObjects
 
             EnqueueBroadcast(new GameMessageSystemChat($"{Name} is recalling to the Allegiance housing.", ChatMessageType.Recall), LocalBroadcastRange, ChatMessageType.Recall);
 
-            SendMotionAsCommands(MotionCommand.HouseRecall, MotionStance.NonCombat);
+            //SendMotionAsCommands(MotionCommand.HouseRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
+
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == Guid.Full)
+                        {
+                            monster.Destroy();
+                            NumberOfPets--;
+                            if (NumberOfPets < 0)
+                            {
+                                NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
 
             // Wait for animation
             var actionChain = new ActionChain();
 
             // Then do teleport
-            var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.HouseRecall);
-            actionChain.AddDelaySeconds(animLength);
+            //var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.HouseRecall);
+            actionChain.AddDelaySeconds(1);
 
             IsBusy = true;
             actionChain.AddAction(this, () =>
@@ -428,7 +521,7 @@ namespace ACE.Server.WorldObjects
                     return;
 
                 Teleport(allegianceHouse.SlumLord.Location);
-            }); 
+            });
 
             actionChain.EnqueueChain();
         }
@@ -470,17 +563,15 @@ namespace ACE.Server.WorldObjects
 
         private static List<Position> pkArenaLocs = new List<Position>()
         {
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpkarenanew1")?.GetPosition(PositionType.Destination) ?? new Position(0x00660117, 30, -50, 0.005f, 0, 0,  0.000000f,  1.000000f)),
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpkarenanew2")?.GetPosition(PositionType.Destination) ?? new Position(0x00660106, 10,   0, 0.005f, 0, 0, -0.947071f,  0.321023f)),
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpkarenanew3")?.GetPosition(PositionType.Destination) ?? new Position(0x00660103, 30, -30, 0.005f, 0, 0, -0.699713f,  0.714424f)),
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpkarenanew4")?.GetPosition(PositionType.Destination) ?? new Position(0x0066011E, 50,   0, 0.005f, 0, 0, -0.961021f, -0.276474f)),
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpkarenanew5")?.GetPosition(PositionType.Destination) ?? new Position(0x00660127, 60, -30, 0.005f, 0, 0,  0.681639f,  0.731689f)),
+            new Position(0x00660117, new Vector3(30, -50, 0.005f), new Quaternion(0, 0, 0, 1)),
+            new Position(0x00660106, new Vector3(10, 0, 0.005f), new Quaternion(0, 0, -0.947071f, 0.321023f)),
+            new Position(0x00660103, new Vector3(0, -30, 0.005f), new Quaternion(0, 0, -0.699713f, 0.714424f)),
+            new Position(0x0066011E, new Vector3(50, 0, 0.005f), new Quaternion(0, 0, -0.961021f, -0.276474f)),
+            new Position(0x00660127, new Vector3(60, -30, 0.005f), new Quaternion(0, 0, 0.681639f, 0.731689f)),
         };
 
         public void HandleActionTeleToPkArena()
         {
-            //Console.WriteLine($"{Name}.HandleActionTeleToPkArena()");
-
             if (PlayerKillerStatus != PlayerKillerStatus.PK)
             {
                 Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.OnlyPKsMayUseCommand));
@@ -519,6 +610,30 @@ namespace ACE.Server.WorldObjects
 
             var startPos = new Position(Location);
 
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == Guid.Full)
+                        {
+                            monster.Destroy();
+                            NumberOfPets--;
+                            if (NumberOfPets < 0)
+                            {
+                                NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
+
             // Wait for animation
             var actionChain = new ActionChain();
 
@@ -548,23 +663,15 @@ namespace ACE.Server.WorldObjects
 
         private static List<Position> pklArenaLocs = new List<Position>()
         {
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpklarenanew1")?.GetPosition(PositionType.Destination) ?? new Position(0x00670117, 30, -50, 0.005f, 0, 0,  0.000000f,  1.000000f)),
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpklarenanew2")?.GetPosition(PositionType.Destination) ?? new Position(0x00670106, 10,   0, 0.005f, 0, 0, -0.947071f,  0.321023f)),
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpklarenanew3")?.GetPosition(PositionType.Destination) ?? new Position(0x00670103, 30, -30, 0.005f, 0, 0, -0.699713f,  0.714424f)),
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpklarenanew4")?.GetPosition(PositionType.Destination) ?? new Position(0x0067011E, 50,   0, 0.005f, 0, 0, -0.961021f, -0.276474f)),
-            new Position(DatabaseManager.World.GetCachedWeenie("portalpklarenanew5")?.GetPosition(PositionType.Destination) ?? new Position(0x00670127, 60, -30, 0.005f, 0, 0,  0.681639f,  0.731689f)),
+            new Position(0x00670117, new Vector3(30, -50, 0.005f), new Quaternion(0, 0, 0, 1)),
+            new Position(0x00670106, new Vector3(10, 0, 0.005f), new Quaternion(0, 0, -0.947071f, 0.321023f)),
+            new Position(0x00670103, new Vector3(0, -30, 0.005f), new Quaternion(0, 0, -0.699713f, 0.714424f)),
+            new Position(0x0067011E, new Vector3(50, 0, 0.005f), new Quaternion(0, 0, -0.961021f, -0.276474f)),
+            new Position(0x00670127, new Vector3(60, -30, 0.005f), new Quaternion(0, 0, 0.681639f, 0.731689f)),
         };
 
         public void HandleActionTeleToPklArena()
         {
-            //Console.WriteLine($"{Name}.HandleActionTeleToPkLiteArena()");
-
-            if (IsOlthoiPlayer)
-            {
-                Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.OlthoiCanOnlyRecallToLifestone));
-                return;
-            }
-
             if (PlayerKillerStatus != PlayerKillerStatus.PKLite)
             {
                 Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.OnlyPKLiteMayUseCommand));
@@ -602,6 +709,30 @@ namespace ACE.Server.WorldObjects
             SendMotionAsCommands(MotionCommand.PKArenaRecall, MotionStance.NonCombat);
 
             var startPos = new Position(Location);
+
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == Guid.Full)
+                        {
+                            monster.Destroy();
+                            NumberOfPets--;
+                            if (NumberOfPets < 0)
+                            {
+                                NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
 
             // Wait for animation
             var actionChain = new ActionChain();
@@ -758,7 +889,7 @@ namespace ACE.Server.WorldObjects
             IgnoreCollisions = false;
             Hidden = false;
             Teleporting = false;
-            
+
             CheckMonsters();
             CheckHouse();
 
@@ -790,6 +921,7 @@ namespace ACE.Server.WorldObjects
             // notify current landblock of player activity
             if (CurrentLandblock != null)
                 CurrentLandblock?.SetActive();
+          
         }
 
         public static readonly float RunFactor = 1.5f;

@@ -14,7 +14,6 @@ using ACE.DatLoader;
 using ACE.Server.Command;
 using ACE.Server.Managers;
 using ACE.Server.Network.Managers;
-using ACE.Server.Mods;
 
 namespace ACE.Server
 {
@@ -172,32 +171,6 @@ namespace ACE.Server
                 log.Info($"Purged {numberOfBiotasPurged:N0} biotas.");
             }
 
-            if (ConfigManager.Config.Offline.PruneDeletedCharactersFromFriendLists)
-            {
-                log.Info($"Pruning invalid friends from all friend lists...");
-                ShardDatabaseOfflineTools.PruneDeletedCharactersFromFriendLists(out var numberOfFriendsPruned);
-                log.Info($"Pruned {numberOfFriendsPruned:N0} invalid friends found on friend lists.");
-            }
-
-            if (ConfigManager.Config.Offline.PruneDeletedObjectsFromShortcutBars)
-            {
-                log.Info($"Pruning invalid shortcuts from all shortcut bars...");
-                ShardDatabaseOfflineTools.PruneDeletedObjectsFromShortcutBars(out var numberOfShortcutsPruned);
-                log.Info($"Pruned {numberOfShortcutsPruned:N0} deleted objects found on shortcut bars.");
-            }
-
-            if (ConfigManager.Config.Offline.PruneDeletedCharactersFromSquelchLists)
-            {
-                log.Info($"Pruning invalid squelches from all squelch lists...");
-                ShardDatabaseOfflineTools.PruneDeletedCharactersFromSquelchLists(out var numberOfSquelchesPruned);
-                log.Info($"Pruned {numberOfSquelchesPruned:N0} invalid squelched characters found on squelch lists.");
-            }
-
-            if (ConfigManager.Config.Offline.AutoServerUpdateCheck)
-                CheckForServerUpdate();
-            else
-                log.Info($"AutoServerVersionCheck is disabled...");
-
             if (ConfigManager.Config.Offline.AutoUpdateWorldDatabase)
             {
                 CheckForWorldDatabaseUpdate();
@@ -214,32 +187,15 @@ namespace ACE.Server
                 log.Info($"AutoApplyDatabaseUpdates is disabled...");
 
             // This should only be enabled manually. To enable it, simply uncomment this line
-            //ACE.Database.OfflineTools.Shard.BiotaGuidConsolidator.ConsolidateBiotaGuids(0xA0000000, true, false, out int numberOfBiotasConsolidated, out int numberOfBiotasSkipped, out int numberOfErrors);
-            //ACE.Database.OfflineTools.Shard.BiotaGuidConsolidator.ConsolidateBiotaGuids(0xD0000000, false, true, out int numberOfBiotasConsolidated2, out int numberOfBiotasSkipped2, out int numberOfErrors2);
+            //ACE.Database.OfflineTools.Shard.BiotaGuidConsolidator.ConsolidateBiotaGuids(0xC0000000, out int numberOfBiotasConsolidated, out int numberOfErrors);
 
             ShardDatabaseOfflineTools.CheckForBiotaPropertiesPaletteOrderColumnInShard();
-
-            // pre-load starterGear.json, abort startup if file is not found as it is required to create new characters.
-            if (Factories.StarterGearFactory.GetStarterGearConfiguration() == null)
-            {
-                log.Fatal("Unable to load or parse starterGear.json. ACEmulator will now abort startup.");
-                ServerManager.StartupAbort();
-                Environment.Exit(0);
-            }
 
             log.Info("Initializing ServerManager...");
             ServerManager.Initialize();
 
             log.Info("Initializing DatManager...");
             DatManager.Initialize(ConfigManager.Config.Server.DatFilesDirectory, true);
-
-            if (ConfigManager.Config.DDD.EnableDATPatching)
-            {
-                log.Info("Initializing DDDManager...");
-                DDDManager.Initialize();
-            }
-            else
-                log.Info("DAT Patching Disabled...");
 
             log.Info("Initializing DatabaseManager...");
             DatabaseManager.Initialize();
@@ -312,6 +268,12 @@ namespace ACE.Server
             log.Info("Initializing EventManager...");
             EventManager.Initialize();
 
+            //log.Info("Initializing Discord Relay...");
+            //ValheelMods.DiscordRelay.Initialize();
+
+            log.Info("Initializing ValHeel Currency Market...");
+            ValheelMods.ValHeelCurrencyMarket.InitializeCurrencyValues();
+
             // Free up memory before the server goes online. This can free up 6 GB+ on larger servers.
             log.Info("Forcing .net garbage collection...");
             for (int i = 0 ; i < 10 ; i++)
@@ -320,9 +282,6 @@ namespace ACE.Server
             // This should be last
             log.Info("Initializing CommandManager...");
             CommandManager.Initialize();
-
-            log.Info("Initializing ModManager...");
-            ModManager.Initialize();
 
             if (!PropertyManager.GetBool("world_closed", false).Item)
             {

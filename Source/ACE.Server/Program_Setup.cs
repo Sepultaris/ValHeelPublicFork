@@ -1,7 +1,10 @@
+extern alias MySqlConnectorAlias;
+
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using ACE.Common;
 
@@ -91,7 +94,7 @@ namespace ACE.Server
 
             Console.WriteLine();
             Console.WriteLine();
-            Console.WriteLine("Next we will configure your SQL server connections. You will need to provide a database name, username and password for each.");
+            Console.WriteLine("Next we will configure your SQL server connections. You will need to know your database name, username and password for each.");
             Console.WriteLine("Default names for the databases are recommended, and it is also recommended you not use root for login to database. The password must not be blank.");
             Console.WriteLine("It is also recommended the SQL server be hosted on the same machine as this server, so defaults for Host and Port would be ideal as well.");
             Console.WriteLine("As before, pressing enter will use default value.");
@@ -272,10 +275,8 @@ namespace ACE.Server
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine();
-            Console.Write("Do you want to ACEmulator to attempt to initialize your SQL databases? This will erase any existing ACEmulator specific databases that may already exist on the server (Y/n): ");
+            Console.Write("Do you want to ACEmulator to attempt to initilize your SQL databases? This will erase any existing ACEmulator specific databases that may already exist on the server (Y/n): ");
             variable = Console.ReadLine();
-            var sqlConnectInfo = $"server={config.MySql.World.Host};port={config.MySql.World.Port};user={config.MySql.World.Username};password={config.MySql.World.Password};{config.MySql.World.ConnectionOptions}";
-            var sqlConnect = new MySqlConnector.MySqlConnection(sqlConnectInfo);
             if (IsRunningInContainer) variable = Convert.ToBoolean(Environment.GetEnvironmentVariable("ACE_SQL_INITIALIZE_DATABASES")) ? "y" : "n";
             if (!variable.Equals("n", StringComparison.OrdinalIgnoreCase) && !variable.Equals("no", StringComparison.OrdinalIgnoreCase))
             {
@@ -286,7 +287,7 @@ namespace ACE.Server
                 {
                     try
                     {
-                        using (var sqlTestConnection = new MySqlConnector.MySqlConnection($"server={config.MySql.World.Host};port={config.MySql.World.Port};user={config.MySql.World.Username};password={config.MySql.World.Password};{config.MySql.World.ConnectionOptions}"))
+                        using (var sqlTestConnection = new MySql.Data.MySqlClient.MySqlConnection($"server={config.MySql.World.Host};port={config.MySql.World.Port};user={config.MySql.World.Username};password={config.MySql.World.Password};DefaultCommandTimeout=120"))
                         {
                             Console.Write(".");
                             sqlTestConnection.Open();
@@ -294,7 +295,7 @@ namespace ACE.Server
 
                         break;
                     }
-                    catch (MySqlConnector.MySqlException)
+                    catch (MySql.Data.MySqlClient.MySqlException)
                     {
                         Console.Write(".");
                         Thread.Sleep(5000);
@@ -306,14 +307,17 @@ namespace ACE.Server
                 {
                     Console.Write("Clearing out temporary ace% database .... ");
                     var sqlDBFile = "DROP DATABASE `ace%`;";
-                    var script = new MySqlConnector.MySqlCommand(sqlDBFile, sqlConnect);
+                    var sqlConnectInfo = $"server={config.MySql.World.Host};port={config.MySql.World.Port};user={config.MySql.World.Username};password={config.MySql.World.Password};DefaultCommandTimeout=120";
+                    var sqlConnect = new MySql.Data.MySqlClient.MySqlConnection(sqlConnectInfo);
+                    var script = new MySql.Data.MySqlClient.MySqlScript(sqlConnect, sqlDBFile);
 
                     Console.Write($"Importing into SQL server at {config.MySql.World.Host}:{config.MySql.World.Port} .... ");
                     try
                     {
-                        ExecuteScript(script);
+                        script.StatementExecuted += new MySql.Data.MySqlClient.MySqlStatementExecutedEventHandler(OnStatementExecutedOutputDot);
+                        var count = script.Execute();
                     }
-                    catch (MySqlConnector.MySqlException)
+                    catch (MySql.Data.MySqlClient.MySqlException)
                     {
 
                     }
@@ -325,30 +329,26 @@ namespace ACE.Server
                 {
                     Console.Write($"Found {file.Name} .... ");
                     var sqlDBFile = File.ReadAllText(file.FullName);
+                    var sqlConnectInfo = $"server={config.MySql.World.Host};port={config.MySql.World.Port};user={config.MySql.World.Username};password={config.MySql.World.Password};DefaultCommandTimeout=120";
                     switch (file.Name)
                     {
-                        case "AuthenticationBase.sql":
-                            sqlConnectInfo = $"server={config.MySql.Authentication.Host};port={config.MySql.Authentication.Port};user={config.MySql.Authentication.Username};password={config.MySql.Authentication.Password};{config.MySql.Shard.ConnectionOptions}";
-                            sqlDBFile = sqlDBFile.Replace("ace_auth", config.MySql.Authentication.Database);
+                        case "AuthenticationBase":
+                            sqlConnectInfo = $"server={config.MySql.Authentication.Host};port={config.MySql.Authentication.Port};user={config.MySql.Authentication.Username};password={config.MySql.Authentication.Password};DefaultCommandTimeout=120";
                             break;
-                        case "ShardBase.sql":
-                            sqlConnectInfo = $"server={config.MySql.Shard.Host};port={config.MySql.Shard.Port};user={config.MySql.Shard.Username};password={config.MySql.Shard.Password};{config.MySql.Shard.ConnectionOptions}";
-                            sqlDBFile = sqlDBFile.Replace("ace_shard", config.MySql.Shard.Database);
-                            break;
-                        case "WorldBase.sql":
-                        default:
-                            //sqlConnectInfo = $"server={config.MySql.World.Host};port={config.MySql.World.Port};user={config.MySql.World.Username};password={config.MySql.World.Password};{config.MySql.Shard.ConnectionOptions}";
-                            sqlDBFile = sqlDBFile.Replace("ace_world", config.MySql.World.Database);
+                        case "ShardBase":
+                            sqlConnectInfo = $"server={config.MySql.Shard.Host};port={config.MySql.Shard.Port};user={config.MySql.Shard.Username};password={config.MySql.Shard.Password};DefaultCommandTimeout=120";
                             break;
                     }
-                    var script = new MySqlConnector.MySqlCommand(sqlDBFile, sqlConnect);
+                    var sqlConnect = new MySql.Data.MySqlClient.MySqlConnection(sqlConnectInfo);
+                    var script = new MySql.Data.MySqlClient.MySqlScript(sqlConnect, sqlDBFile);
 
                     Console.Write($"Importing into SQL server at {config.MySql.World.Host}:{config.MySql.World.Port} .... ");
                     try
                     {
-                        ExecuteScript(script);
+                        script.StatementExecuted += new MySql.Data.MySqlClient.MySqlStatementExecutedEventHandler(OnStatementExecutedOutputDot);
+                        var count = script.Execute();
                     }
-                    catch (MySqlConnector.MySqlException)
+                    catch (MySql.Data.MySqlClient.MySqlException)
                     {
 
                     }
@@ -358,11 +358,11 @@ namespace ACE.Server
 
                 Console.WriteLine("Searching for Update SQL scripts .... ");
 
-                PatchDatabase("Authentication", config.MySql.Authentication.Host, config.MySql.Authentication.Port, config.MySql.Authentication.Username, config.MySql.Authentication.Password, config.MySql.Authentication.Database, config.MySql.Shard.Database, config.MySql.World.Database);
+                PatchDatabase("Authentication", config.MySql.Authentication.Host, config.MySql.Authentication.Port, config.MySql.Authentication.Username, config.MySql.Authentication.Password, config.MySql.Authentication.Database);
 
-                PatchDatabase("Shard", config.MySql.Shard.Host, config.MySql.Shard.Port, config.MySql.Shard.Username, config.MySql.Shard.Password, config.MySql.Authentication.Database, config.MySql.Shard.Database, config.MySql.World.Database);
+                PatchDatabase("Shard", config.MySql.Shard.Host, config.MySql.Shard.Port, config.MySql.Shard.Username, config.MySql.Shard.Password, config.MySql.Shard.Database);
 
-                PatchDatabase("World", config.MySql.World.Host, config.MySql.World.Port, config.MySql.World.Username, config.MySql.World.Password, config.MySql.Authentication.Database, config.MySql.Shard.Database, config.MySql.World.Database);
+                PatchDatabase("World", config.MySql.World.Host, config.MySql.World.Port, config.MySql.World.Username, config.MySql.World.Password, config.MySql.World.Database);
             }
 
             Console.WriteLine();
@@ -385,20 +385,31 @@ namespace ACE.Server
 
                 Console.Write("Looking up latest release from ACEmulator/ACE-World-16PY-Patches .... ");
 
-                var url = "https://api.github.com/repos/ACEmulator/ACE-World-16PY-Patches/releases/latest";
-                using var client = new WebClient();
-                var html = client.GetStringFromURL(url).Result;
+                // webrequest code provided by OptimShi
+                var url = "https://api.github.com/repos/ACEmulator/ACE-World-16PY-Patches/releases";
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.UserAgent = "Mozilla//5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko//20100101 Firefox//72.0";
+                request.UserAgent = "ACE.Server";
+
+                var response = request.GetResponse();
+                var reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.UTF8);
+                var html = reader.ReadToEnd();
+                reader.Close();
+                response.Close();
 
                 dynamic json = JsonConvert.DeserializeObject(html);
-                string tag = json.tag_name;
-                string dbURL = json.assets[0].browser_download_url;
-                string dbFileName = json.assets[0].name;
+                string tag = json[0].tag_name;
+                string dbURL = json[0].assets[0].browser_download_url;
+                string dbFileName = json[0].assets[0].name;
+                // webrequest code provided by OptimShi
 
                 Console.WriteLine($"Found {tag} !");
 
                 Console.Write($"Downloading {dbFileName} .... ");
-                var dlTask = client.DownloadFile(dbURL, dbFileName);
-                dlTask.Wait();
+                using (var client = new WebClient())
+                {
+                    client.DownloadFile(dbURL, dbFileName);
+                }
                 Console.WriteLine("download complete!");
 
                 Console.Write($"Extracting {dbFileName} .... ");
@@ -412,25 +423,24 @@ namespace ACE.Server
                 Console.Write($"Importing {sqlFile} into SQL server at {config.MySql.World.Host}:{config.MySql.World.Port} (This will take a while, please be patient) .... ");
                 using (var sr = File.OpenText(sqlFile))
                 {
+                    var sqlConnect = new MySql.Data.MySqlClient.MySqlConnection($"server={config.MySql.World.Host};port={config.MySql.World.Port};user={config.MySql.World.Username};password={config.MySql.World.Password};DefaultCommandTimeout=120");
+
                     var line = string.Empty;
                     var completeSQLline = string.Empty;
-
-                    var dbname = config.MySql.World.Database;
-
                     while ((line = sr.ReadLine()) != null)
                     {
-                        line = line.Replace("ace_world", dbname);
                         //do minimal amount of work here
                         if (line.EndsWith(";"))
                         {
                             completeSQLline += line + Environment.NewLine;
 
-                            var script = new MySqlConnector.MySqlCommand(completeSQLline, sqlConnect);
+                            var script = new MySql.Data.MySqlClient.MySqlScript(sqlConnect, completeSQLline);
                             try
                             {
-                                ExecuteScript(script);
+                                script.StatementExecuted += new MySql.Data.MySqlClient.MySqlStatementExecutedEventHandler(OnStatementExecutedOutputDot);
+                                var count = script.Execute();
                             }
-                            catch (MySqlConnector.MySqlException)
+                            catch (MySql.Data.MySqlClient.MySqlException)
                             {
 
                             }
@@ -447,32 +457,12 @@ namespace ACE.Server
                 Console.WriteLine("Deleted!");
             }
 
-            CleanupConnection(sqlConnect);
             Console.WriteLine("exiting setup for ACEmulator.");
         }
 
-        private static void ExecuteScript(MySqlConnector.MySqlCommand scriptCommand)
+        private static void OnStatementExecutedOutputDot(object sender, MySql.Data.MySqlClient.MySqlScriptEventArgs args)
         {
-            if (scriptCommand.Connection.State != System.Data.ConnectionState.Open)
-            {
-                scriptCommand.Connection.Open();
-            }
-            scriptCommand.ExecuteNonQuery();
             Console.Write(".");
-        }
-
-        private static void CleanupConnection(MySqlConnector.MySqlConnection connection)
-        {
-            if (connection.State != System.Data.ConnectionState.Closed)
-            {
-                try
-                {
-                    connection.Close();
-                }
-                catch
-                {
-                }
-            }
         }
     }
 }

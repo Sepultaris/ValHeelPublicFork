@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Factories;
 using ACE.Server.Managers;
-using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
-
-using log4net;
 
 namespace ACE.Server.Entity
 {
@@ -18,8 +14,6 @@ namespace ACE.Server.Entity
     {
         // http://acpedia.org/wiki/Tailoring
         // https://asheron.fandom.com/wiki/Tailoring
-
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         // tailoring kits
         public const uint ArmorTailoringKit = 41956;
@@ -129,10 +123,6 @@ namespace ACE.Server.Entity
                 return WeenieError.YouDoNotPassCraftingRequirements;
             }
 
-            // verify not society armor
-            if (source.IsSocietyArmor || target.IsSocietyArmor)
-                return WeenieError.YouDoNotPassCraftingRequirements;
-
             return WeenieError.None;
         }
 
@@ -204,12 +194,6 @@ namespace ACE.Server.Entity
                 return;
             }
 
-            if (!HasAvailableSpace(player, source.WeenieClassId, target.WeenieClassId, wcid.Value))
-            {
-                player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-                return;
-            }
-
             var wo = WorldObjectFactory.CreateNewWorldObject(wcid.Value);
 
             SetArmorProperties(target, wo);
@@ -237,9 +221,6 @@ namespace ACE.Server.Entity
             target.Shade2 = source.Shade2;
             target.Shade3 = source.Shade3;
             target.Shade4 = source.Shade4;
-
-            target.LightsStatus = source.LightsStatus;
-            target.Translucency = source.Translucency;
 
             target.SetupTableId = source.SetupTableId;
             target.PaletteBaseId = source.PaletteBaseId;
@@ -286,6 +267,8 @@ namespace ACE.Server.Entity
 
             target.HookType = source.HookType;
             target.HookPlacement = source.HookPlacement;
+            target.LightsStatus = source.LightsStatus;
+            target.Translucency = source.Translucency;
 
             // These values are all set just for verification purposes. Likely originally handled by unique WCID and recipe system.
             if (source is MeleeWeapon)
@@ -300,41 +283,12 @@ namespace ACE.Server.Entity
             target.W_DamageType = source.W_DamageType;
         }
 
-        public static bool HasAvailableSpace(Player player, uint sourceWCID, uint targetWCID, uint resultWCID)
-        {
-            // ensure player has enough free inventory slots / container slots / available burden to mutate items
-            var itemsToReceive = new ItemsToReceive(player);
-
-            itemsToReceive.Remove(sourceWCID, 1);
-            itemsToReceive.Remove(targetWCID, 1);
-            itemsToReceive.Add(resultWCID, 1);
-
-            if (itemsToReceive.PlayerExceedsLimits)
-            {
-                if (itemsToReceive.PlayerExceedsAvailableBurden)
-                    player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, "You are too encumbered to tailor that!"));
-                else if (itemsToReceive.PlayerOutOfInventorySlots)
-                    player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, "You do not have enough pack space to tailor that!"));
-                else if (itemsToReceive.PlayerOutOfContainerSlots)
-                    player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, "You do not have enough container slots to tailor that!"));
-
-                return false;
-            }
-
-            return true;
-        }
-
         public static void Finalize(Player player, WorldObject source, WorldObject target, WorldObject result)
         {
             player.TryConsumeFromInventoryWithNetworking(source, 1);
             player.TryConsumeFromInventoryWithNetworking(target, 1);
 
-            // errors shouldn't be possible here, since the items were pre-validated, but just in case...
-            if (!player.TryCreateInInventoryWithNetworking(result))
-            {
-                log.Error($"[TAILORING] Tailoring.Finalize({player.Name} (0x{player.Guid}), {source.Name} (0x{source.Guid}), {target.Name} (0x{target.Guid}), {result.Name}) - couldn't add {result.Name} ({result.Guid}) to player inventory after validation, this shouldn't happen!");
-                result.Destroy();  // cleanup for guid manager
-            }
+            player.TryCreateInInventoryWithNetworking(result);
 
             if (PropertyManager.GetBool("player_receive_immediate_save").Item)
                 player.RushNextPlayerSave(5);
@@ -364,14 +318,8 @@ namespace ACE.Server.Entity
                 return;
             }
 
-            if (!HasAvailableSpace(player, source.WeenieClassId, target.WeenieClassId, DarkHeart))
-            {
-                player.SendUseDoneEvent(WeenieError.YouDoNotPassCraftingRequirements);
-                return;
-            }
-
             // create intermediate weapon tailoring kit
-            var wo = WorldObjectFactory.CreateNewWorldObject(DarkHeart);
+            var wo = WorldObjectFactory.CreateNewWorldObject(51451);
             SetWeaponProperties(target, wo);
 
             player.Session.Network.EnqueueSend(new GameMessageSystemChat("You tailor the appearance off the weapon.", ChatMessageType.Broadcast));
@@ -583,9 +531,6 @@ namespace ACE.Server.Entity
             player.UpdateProperty(target, PropertyFloat.Shade3, source.Shade3);
             player.UpdateProperty(target, PropertyFloat.Shade4, source.Shade4);
 
-            player.UpdateProperty(target, PropertyBool.LightsStatus, source.LightsStatus);
-            player.UpdateProperty(target, PropertyFloat.Translucency, source.Translucency);
-
             player.UpdateProperty(target, PropertyDataId.Setup, source.SetupTableId);
             player.UpdateProperty(target, PropertyDataId.ClothingBase, source.ClothingBase);
             player.UpdateProperty(target, PropertyDataId.PaletteBase, source.PaletteBaseId);
@@ -621,6 +566,8 @@ namespace ACE.Server.Entity
 
             player.UpdateProperty(target, PropertyInt.HookType, source.HookType);
             player.UpdateProperty(target, PropertyInt.HookPlacement, source.HookPlacement);
+            player.UpdateProperty(target, PropertyBool.LightsStatus, source.LightsStatus);
+            player.UpdateProperty(target, PropertyFloat.Translucency, source.Translucency);
         }
 
         public static uint? GetArmorWCID(EquipMask validLocations)

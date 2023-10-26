@@ -1,8 +1,6 @@
 using System;
 using System.Diagnostics;
 
-using log4net;
-
 using ACE.Common;
 using ACE.Common.Extensions;
 using ACE.Entity.Enum;
@@ -30,8 +28,6 @@ namespace ACE.Server.WorldObjects
     }
     public class UnlockerHelper
     {
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         public static void ConsumeUnlocker(Player player, WorldObject unlocker, WorldObject target, bool success)
         {
             // is Sonic Screwdriver supposed to be consumed on use?
@@ -61,12 +57,9 @@ namespace ACE.Server.WorldObjects
             {
                 msg += $"Your {(isLockpick ? "lockpicks" : "key")} ";
 
-                if (unlocker.Structure > 0)
-                    unlocker.Structure--;
-                else
-                    unlocker.Structure = 0;
+                unlocker.Structure--;
 
-                if (unlocker.Structure == 0)
+                if (unlocker.Structure < 1)
                 {
                     msg += $"{(isLockpick ? "are" : "is")} used up.";
                 }
@@ -74,20 +67,14 @@ namespace ACE.Server.WorldObjects
                 {
                     msg += $"{(isLockpick ? "have" : "has")} {unlocker.Structure} use{(unlocker.Structure > 1 ? "s" : "")} left.";
                 }
-
-                unlocker.Value -= unlocker.StructureUnitValue;
-
-                if (unlocker.Value < 0) // fix negative value
-                    unlocker.Value = 0;
             }
 
             player.Session.Network.EnqueueSend(new GameMessageSystemChat(msg, ChatMessageType.Broadcast));
             if (!unlimitedUses)
             {
-                if (unlocker.Structure == 0)
+                if (unlocker.Structure < 1)
                 {
-                    if (!player.TryConsumeFromInventoryWithNetworking(unlocker, 1))
-                        log.Warn($"UnlockerHelper.ConsumeUnlocker: TryConsumeFromInventoryWithNetworking failed for {unlocker.Name} (0x{unlocker.Guid}:{unlocker.WeenieClassId}), used on {target.Name} (0x{target.Guid}:{target.WeenieClassId}) and used by {player.Name} (0x{player.Guid})");
+                    player.TryConsumeFromInventoryWithNetworking(unlocker, 1);
                 }
                 else
                 {

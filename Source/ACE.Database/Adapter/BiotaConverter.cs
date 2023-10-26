@@ -527,16 +527,6 @@ namespace ACE.Database.Adapter
                 {
                     var entity = new BiotaPropertiesPosition { ObjectId = biota.Id, PositionType = (ushort)kvp.Key, ObjCellId = kvp.Value.ObjCellId, OriginX = kvp.Value.PositionX, OriginY = kvp.Value.PositionY, OriginZ = kvp.Value.PositionZ, AnglesW = kvp.Value.RotationW, AnglesX = kvp.Value.RotationX, AnglesY = kvp.Value.RotationY, AnglesZ = kvp.Value.RotationZ };
 
-                    // Entity Framework is unable to store NaN floats in the database and results in an error of:
-                    // ERROR 1054: Unknown column 'NaN' in 'field list'
-                    if (float.IsNaN(entity.AnglesX) || float.IsNaN(entity.AnglesY) || float.IsNaN(entity.AnglesZ) || float.IsNaN(entity.AnglesW))
-                    {
-                        entity.AnglesW = 1;
-                        entity.AnglesX = 0;
-                        entity.AnglesY = 0;
-                        entity.AnglesZ = 0;
-                    }
-
                     result.BiotaPropertiesPosition.Add(entity);
                 }
             }
@@ -654,7 +644,7 @@ namespace ACE.Database.Adapter
                             Type = value2.Type,
                             Delay = value2.Delay,
                             Extent = value2.Extent,
-                            Motion = (uint?)value2.Motion,
+                            Motion = (int?)value2.Motion,
                             Message = value2.Message,
                             TestString = value2.TestString,
                             Min = value2.Min,

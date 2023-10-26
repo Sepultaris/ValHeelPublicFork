@@ -49,6 +49,23 @@ namespace ACE.Database
             }
         }
 
+        public List<string> GetListofBestTimes()
+        {
+            using (var context = new ShardDbContext())
+            {
+                var results = context.BiotaPropertiesInt
+                    .AsNoTracking()
+                    .Where(r => r.Type == 9044).ToList();
+
+                var result = new List<string>();
+                foreach (var time in results)
+                {                    
+                    result.Add($"{time}");
+                }
+
+                return result;
+            }
+        }
 
         /// <summary>
         /// Will return uint.MaxValue if no records were found within the range provided.
@@ -568,49 +585,23 @@ namespace ACE.Database
 
         public List<Character> GetCharacters(uint accountId, bool includeDeleted)
         {
-            return GetCharacterList(accountId, includeDeleted);
-        }
-
-        public Character GetCharacter(uint characterId)
-        {
-            return GetCharacterList(0, true, characterId).FirstOrDefault();
-        }
-
-        private static List<Character> GetCharacterList(uint accountID, bool includeDeleted, uint characterID = 0)
-        {
             var context = new ShardDbContext();
 
-            IQueryable<Character> query;
-
-            if (accountID > 0)
-                query = context.Character.Where(r => r.AccountId == accountID && (includeDeleted || !r.IsDeleted));
-            else
-                query = context.Character.Where(r => r.Id == characterID && (includeDeleted || !r.IsDeleted));
+            var query = context.Character.Where(r => r.AccountId == accountId && (includeDeleted || !r.IsDeleted));
 
             var results = query.ToList();
 
-            for (int i = 0; i < results.Count; i++)
-            {
-                // Do we have a reference to this Character already?
-                var existingChar = CharacterContexts.FirstOrDefault(r => r.Key.Id == results[i].Id);
+            query.Include(r => r.CharacterPropertiesContractRegistry).Load();
+            query.Include(r => r.CharacterPropertiesFillCompBook).Load();
+            query.Include(r => r.CharacterPropertiesFriendList).Load();
+            query.Include(r => r.CharacterPropertiesQuestRegistry).Load();
+            query.Include(r => r.CharacterPropertiesShortcutBar).Load();
+            query.Include(r => r.CharacterPropertiesSpellBar).Load();
+            query.Include(r => r.CharacterPropertiesSquelch).Load();
+            query.Include(r => r.CharacterPropertiesTitleBook).Load();
 
-                if (existingChar.Key != null)
-                    results[i] = existingChar.Key;
-                else
-                {
-                    // No reference, pull all the properties and add it to the cache
-                    query.Include(r => r.CharacterPropertiesContractRegistry).Load();
-                    query.Include(r => r.CharacterPropertiesFillCompBook).Load();
-                    query.Include(r => r.CharacterPropertiesFriendList).Load();
-                    query.Include(r => r.CharacterPropertiesQuestRegistry).Load();
-                    query.Include(r => r.CharacterPropertiesShortcutBar).Load();
-                    query.Include(r => r.CharacterPropertiesSpellBar).Load();
-                    query.Include(r => r.CharacterPropertiesSquelch).Load();
-                    query.Include(r => r.CharacterPropertiesTitleBook).Load();
-
-                    CharacterContexts.Add(results[i], context);
-                }
-            }
+            foreach (var result in results)
+                CharacterContexts.Add(result, context);
 
             return results;
         }
@@ -620,7 +611,7 @@ namespace ACE.Database
             var context = new ShardDbContext();
 
             var result = context.Character
-                .FirstOrDefault(r => r.Name == name && !r.IsDeleted);
+                .FirstOrDefault(r => r.Name == name.ToLower() && !r.IsDeleted);
 
             return result;
         }

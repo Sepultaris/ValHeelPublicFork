@@ -69,9 +69,24 @@
                     "stacksize": "1"
                 },
                 {
+                    "weenieId": "31000",
+                    "name": "Blackmoor's Favor",
+                    "stacksize": "1"
+                },
+                {
+                    "weenieId": "31001",
+                    "name": "Asheron's Benediction",
+                    "stacksize": "1"
+                },
+                {
                     "weenieId": "20646",
                     "name": "Ust",
                     "stacksize": "1"
+                },
+                {
+                    "weenieId": "802108",
+                    "name": "Pocket Buffing Stone",
+                        "stacksize": "1"
                 }
             ],
             "heritage": [
@@ -151,6 +166,79 @@
                             "stacksize": "1"
                         }
                     ]
+                },
+                {
+                    "id": "12",
+                    "name": "Olthoi Soldier",
+                    "gear": [
+                        {
+                            "weenieId": "43634",
+                            "name": "Acidic Infusion",
+                            "stacksize": "10"
+                        },
+                        {
+                            "weenieId": "43701",
+                            "name": "Olthoi Fibrous Healing Tissue",
+                            "stacksize": "1"
+                        }
+                    ]
+                },
+                {
+                    "id": "13",
+                    "name": "Olthoi Spitter",
+                    "gear": [
+                        {
+                            "weenieId": "43634",
+                            "name": "Acidic Infusion",
+                            "stacksize": "10"
+                        },
+                        {
+                            "weenieId": "43635",
+                            "name": "Saliva Invigorator",
+                            "stacksize": "100"
+                        },
+                        {
+                            "weenieId": "43701",
+                            "name": "Olthoi Fibrous Healing Tissue",
+                            "stacksize": "1"
+                        },
+                        {
+                            "weenieId": "43489",
+                            "name": "Salivatory Goo",
+                            "stacksize": "1"
+                        },
+                        {
+                            "weenieId": "15271",
+                            "name": "Foci of Strife",
+                            "stacksize": "1"
+                        }
+                    ],
+                    "spells": [
+                        {
+                            "spellId": "5440",
+                            "name": "Acid Spit 1"
+                        },
+                        {
+                            "spellId": "5442",
+                            "name": "Acid Spit Arc 1"
+                        },
+                        {
+                            "spellId": "5444",
+                            "name": "Acid Spit Blast 1"
+                        },
+                        {
+                            "spellId": "5439",
+                            "name": "Acid Spit Streak 1"
+                        },
+                        {
+                            "spellId": "5446",
+                            "name": "Acid Spit Volley 1"
+                        },
+                        {
+                            "spellId": "5522",
+                            "name": "Acid Spit Vulnerability 1"
+                        }
+                    ]
                 }
             ]
         },
@@ -193,12 +281,7 @@
                     "weenieId": "12748",
                     "name": "Training Wand",
                     "stacksize": "1"
-                },
-                {
-                    "weenieId": "15268",
-                    "name": "Foci of Enchantment",
-                    "stacksize": "1"
-                },
+                },               
                 {
                     "weenieId": "691",
                     "name": "Lead Scarab",
@@ -245,11 +328,6 @@
                 {
                     "weenieId": "12748",
                     "name": "Training Wand",
-                    "stacksize": "1"
-                },
-                {
-                    "weenieId": "15269",
-                    "name": "Foci of Artifice",
                     "stacksize": "1"
                 },
                 {
@@ -303,11 +381,6 @@
                 {
                     "weenieId": "12748",
                     "name": "Training Wand",
-                    "stacksize": "1"
-                },
-                {
-                    "weenieId": "15270",
-                    "name": "Foci of Verdancy",
                     "stacksize": "1"
                 },
                 {
@@ -366,11 +439,6 @@
                 {
                     "weenieId": "12748",
                     "name": "Training Wand",
-                    "stacksize": "1"
-                },
-                {
-                    "weenieId": "15271",
-                    "name": "Foci of Strife",
                     "stacksize": "1"
                 },
                 {
@@ -533,11 +601,6 @@
                     "stacksize": "1"
                 },
                 {
-                    "weenieId": "43173",
-                    "name": "Foci of Shadow",
-                    "stacksize": "1"
-                },
-                {
                     "weenieId": "691",
                     "name": "Lead Scarab",
                     "stacksize": "5"
@@ -666,7 +729,6 @@
                     "name": "Tumerok",
                     "gear": [
                         {
-                            "weenieId": "12745",
                             "name": "Training Trident",
                             "stacksize": "1"
                         }
@@ -738,7 +800,6 @@
                     "name": "Gharu'ndim",
                     "gear": [
                         {
-                            "weenieId":  "45550",
                             "name": "Training Staff",
                             "stacksize": "1"
                         }
@@ -782,7 +843,6 @@
                     "name": "Gear",
                     "gear": [
                         {
-                            "weenieID": "45542",
                             "name": "Training Club",
                             "stacksize": "1"
                         }
@@ -793,7 +853,6 @@
                     "name": "Tumerok",
                     "gear": [
                         {
-                            "weenieID": "45546",
                             "name": "Training Spear",
                             "stacksize": "1"
                         }
@@ -986,7 +1045,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31717",
+                            "weenieId": "300",
                             "name": "Arrow",
                             "stacksize": "250"
                         }
@@ -1002,7 +1061,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31715",
+                            "weenieId": "12464",
                             "name": "Atlatl Dart",
                             "stacksize": "250"
                         }
@@ -1018,7 +1077,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31717",
+                            "weenieId": "300",
                             "name": "Arrow",
                             "stacksize": "250"
                         }
@@ -1034,7 +1093,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31716",
+                            "weenieId": "305",
                             "name": "Quarrel",
                             "stacksize": "250"
                         }
@@ -1050,7 +1109,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31716",
+                            "weenieId": "305",
                             "name": "Quarrel",
                             "stacksize": "250"
                         }
@@ -1066,7 +1125,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31716",
+                            "weenieId": "305",
                             "name": "Quarrel",
                             "stacksize": "250"
                         }
@@ -1082,7 +1141,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31715",
+                            "weenieId": "12464",
                             "name": "Atlatl Dart",
                             "stacksize": "250"
                         }
@@ -1098,7 +1157,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31715",
+                            "weenieId": "12464",
                             "name": "Atlatl Dart",
                             "stacksize": "250"
                         }
@@ -1114,7 +1173,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31717",
+                            "weenieId": "300",
                             "name": "Arrow",
                             "stacksize": "250"
                         }
@@ -1130,7 +1189,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31716",
+                            "weenieId": "305",
                             "name": "Quarrel",
                             "stacksize": "250"
                         }
@@ -1146,7 +1205,7 @@
                             "stacksize": "1"
                         },
                         {
-                            "weenieId": "31715",
+                            "weenieId": "12464",
                             "name": "Atlatl Dart",
                             "stacksize": "250"
                         }

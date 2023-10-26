@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System;
 
 using Newtonsoft.Json;
 
@@ -8,7 +9,10 @@ using ACE.Database.Models.World;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity;
+using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
+using ACE.Common;
+using static ACE.Server.WorldObjects.Player;
 
 namespace ACE.Server.Managers
 {
@@ -40,25 +44,34 @@ namespace ACE.Server.Managers
         {
             Recipe recipe = null;
 
+            /*if (source.WeenieClassId == 801966)
+            {              
+                if (target.Sockets == 0 || target.Sockets == null)
+                {                    
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    player.Inventory.TryAdd(player.Guid, source);
+                    return null;
+                }
+            }*/
+            /*if (source.WeenieClassId == 801967)
+            {
+                if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    return null;
+                }
+            }*/
+            /*if (source.WeenieClassId == 801968)
+            {
+                if (target.Sockets == 0 || target.Sockets == null)
+                {
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"The {target.Name} does not have enough sockets.", ChatMessageType.Craft));
+                    return null;
+                }
+            }*/
+
             switch ((WeenieClassName)source.WeenieClassId)
             {
-                case WeenieClassName.W_POTDYEDARKGREEN_CLASS:
-                case WeenieClassName.W_POTDYEDARKRED_CLASS:
-                case WeenieClassName.W_POTDYEDARKYELLOW_CLASS:
-                case WeenieClassName.W_POTDYEWINTERBLUE_CLASS:
-                case WeenieClassName.W_POTDYEWINTERGREEN_CLASS:
-                case WeenieClassName.W_POTDYEWINTERSILVER_CLASS:
-                case WeenieClassName.W_POTDYESPRINGBLACK_CLASS:
-                case WeenieClassName.W_POTDYESPRINGBLUE_CLASS:
-                case WeenieClassName.W_POTDYESPRINGPURPLE_CLASS:
-
-                    // ensure item is armor/clothing and dyeable
-                    if (target.WeenieType != WeenieType.Clothing || !(target.GetProperty(PropertyBool.Dyable) ?? false))
-                        return null;
-
-                    recipe = DatabaseManager.World.GetCachedRecipe(3844);     // base dye recipe
-                    break;
-
                 case WeenieClassName.W_DYERAREETERNALFOOLPROOFBLUE_CLASS:
                 case WeenieClassName.W_DYERAREETERNALFOOLPROOFBLACK_CLASS:
                 case WeenieClassName.W_DYERAREETERNALFOOLPROOFBOTCHED_CLASS:
@@ -74,7 +87,9 @@ namespace ACE.Server.Managers
                     if (target.WeenieType != WeenieType.Clothing || !(target.GetProperty(PropertyBool.Dyable) ?? false))
                         return null;
 
-                    recipe = DatabaseManager.World.GetCachedRecipe(9068);     // rare eternal dye recipe
+                    // use dye recipe as base, cleared
+                    recipe = DatabaseManager.World.GetRecipe(3844);
+                    ClearRecipe(recipe);
                     break;
 
                 case WeenieClassName.W_MATERIALIVORY_CLASS:
@@ -84,42 +99,38 @@ namespace ACE.Server.Managers
                     if (!(target.GetProperty(PropertyBool.Ivoryable) ?? false))
                         return null;
 
-                    var recipeId = source.WeenieClassId == (int)WeenieClassName.W_MATERIALRAREETERNALIVORY_CLASS ? 9069 : 3977;
+                    // use ivory recipe as base
+                    recipe = DatabaseManager.World.GetRecipe(3977);
 
-                    recipe = DatabaseManager.World.GetCachedRecipe((uint)recipeId);
+                    if (source.WeenieClassId == (int)WeenieClassName.W_MATERIALRAREETERNALIVORY_CLASS)
+                        ClearRecipe(recipe);
 
                     break;
 
                 case WeenieClassName.W_MATERIALLEATHER_CLASS:
                 case WeenieClassName.W_MATERIALRAREETERNALLEATHER_CLASS:
 
-                    // ensure item is not already retained, and is not stackable
-                    // and can either be salvaged, sold, or consumed with a mana stone
-                    if (target.Retained || target is Stackable)
+                    // ensure item is not retained and sellable
+                    if (target.Retained || !target.IsSellable)
                         return null;
 
-                    if (target.MaterialType == null && !target.IsSellable && target.ItemMaxMana == null)
-                        return null;
+                    // use leather recipe as base
+                    recipe = DatabaseManager.World.GetRecipe(4426);
 
-                    recipeId = source.WeenieClassId == (int)WeenieClassName.W_MATERIALRAREETERNALLEATHER_CLASS ? 9070 : 4426;
-
-                    recipe = DatabaseManager.World.GetCachedRecipe((uint)recipeId);
+                    if (source.WeenieClassId == (int)WeenieClassName.W_MATERIALRAREETERNALLEATHER_CLASS)
+                        ClearRecipe(recipe);
 
                     break;
 
                 case WeenieClassName.W_MATERIALSANDSTONE_CLASS:
                 case WeenieClassName.W_MATERIALSANDSTONE100_CLASS:
 
-                    // ensure item is retained and not stackable
-                    // and can either be salvaged, sold, or consumed with a mana stone
-                    if (!target.Retained || target is Stackable)
-                        return null;
-
-                    if (target.MaterialType == null && !target.IsSellable && target.ItemMaxMana == null)
+                    // ensure item is retained and sellable
+                    if (!target.Retained || !target.IsSellable)
                         return null;
 
                     // use sandstone recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(8003);
+                    recipe = DatabaseManager.World.GetRecipe(8003);
 
                     break;
 
@@ -130,7 +141,7 @@ namespace ACE.Server.Managers
                         return null;
 
                     // use gold recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(3851);
+                    recipe = DatabaseManager.World.GetRecipe(3851);
                     break;
 
                 case WeenieClassName.W_MATERIALLINEN_CLASS:
@@ -140,7 +151,7 @@ namespace ACE.Server.Managers
                         return null;
 
                     // use linen recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(3854);
+                    recipe = DatabaseManager.World.GetRecipe(3854);
                     break;
 
                 case WeenieClassName.W_MATERIALMOONSTONE_CLASS:
@@ -150,7 +161,7 @@ namespace ACE.Server.Managers
                         return null;
 
                     // use moonstone recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(3978);
+                    recipe = DatabaseManager.World.GetRecipe(3978);
                     break;
 
                 case WeenieClassName.W_MATERIALPINE_CLASS:
@@ -160,7 +171,7 @@ namespace ACE.Server.Managers
                         return null;
 
                     // use pine recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(3858);
+                    recipe = DatabaseManager.World.GetRecipe(3858);
                     break;
 
                 case WeenieClassName.W_MATERIALIRON100_CLASS:
@@ -178,7 +189,7 @@ namespace ACE.Server.Managers
                         return null;
 
                     // grab correct recipe to use as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
+                    recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
                     break;
 
                 case WeenieClassName.W_MATERIALMAHOGANY100_CLASS:
@@ -189,8 +200,8 @@ namespace ACE.Server.Managers
                         return null;
 
                     // use mahogany recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(3855);
-                    break;
+                    recipe = DatabaseManager.World.GetRecipe(3855);
+                    break;                
 
                 case WeenieClassName.W_MATERIALOAK_CLASS:
 
@@ -199,7 +210,7 @@ namespace ACE.Server.Managers
                         return null;
 
                     // use oak recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(3857);
+                    recipe = DatabaseManager.World.GetRecipe(3857);
                     break;
 
                 case WeenieClassName.W_MATERIALOPAL100_CLASS:
@@ -210,7 +221,7 @@ namespace ACE.Server.Managers
                         return null;
 
                     // use opal recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(3979);
+                    recipe = DatabaseManager.World.GetRecipe(3979);
                     break;
 
                 case WeenieClassName.W_MATERIALGREENGARNET100_CLASS:
@@ -221,7 +232,7 @@ namespace ACE.Server.Managers
                         return null;
 
                     // use green garnet recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(5202);
+                    recipe = DatabaseManager.World.GetRecipe(5202);
                     break;
 
                 case WeenieClassName.W_MATERIALBRASS100_CLASS:
@@ -231,7 +242,7 @@ namespace ACE.Server.Managers
                     if (target.Workmanship == null) return null;
 
                     // use brass recipe as base
-                    recipe = DatabaseManager.World.GetCachedRecipe(3848);
+                    recipe = DatabaseManager.World.GetRecipe(3848);
                     break;
 
                 case WeenieClassName.W_MATERIALROSEQUARTZ_CLASS:
@@ -250,7 +261,7 @@ namespace ACE.Server.Managers
                     if (target.WeenieType != WeenieType.Generic || target.Workmanship == null || target.ValidLocations == EquipMask.TrinketOne)
                         return null;
 
-                    recipe = DatabaseManager.World.GetCachedRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
+                    recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
                     break;
 
                 //case WeenieClassName.W_MATERIALSTEEL50_CLASS:
@@ -284,13 +295,12 @@ namespace ACE.Server.Managers
                     if (source.MaterialType == MaterialType.Steel && !target.IsEnchantable)
                         return null;
 
-                    recipe = DatabaseManager.World.GetCachedRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
+                    recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
                     break;
 
                 case WeenieClassName.W_MATERIALPERIDOT_CLASS:
                 case WeenieClassName.W_MATERIALYELLOWTOPAZ_CLASS:
                 case WeenieClassName.W_MATERIALZIRCON_CLASS:
-
                 case WeenieClassName.W_MATERIALRAREFOOLPROOFPERIDOT_CLASS:
                 case WeenieClassName.W_MATERIALRAREFOOLPROOFYELLOWTOPAZ_CLASS:
                 case WeenieClassName.W_MATERIALRAREFOOLPROOFZIRCON_CLASS:
@@ -298,52 +308,65 @@ namespace ACE.Server.Managers
                 case WeenieClassName.W_MATERIALACE36635FOOLPROOFYELLOWTOPAZ:
                 case WeenieClassName.W_MATERIALACE36636FOOLPROOFZIRCON:
 
-                    // can be applied to anything with AL, including shields (according to base recipe)
-                    if (!target.HasArmorLevel() || target.Workmanship == null)
+                    // ensure clothing/armor w/ AL and workmanship
+                    if (target.WeenieType != WeenieType.Clothing || !target.HasArmorLevel() || target.Workmanship == null)
                         return null;
 
-                    recipe = DatabaseManager.World.GetCachedRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
+                    recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
+                    break;
+
+                case WeenieClassName.W_POTDYEDARKGREEN_CLASS:
+                case WeenieClassName.W_POTDYEDARKRED_CLASS:
+                case WeenieClassName.W_POTDYEDARKYELLOW_CLASS:
+                case WeenieClassName.W_POTDYEWINTERBLUE_CLASS:
+                case WeenieClassName.W_POTDYEWINTERGREEN_CLASS:
+                case WeenieClassName.W_POTDYEWINTERSILVER_CLASS:
+                case WeenieClassName.W_POTDYESPRINGBLACK_CLASS:
+                case WeenieClassName.W_POTDYESPRINGBLUE_CLASS:
+                case WeenieClassName.W_POTDYESPRINGPURPLE_CLASS:
+
+                    // ensure dyeable armor/clothing
+                    if (target.WeenieType != WeenieType.Clothing || !(target.GetProperty(PropertyBool.Dyable) ?? false))
+                        return null;
+
+                    recipe = DatabaseManager.World.GetRecipe(3844);
                     break;
 
                 // imbues - foolproof handled in regular imbue code
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFAQUAMARINE_CLASS:
                 case WeenieClassName.W_MATERIALAQUAMARINE100_CLASS:
                 case WeenieClassName.W_MATERIALAQUAMARINE_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFBLACKGARNET_CLASS:
                 case WeenieClassName.W_MATERIALBLACKGARNET100_CLASS:
                 case WeenieClassName.W_MATERIALBLACKGARNET_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFBLACKOPAL_CLASS:
                 case WeenieClassName.W_MATERIALBLACKOPAL100_CLASS:
                 case WeenieClassName.W_MATERIALBLACKOPAL_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFEMERALD_CLASS:
                 case WeenieClassName.W_MATERIALEMERALD100_CLASS:
                 case WeenieClassName.W_MATERIALEMERALD_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFFIREOPAL_CLASS:
                 case WeenieClassName.W_MATERIALFIREOPAL100_CLASS:
                 case WeenieClassName.W_MATERIALFIREOPAL_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFIMPERIALTOPAZ_CLASS:
                 case WeenieClassName.W_MATERIALIMPERIALTOPAZ100_CLASS:
                 case WeenieClassName.W_MATERIALIMPERIALTOPAZ_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFJET_CLASS:
                 case WeenieClassName.W_MATERIALJET100_CLASS:
                 case WeenieClassName.W_MATERIALJET_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFREDGARNET_CLASS:
                 case WeenieClassName.W_MATERIALREDGARNET100_CLASS:
                 case WeenieClassName.W_MATERIALREDGARNET_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFSUNSTONE_CLASS:
                 case WeenieClassName.W_MATERIALSUNSTONE100_CLASS:
                 case WeenieClassName.W_MATERIALSUNSTONE_CLASS:
+                case WeenieClassName.W_MATERIALRAREFOOLPROOFWHITESAPPHIRE_CLASS:
                 case WeenieClassName.W_MATERIALWHITESAPPHIRE100_CLASS:
                 case WeenieClassName.W_MATERIALWHITESAPPHIRE_CLASS:
-
                 case WeenieClassName.W_LEFTHANDTETHER_CLASS:
                 case WeenieClassName.W_LEFTHANDTETHERREMOVER_CLASS:
-
                 case WeenieClassName.W_COREPLATINGINTEGRATOR_CLASS:
                 case WeenieClassName.W_COREPLATINGDISINTEGRATOR_CLASS:
-
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFAQUAMARINE_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFBLACKGARNET_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFBLACKOPAL_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFEMERALD_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFFIREOPAL_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFIMPERIALTOPAZ_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFJET_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFREDGARNET_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFSUNSTONE_CLASS:
-                case WeenieClassName.W_MATERIALRAREFOOLPROOFWHITESAPPHIRE_CLASS:
-
                 case WeenieClassName.W_MATERIALACE36619FOOLPROOFAQUAMARINE:
                 case WeenieClassName.W_MATERIALACE36620FOOLPROOFBLACKGARNET:
                 case WeenieClassName.W_MATERIALACE36621FOOLPROOFBLACKOPAL:
@@ -355,7 +378,7 @@ namespace ACE.Server.Managers
                 case WeenieClassName.W_MATERIALACE36627FOOLPROOFSUNSTONE:
                 case WeenieClassName.W_MATERIALACE36628FOOLPROOFWHITESAPPHIRE:
 
-                    recipe = DatabaseManager.World.GetCachedRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
+                    recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
                     break;
 
                 // Society Shields
@@ -391,7 +414,7 @@ namespace ACE.Server.Managers
                     if (target.WeenieType != WeenieType.Generic || target.ItemType != ItemType.Armor || !target.IsShield)
                         return null;
 
-                    recipe = DatabaseManager.World.GetCachedRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
+                    recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
                     break;
 
                 // Slayer stones
@@ -400,7 +423,7 @@ namespace ACE.Server.Managers
                 case WeenieClassName.W_SPECTRALSKULL_CLASS:
                 case WeenieClassName.W_ANEKSHAYSLAYERSTONE_CLASS:
 
-                    recipe = DatabaseManager.World.GetCachedRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
+                    recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
                     break;
 
                 // Paragon Weapons
@@ -409,15 +432,15 @@ namespace ACE.Server.Managers
                     switch (target.WeenieType)
                     {
                         case WeenieType.Caster:
-                            recipe = DatabaseManager.World.GetCachedRecipe(8700);
+                            recipe = DatabaseManager.World.GetRecipe(8700);
                             break;
 
                         case WeenieType.MeleeWeapon:
-                            recipe = DatabaseManager.World.GetCachedRecipe(8701);
+                            recipe = DatabaseManager.World.GetRecipe(8701);
                             break;
 
                         case WeenieType.MissileLauncher:
-                            recipe = DatabaseManager.World.GetCachedRecipe(8699);
+                            recipe = DatabaseManager.World.GetRecipe(8699);
                             break;
 
                         default:
@@ -475,31 +498,24 @@ namespace ACE.Server.Managers
                 case WeenieClassName.W_LUMINOUSAMBEROFTHE48THTIERPARAGON_CLASS:
                 case WeenieClassName.W_LUMINOUSAMBEROFTHE49THTIERPARAGON_CLASS:
                 case WeenieClassName.W_LUMINOUSAMBEROFTHE50THTIERPARAGON_CLASS:
-                    recipe = DatabaseManager.World.GetCachedRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
-                    break;
-
-                case WeenieClassName.W_UNINSCRIPTIONSTONE_CLASS:
-
-                    /* Skip this for check in favor of second version which is closer to intent of stone i think.
-                    // ensure workmanship and weenie type                    
-                    if (target.Workmanship == null
-                        || target.WeenieType != WeenieType.MeleeWeapon || target.WeenieType != WeenieType.MissileLauncher || target.WeenieType != WeenieType.Caster
-                        || target.WeenieType != WeenieType.Clothing)
-                    */
-
-                    // check for base weenie for an inscription, if it exists, you cannot uninscribe the item.
-                    string inscription = "";
-                    var baseWeenie = DatabaseManager.World.GetCachedWeenie(target.WeenieClassId)?.PropertiesString?.TryGetValue(PropertyString.Inscription, out inscription);
-
-                    if (baseWeenie == null || !string.IsNullOrWhiteSpace(inscription))
-                        return null;
-
-                    recipe = DatabaseManager.World.GetCachedRecipe(9133);
-
+                    recipe = DatabaseManager.World.GetRecipe(SourceToRecipe[(WeenieClassName)source.WeenieClassId]);
                     break;
             }
-
+            
             return recipe;
+        }
+
+        public static void ClearRecipe(Recipe recipe)
+        {
+            recipe.Difficulty = 0;
+            recipe.FailAmount = 0;
+            recipe.FailDestroySourceAmount = 0;
+            recipe.FailDestroySourceChance = 0;
+            recipe.SuccessAmount = 0;
+            recipe.SuccessDestroySourceChance = 0;
+            recipe.SuccessDestroySourceChance = 0;
+            recipe.SuccessWCID = 0;
+            recipe.FailWCID = 0;
         }
 
         public static Dictionary<WeenieClassName, uint> SourceToRecipe = new Dictionary<WeenieClassName, uint>()
@@ -526,7 +542,7 @@ namespace ACE.Server.Managers
             { WeenieClassName.W_MATERIALCITRINE_CLASS,         4439 },
             { WeenieClassName.W_MATERIALCARNELIAN_CLASS,       4443 },
 
-            //{ WeenieClassName.W_MATERIALSTEEL50_CLASS,         3860 },
+            // { WeenieClassName.W_MATERIALSTEEL50_CLASS,         3860 },
             { WeenieClassName.W_MATERIALSTEEL100_CLASS,        3860 },
             { WeenieClassName.W_MATERIALSTEEL_CLASS,           3860 },
             { WeenieClassName.W_MATERIALSTEELPATHWARDEN_CLASS, 3860 },
@@ -544,60 +560,55 @@ namespace ACE.Server.Managers
             { WeenieClassName.W_MATERIALPERIDOT_CLASS,         4435 },
             { WeenieClassName.W_MATERIALYELLOWTOPAZ_CLASS,     4434 },
             { WeenieClassName.W_MATERIALZIRCON_CLASS,          4433 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFPERIDOT_CLASS,     4435 },
+            { WeenieClassName.W_MATERIALACE36634FOOLPROOFPERIDOT,       4435 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFYELLOWTOPAZ_CLASS, 4434 },
+            { WeenieClassName.W_MATERIALACE36635FOOLPROOFYELLOWTOPAZ,   4434 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFZIRCON_CLASS,      4433 },
+            { WeenieClassName.W_MATERIALACE36636FOOLPROOFZIRCON,        4433 },
 
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFPERIDOT_CLASS,     8016 },
-            { WeenieClassName.W_MATERIALACE36634FOOLPROOFPERIDOT,       8016 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFYELLOWTOPAZ_CLASS, 8015 },
-            { WeenieClassName.W_MATERIALACE36635FOOLPROOFYELLOWTOPAZ,   8015 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFZIRCON_CLASS,      8014 },
-            { WeenieClassName.W_MATERIALACE36636FOOLPROOFZIRCON,        8014 },
-
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFAQUAMARINE_CLASS,    4436 },
+            { WeenieClassName.W_MATERIALACE36619FOOLPROOFAQUAMARINE,      4436 },
             { WeenieClassName.W_MATERIALAQUAMARINE100_CLASS,              4436 },
             { WeenieClassName.W_MATERIALAQUAMARINE_CLASS,                 4436 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFBLACKGARNET_CLASS,   4449 },
+            { WeenieClassName.W_MATERIALACE36620FOOLPROOFBLACKGARNET,     4449 },
             { WeenieClassName.W_MATERIALBLACKGARNET100_CLASS,             4449 },
             { WeenieClassName.W_MATERIALBLACKGARNET_CLASS,                4449 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFBLACKOPAL_CLASS,     3863 },
+            { WeenieClassName.W_MATERIALACE36621FOOLPROOFBLACKOPAL,       3863 },
             { WeenieClassName.W_MATERIALBLACKOPAL100_CLASS,               3863 },
             { WeenieClassName.W_MATERIALBLACKOPAL_CLASS,                  3863 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFEMERALD_CLASS,       4450 },
+            { WeenieClassName.W_MATERIALACE36622FOOLPROOFEMERALD,         4450 },
             { WeenieClassName.W_MATERIALEMERALD100_CLASS,                 4450 },
             { WeenieClassName.W_MATERIALEMERALD_CLASS,                    4450 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFFIREOPAL_CLASS,      3864 },
+            { WeenieClassName.W_MATERIALACE36623FOOLPROOFFIREOPAL,        3864 },
             { WeenieClassName.W_MATERIALFIREOPAL100_CLASS,                3864 },
             { WeenieClassName.W_MATERIALFIREOPAL_CLASS,                   3864 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFIMPERIALTOPAZ_CLASS, 4454 },
+            { WeenieClassName.W_MATERIALACE36624FOOLPROOFIMPERIALTOPAZ,   4454 },
             { WeenieClassName.W_MATERIALIMPERIALTOPAZ100_CLASS,           4454 },
             { WeenieClassName.W_MATERIALIMPERIALTOPAZ_CLASS,              4454 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFJET_CLASS,           4451 },
+            { WeenieClassName.W_MATERIALACE36625FOOLPROOFJET,             4451 },
             { WeenieClassName.W_MATERIALJET100_CLASS,                     4451 },
             { WeenieClassName.W_MATERIALJET_CLASS,                        4451 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFREDGARNET_CLASS,     4452 },
+            { WeenieClassName.W_MATERIALACE36626FOOLPROOFREDGARNET,       4452 },
             { WeenieClassName.W_MATERIALREDGARNET100_CLASS,               4452 },
             { WeenieClassName.W_MATERIALREDGARNET_CLASS,                  4452 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFSUNSTONE_CLASS,      3865 },
+            { WeenieClassName.W_MATERIALACE36627FOOLPROOFSUNSTONE,        3865 },
             { WeenieClassName.W_MATERIALSUNSTONE100_CLASS,                3865 },
             { WeenieClassName.W_MATERIALSUNSTONE_CLASS,                   3865 },
+            { WeenieClassName.W_MATERIALRAREFOOLPROOFWHITESAPPHIRE_CLASS, 4453 },
+            { WeenieClassName.W_MATERIALACE36628FOOLPROOFWHITESAPPHIRE,   4453 },
             { WeenieClassName.W_MATERIALWHITESAPPHIRE100_CLASS,           4453 },
             { WeenieClassName.W_MATERIALWHITESAPPHIRE_CLASS,              4453 },
-
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFAQUAMARINE_CLASS,    8004 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFBLACKGARNET_CLASS,   8005 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFBLACKOPAL_CLASS,     8011 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFEMERALD_CLASS,       8006 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFFIREOPAL_CLASS,      8012 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFIMPERIALTOPAZ_CLASS, 8010 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFJET_CLASS,           8007 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFREDGARNET_CLASS,     8008 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFSUNSTONE_CLASS,      8013 },
-            { WeenieClassName.W_MATERIALRAREFOOLPROOFWHITESAPPHIRE_CLASS, 8009 },
-
-            { WeenieClassName.W_MATERIALACE36619FOOLPROOFAQUAMARINE,      8004 },
-            { WeenieClassName.W_MATERIALACE36620FOOLPROOFBLACKGARNET,     8005 },
-            { WeenieClassName.W_MATERIALACE36621FOOLPROOFBLACKOPAL,       8011 },
-            { WeenieClassName.W_MATERIALACE36622FOOLPROOFEMERALD,         8006 },
-            { WeenieClassName.W_MATERIALACE36623FOOLPROOFFIREOPAL,        8012 },
-            { WeenieClassName.W_MATERIALACE36624FOOLPROOFIMPERIALTOPAZ,   8010 },
-            { WeenieClassName.W_MATERIALACE36625FOOLPROOFJET,             8007 },
-            { WeenieClassName.W_MATERIALACE36626FOOLPROOFREDGARNET,       8008 },
-            { WeenieClassName.W_MATERIALACE36627FOOLPROOFSUNSTONE,        8013 },
-            { WeenieClassName.W_MATERIALACE36628FOOLPROOFWHITESAPPHIRE,   8009 },
-
             { WeenieClassName.W_LEFTHANDTETHER_CLASS,                     6798 },
             { WeenieClassName.W_LEFTHANDTETHERREMOVER_CLASS,              6799 },
-
             { WeenieClassName.W_COREPLATINGINTEGRATOR_CLASS,              6800 },
             { WeenieClassName.W_COREPLATINGDISINTEGRATOR_CLASS,           6801 },
 

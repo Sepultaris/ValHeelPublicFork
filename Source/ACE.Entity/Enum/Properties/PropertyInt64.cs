@@ -21,6 +21,8 @@ namespace ACE.Entity.Enum.Properties
         [SendOnLogin]
         MaximumLuminance    = 7,
         InteractionReqs     = 8,
+        [SendOnLogin]
+        VitaeCpPool = 129,
 
         /* custom */
         [ServerOnly]
@@ -28,9 +30,29 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         AllegianceXPGenerated = 9001,
         [ServerOnly]
-        AllegianceXPReceived  = 9002,
+        AllegianceXPReceived  = 9002,        
         [ServerOnly]
-        VerifyXp              = 9003
+        VerifyXp              = 9003,
+        [ServerOnly]
+        TotalXpBeyond         = 9004,
+        [ServerOnly]
+        BankedPyreals         = 9005,
+        [ServerOnly]
+        BankedLuminance       = 9006,
+        [ServerOnly]
+        BankedAshcoin         = 9007,
+        [ServerOnly]
+        PyrealSavings         = 9008,
+        [ServerOnly]
+        HcPyrealsWon          = 9009,
+        [ServerOnly]
+        BankedCarnageTokens   = 9010,
+        [ServerOnly]
+        HcScore               = 9011,
+        [ServerOnly]
+        CreatureKills         = 9012,
+        [ServerOnly]
+        PriceOnHead           = 9013,
     }
 
     public static class PropertyInt64Extensions

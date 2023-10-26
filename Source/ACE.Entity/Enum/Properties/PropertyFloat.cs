@@ -216,7 +216,53 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         PCAPRecordeOmegaY              = 8017,
         [ServerOnly]
-        PCAPRecordeOmegaZ              = 8018
+        PCAPRecordeOmegaZ              = 8018,
+        [ServerOnly]
+        MirraResistanceBonus           = 8019,
+        [ServerOnly]
+        MirraDamageModBonus            = 8020,
+        [ServerOnly]
+        SpeedrunStartTime              = 8021,
+        [ServerOnly]
+        SpeedrunEndTime                = 8022,
+        [ServerOnly]
+        BestTime                       = 8023,
+        [ServerOnly]
+        LastTime                       = 8024,
+        [ServerOnly]
+        BankCommandTimer               = 8025,
+        [ServerOnly]
+        InterestTimer                  = 8026,
+        [ServerOnly]
+        WithdrawTimer                  = 8027,
+        [ServerOnly]
+        HcAgeTimestamp                 = 8028,
+        [ServerOnly]
+        CTInCirculation                = 8029,
+        [ServerOnly]
+        ACInCirculation                = 8030,
+        [ServerOnly]
+        PyrealValue                    = 8031,
+        [ServerOnly]
+        MMDValue                       = 8032,
+        [ServerOnly]
+        ACValue                        = 8033,
+        [ServerOnly]
+        HoTTimestamp                   = 8034,
+        LastHoTTickTimestamp           = 8035,
+        LastWarChannelTimestamp        = 8036,
+        WarChannelChance               = 8037,
+        MeleeDoTChance                 = 8038,
+        MissileAoEChance               = 8039,
+        LastTankBuffTimestamp          = 8040,
+        LastDamageBuffTimestamp        = 8041,
+        LastBrutalizeTimestamp         = 8042,
+        BrutalizeTimestamp             = 8043,
+        LastLifeWellTimestamp          = 8044,
+        LastSneakTimestamp             = 8045,
+        LastTauntTimestamp             = 8046,
+        LastHoTCastTimestamp           = 8047,
+        LastMissileAoETimestamp        = 8048,
     }
 
     public static class PropertyFloatExtensions

@@ -1,9 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 using log4net;
 
@@ -11,7 +9,6 @@ using ACE.Server.Network.Managers;
 
 namespace ACE.Server.Network
 {
-    // Reference: https://learn.microsoft.com/en-us/dotnet/api/system.net.sockets.socket.beginreceivefrom?view=net-7.0
     public class ConnectionListener
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -44,15 +41,6 @@ namespace ACE.Server.Network
                 ListenerEndpoint = new IPEndPoint(listeningHost, (int)listeningPort);
                 Socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-
-                //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                //{
-                //    var sioUdpConnectionReset = -1744830452;
-                //    var inValue = new byte[] { 0 };
-                //    var outValue = new byte[] { 0 };
-                //    Socket.IOControl(sioUdpConnectionReset, inValue, outValue);
-                //}
-
                 Socket.Bind(ListenerEndpoint);
                 Listen();
             }
@@ -79,12 +67,12 @@ namespace ACE.Server.Network
             }
             catch (SocketException socketException)
             {
-                log.DebugFormat("ConnectionListener({2}, {3}).Listen() has thrown {0}: {1}", socketException.SocketErrorCode, socketException.Message, listeningHost, listeningPort);
+                log.DebugFormat("ConnectionListener.Listen() has thrown {0}: {1}", socketException.SocketErrorCode, socketException.Message);
                 Listen();
             }
             catch (Exception exception)
             {
-                log.FatalFormat("ConnectionListener({1}, {2}).Listen() has thrown: {0}", exception.Message, listeningHost, listeningPort);
+                log.FatalFormat("ConnectionListener.Listen() has thrown: {0}", exception.Message);
             }
         }
 
@@ -128,19 +116,16 @@ namespace ACE.Server.Network
                     socketException.SocketErrorCode == SocketError.NetworkReset ||
                     socketException.SocketErrorCode == SocketError.ConnectionReset)
                 {
-                    log.DebugFormat("ConnectionListener({3}, {4}).OnDataReceieve() has thrown {0}: {1} from client {2}", socketException.SocketErrorCode, socketException.Message, clientEndPoint != null ? clientEndPoint.ToString() : "Unknown", listeningHost, listeningPort);
+                    log.DebugFormat("ConnectionListener.OnDataReceieve() has thrown {0}: {1} from client {2}", socketException.SocketErrorCode, socketException.Message, clientEndPoint != null ? clientEndPoint.ToString() : "Unknown");
                 }
                 else
                 {
-                    log.FatalFormat("ConnectionListener({3}, {4}).OnDataReceieve() has thrown {0}: {1} from client {2}", socketException.SocketErrorCode, socketException.Message, clientEndPoint != null ? clientEndPoint.ToString() : "Unknown", listeningHost, listeningPort);
+                    log.FatalFormat("ConnectionListener.OnDataReceieve() has thrown {0}: {1} from client {2}", socketException.SocketErrorCode, socketException.Message, clientEndPoint != null ? clientEndPoint.ToString() : "Unknown");
                     return;
                 }
             }
 
-            if (result.CompletedSynchronously)
-                Task.Run(() => Listen());
-            else
-                Listen();
+            Listen();
         }
     }
 }

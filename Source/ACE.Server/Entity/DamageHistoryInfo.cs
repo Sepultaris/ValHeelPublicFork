@@ -1,6 +1,7 @@
 using System;
 
 using ACE.Entity;
+using ACE.Server.Managers;
 using ACE.Server.WorldObjects;
 
 namespace ACE.Server.Entity
@@ -11,14 +12,14 @@ namespace ACE.Server.Entity
 
         public readonly ObjectGuid Guid;
         public readonly string Name;
+        public readonly int DoTOwnerGuid;
 
         public float TotalDamage;
+        public float TotalThreat;
 
         public readonly WeakReference<Player> PetOwner;
 
         public bool IsPlayer => Guid.IsPlayer();
-
-        public readonly bool IsOlthoiPlayer;
 
         public DamageHistoryInfo(WorldObject attacker, float totalDamage = 0.0f)
         {
@@ -26,13 +27,43 @@ namespace ACE.Server.Entity
 
             Guid = attacker.Guid;
             Name = attacker.Name;
-
-            IsOlthoiPlayer = attacker is Player player && player.IsOlthoiPlayer;
+            DoTOwnerGuid = attacker.DoTOwnerGuid;
 
             TotalDamage = totalDamage;
+            TotalThreat = totalDamage;
+
+            var tankTotalThreatMod = 5.0f;
+
+            if (attacker is Player player)
+            {
+                if (player.IsTank)
+                {
+                    if (player.TauntTimerActive)
+                        tankTotalThreatMod = 10.0f;
+
+                    TotalThreat *= tankTotalThreatMod;
+                }
+                else
+                    TotalThreat *= totalDamage * 0.5f;
+            }
 
             if (attacker is CombatPet combatPet && combatPet.P_PetOwner != null)
                 PetOwner = new WeakReference<Player>(combatPet.P_PetOwner);
+
+            if (attacker.WeenieClassId == 300501)
+            {
+                foreach (var p in PlayerManager.GetAllOnline())
+                {
+                    if (p.Guid.Full == attacker.DoTOwnerGuid)
+                    {
+                        if (DoTOwnerGuid != 0)
+                        {
+                            Guid = p.Guid;
+                            Name = p.Name;
+                        }
+                    }
+                }
+            }
         }
 
         public WorldObject TryGetAttacker()

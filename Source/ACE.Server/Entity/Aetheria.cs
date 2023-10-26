@@ -40,15 +40,6 @@ namespace ACE.Server.Entity
         Vigor,
     }
 
-    public enum Surge
-    {
-        Destruction,
-        Protection,
-        Regeneration,
-        Affliction,
-        Festering
-    };
-
     public enum AetheriaColor
     {
         Blue,

@@ -1,6 +1,5 @@
 using System;
 
-using ACE.Common.Extensions;
 using ACE.DatLoader;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
@@ -136,33 +135,28 @@ namespace ACE.Server.WorldObjects.Entity
             }
         }
 
-        public uint Current => GetCurrent(true);
-
-        public uint GetCurrent(bool enchanted)
+        public uint Current
         {
-            var multipliers = enchanted ? creature.EnchantmentManager.GetAttributeMod_Multiplier(Attribute) : 1.0f;
-            var additives = enchanted ? creature.EnchantmentManager.GetAttributeMod_Additive(Attribute) : 0;
+            get
+            {
+                var total = (int)Base;
 
-            var total = (int)Base * multipliers + additives;
+                var attributeMod = creature.EnchantmentManager.GetAttributeMod(Attribute);
+                total += attributeMod;
 
-            total = total.Round();
-
-            // attributes cannot be debuffed below 10 normally,
-            // or 1 for creatures with very low starting attributes
-            var minimumAttribute = Base >= 10 ? 10 : 1;
-
-            return (uint)Math.Max(minimumAttribute, total);
+                return (uint)Math.Max(total, 10);    // minimum value for an attribute: 10
+            }
         }
 
         public ModifierType ModifierType
         {
             get
             {
-                var diff = (int)GetCurrent(true) - (int)GetCurrent(false);
+                var attrMod = creature.EnchantmentManager.GetAttributeMod(Attribute);
 
-                if (diff > 0)
+                if (attrMod > 0)
                     return ModifierType.Buffed;
-                else if (diff < 0)
+                else if (attrMod < 0)
                     return ModifierType.Debuffed;
                 else
                     return ModifierType.None;

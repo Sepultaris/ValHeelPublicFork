@@ -31,8 +31,8 @@ namespace ACE.Server.Physics.Common
         //public static Surface BuildingDetailSurface;
         //public static Surface ObjectDetailSurface;
 
-        public static float AmbientLevel = 0.4f;
-        public static Vector3 Sunlight = new Vector3(1.2f, 0, 0.5f);
+        public static float AmbientLevel = 3.4f;
+        public static Vector3 Sunlight = new Vector3(7.2f, 7, 7.5f);
 
         public static bool SetMidRadius(int radius)
         {

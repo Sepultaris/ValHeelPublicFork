@@ -42,7 +42,20 @@ namespace ACE.Server.Factories.Tables.Wcids
             ( WeenieClassName.manastonemajor,   0.25f ),
         };
 
+
         private static ChanceTable<WeenieClassName> T6_T8_Chances = new ChanceTable<WeenieClassName>()
+        {
+            ( WeenieClassName.manastonegreater, 0.25f ),
+            ( WeenieClassName.manastonemajor,   0.75f ),
+        };
+
+        private static ChanceTable<WeenieClassName> T9_Chances = new ChanceTable<WeenieClassName>()
+        {
+            ( WeenieClassName.manastonegreater, 0.25f ),
+            ( WeenieClassName.manastonemajor,   0.75f ),
+        };
+
+        private static ChanceTable<WeenieClassName> T10_Chances = new ChanceTable<WeenieClassName>()
         {
             ( WeenieClassName.manastonegreater, 0.25f ),
             ( WeenieClassName.manastonemajor,   0.75f ),
@@ -58,6 +71,8 @@ namespace ACE.Server.Factories.Tables.Wcids
             T6_T8_Chances,
             T6_T8_Chances,
             T6_T8_Chances,
+            T9_Chances,
+            T10_Chances,
         };
 
         public static WeenieClassName Roll(TreasureDeath profile)

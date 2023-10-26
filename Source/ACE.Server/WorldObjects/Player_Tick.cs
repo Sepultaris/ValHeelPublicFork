@@ -2,21 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
+using System.Threading.Tasks;
 using ACE.Common;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
+using ACE.Server.Command.Handlers;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
-using ACE.Server.Factories;
 using ACE.Server.Managers;
-using ACE.Server.Network.Enum;
+using ACE.Server.Network;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Network.Sequence;
 using ACE.Server.Network.Structure;
 using ACE.Server.Physics;
 using ACE.Server.Physics.Common;
+using ACE.Server.ValheelMods;
+using Google.Protobuf.WellKnownTypes;
 
 namespace ACE.Server.WorldObjects
 {
@@ -32,37 +34,12 @@ namespace ACE.Server.WorldObjects
 
         private double houseRentWarnTimestamp;
         private const double houseRentWarnInterval = 3600;
+        private ObjCell CurCell;
+
+        public List<Creature> CombatPets = new List<Creature>();
 
         public void Player_Tick(double currentUnixTime)
         {
-            if (CharacterSaveFailed)
-            {
-                // Boot the player as their Character object is not saving properly
-                if (!IsLoggingOut)
-                {
-                    log.Error($"{Session.Player.Name} | 0x{Guid} | Account: {Account.AccountName} - disconnected for CharacterSaveFailed");
-                    //Session.SendCharacterError(CharacterError.AccountLogin); // forces client to error screen
-                    Session.Terminate(SessionTerminationReason.CharacterSaveFailed, new GameMessageCharacterError(CharacterError.AccountLogin));
-                    //Session.LogOffPlayer(true);
-                    CharacterSaveFailed = false;
-                }
-                return;
-            }
-
-            if (BiotaSaveFailed)
-            {
-                // Boot the player as their Biota object is not saving properly
-                if (!IsLoggingOut)
-                {
-                    log.Error($"{Session.Player.Name} | 0x{Guid} | Account: {Account.AccountName} - disconnected for BiotaSaveFailed");
-                    //Session.SendCharacterError(CharacterError.AccountLogin); // forces client to error screen
-                    Session.Terminate(SessionTerminationReason.BiotaSaveFailed, new GameMessageCharacterError(CharacterError.AccountLogin));
-                    //Session.LogOffPlayer(true);
-                    BiotaSaveFailed = false;
-                }
-                return;
-            }
-
             actionQueue.RunActions();
 
             if (nextAgeUpdateTime <= currentUnixTime)
@@ -93,7 +70,7 @@ namespace ACE.Server.WorldObjects
                 {
                     HouseManager.GetHouse(House.Guid.Full, (house) =>
                     {
-                        if (house != null && house.HouseStatus == HouseStatus.Active && !house.SlumLord.IsRentPaid())
+                        if (house != null && !house.SlumLord.IsRentPaid())
                             Session.Network.EnqueueSend(new GameMessageSystemChat($"Warning!  You have not paid your maintenance costs for the last {(house.IsApartment ? "90" : "30")} day maintenance period.  Please pay these costs by this deadline or you will lose your house, and all your items within it.", ChatMessageType.Broadcast));
                     });
 
@@ -102,6 +79,79 @@ namespace ACE.Server.WorldObjects
                 else if (houseRentWarnTimestamp == 0)
                     houseRentWarnTimestamp = Time.GetFutureUnixTime(houseRentWarnInterval);
             }
+
+            ValHeelAbilityManager(this);
+        }
+        public static void CalculatePlayerAge(Player player, double currentUnixTime)
+        {
+            var dob = player.GetProperty(PropertyString.DateOfBirth);
+
+            DateTime currentDate = DateTime.Now;
+
+            DateTime dateFromString = DateTime.Parse(dob);
+
+            player.SetProperty(PropertyString.DateOfBirth, $"{dateFromString}");
+
+            // Calculate the age
+            TimeSpan ageSpan = DateTime.Now - dateFromString;
+            int years = (int)(ageSpan.Days / 365.25);
+            int months = (int)((ageSpan.Days % 365.25) / 30.44);
+            int days = ageSpan.Days % 30;
+            int hours = ageSpan.Hours;
+            int minutes = ageSpan.Minutes;
+
+            // Format the age
+            string formattedAge = $"{years:00}:{months:00}:{days:00}:{hours:00}:{minutes:00}";
+
+            // I used this to monitor the output on the console so I didn't have to log in 
+            //Console.WriteLine($"Age as YY:MM:DD:HH:MM format: {formattedAge}");
+
+            player.HcAge = formattedAge;
+        }
+
+        public static void CalculateHcPlayerAgeTimestamp(Player player, double currentUnxiTime)
+        {
+            var dob = player.GetProperty(PropertyString.DateOfBirth);
+
+            DateTime dateFromString = DateTime.Parse(dob);
+            long originalUnixTimestamp = ((DateTimeOffset)dateFromString).ToUnixTimeSeconds();
+
+            DateTime currentDate = DateTime.Now.ToUniversalTime();
+            long currentUnixTimestamp = ((DateTimeOffset)currentDate).ToUnixTimeSeconds();
+
+            long ageInSeconds = currentUnixTimestamp - originalUnixTimestamp;
+
+            player.HcAgeTimestamp = ageInSeconds;
+        }
+
+        public static void HcScoreCalculator(IPlayer player, long value)
+        {
+            if (player != null)
+            {
+                const long maxValue = 500_000_000;
+                ulong pyrealsWon = player.HcPyrealsWon;
+                float pyrealMultiplier = (float)(Math.Round((float)pyrealsWon + 1.0f) / (float)maxValue);
+
+                if (pyrealMultiplier < 0.01)
+                    pyrealMultiplier = 0.01f;
+
+                long baseScore = (long)((player.Level * player.CreatureKills) + ((player.HcAgeTimestamp /60) /60));
+
+                float score = (float)(baseScore + (baseScore * pyrealMultiplier) - ((player.HcAgeTimestamp / 60) / 60)) / 1000;
+
+                if (score < 0)
+                    score = 0;
+
+                    player.HcScore = (long)Math.Round(score);
+            }
+        }
+
+        public static void PlayerAcheivements(Player player)
+        {
+            if (!player.Hardcore)
+                return;
+
+
         }
 
         private static readonly TimeSpan MaximumTeleportTime = TimeSpan.FromMinutes(5);
@@ -123,7 +173,141 @@ namespace ACE.Server.WorldObjects
 
             GagsTick();
 
+            if (ValHeelBounty.HasBountyCheck(Name))
+            {
+                if (PriceOnHead == null)
+                    PriceOnHead = 0;
+
+                if (PriceOnHead > 1000000)
+                {
+                    PlayerKillerStatus = PlayerKillerStatus.PK;
+                    Session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(this, PropertyInt.PlayerKillerStatus, (int)PlayerKillerStatus));
+                    CommandHandlerHelper.WriteOutputInfo(Session, $"WARNING!: Your bounty has become too high! You are now a wanted player.", ChatMessageType.Broadcast);
+                    CommandHandlerHelper.WriteOutputInfo(Session, $"WARNING!: You will remain PK until another player kills you.", ChatMessageType.Broadcast);
+                }
+            }
+
+            if (Hardcore)
+            {
+                CalculatePlayerAge(this, currentUnixTime);
+
+                CalculateHcPlayerAgeTimestamp(this, currentUnixTime);
+
+                HcAchievementSystem.CheckAndHandleAchievements(this);
+
+                HcScoreCalculator(this, (long)HcPyrealsWon);
+            }
+
             PhysicsObj.ObjMaint.DestroyObjects();
+
+            Player player = Session.Player;
+
+            var session = Session;
+
+            if (IsOnPKLandblock)
+            {
+                var pkStatus = player.PlayerKillerStatus;
+
+                if (pkStatus == PlayerKillerStatus.NPK)
+                {
+                    player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
+                    player.PlayerKillerStatus = PlayerKillerStatus.PK;
+                    session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
+                    CommandHandlerHelper.WriteOutputInfo(session, $"WARNING:You have entered a Player Killer area: {session.Player.PlayerKillerStatus.ToString()}", ChatMessageType.Broadcast);
+
+                    int randomNum = new Random().Next(1, 7);
+
+                    switch (randomNum)
+                    {
+                        case 1:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder1Sound);
+                            break;
+                        case 2:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder2Sound);
+                            break;
+                        case 3:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder3Sound);
+                            break;
+                        case 4:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder4Sound);
+                            break;
+                        case 5:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder5Sound);
+                            break;
+                        case 6:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Thunder6Sound);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    int randomNum2 = new Random().Next(1, 7);
+
+                    switch (randomNum2)
+                    {
+                        case 1:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.RoarSound);
+                            break;
+                        case 2:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Chant2Sound);
+                            break;
+                        case 3:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.Chant1Sound);
+                            break;
+                        case 4:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.LostSoulsSound);
+                            break;
+                        case 5:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.DarkWhispers1Sound);
+                            break;
+                        case 6:
+                            LandblockManager.DoEnvironChange(EnvironChangeType.DarkWindSound);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    ApplyVisualEffects(PlayScript.VisionDownBlack);
+                    ApplyVisualEffects(PlayScript.BaelZharonSmite);
+                }
+            }
+            else if (!IsOnPKLandblock)
+            {
+                var pkStatus = player.PlayerKillerStatus;
+
+                if (PriceOnHead == null)
+                    PriceOnHead = 0;
+
+                if (pkStatus == PlayerKillerStatus.PK && !PKTimerActive && PriceOnHead < 1000000)
+                {
+                    player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
+                    player.PlayerKillerStatus = PlayerKillerStatus.NPK;
+                    session.Player.EnqueueBroadcast(new GameMessagePublicUpdatePropertyInt(session.Player, PropertyInt.PlayerKillerStatus, (int)session.Player.PlayerKillerStatus));
+                    CommandHandlerHelper.WriteOutputInfo(session, $"WARNING:You have exited a Player Killer area: {session.Player.PlayerKillerStatus.ToString()}", ChatMessageType.Broadcast);
+
+                    ApplyVisualEffects(PlayScript.VisionUpWhite);
+                    ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
+                }
+            }
+
+            if (IsOnSpeedRunLandblock)
+            {
+                if (player.SpeedRunning == false)
+                {
+                    HandleSpeedRun(player, currentUnixTime);
+                }
+                if (player.SpeedRunning == true)
+                {
+                    HandleSpeedRun(player, currentUnixTime);
+                }
+            }
+            else
+            {
+                if (player.SpeedRunning == true)
+                {
+                    HandleSpeedRun(player, currentUnixTime);
+                }
+            }
 
             // Check if we're due for our periodic SavePlayer
             if (LastRequestedDatabaseSave == DateTime.MinValue)
@@ -140,13 +324,218 @@ namespace ACE.Server.WorldObjects
                     LogOut();
             }
 
+            if (player.BankAccountNumber != null)
+                Player_Bank.HandleInterestPayments(player);
+
             base.Heartbeat(currentUnixTime);
+
+            MonitorCombatPets(CombatPets, player);
         }
 
+        
+
+        public void MonitorCombatPets(List<Creature> CombatPets, Player player)
+        {
+            var session = Session;
+            var visibleCreatures = PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature();
+            var currentLandblock = player.CurrentLandblock;
+
+            foreach (var creature in visibleCreatures)
+            {
+                
+            }
+
+            // Remove combat pets that are no longer visible and decrease player's pet count
+            for (int i = CombatPets.Count - 1; i >= 0; i--)
+            {
+                var combatPet = CombatPets[i];
+                if (!visibleCreatures.Contains(combatPet))
+                {
+                    CombatPets.RemoveAt(i);
+                    player.NumberOfPets = CombatPets.Count;
+                    combatPet.Die();
+                    /*session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"A pet was removed {CombatPets.Count}.", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));*/
+                }
+            }
+
+            // Remove the first combat pet if more than 3 combat pets are visible
+            if (visibleCreatures.Count(c => c.IsCombatPet && c.PetOwner == player.Guid.Full) > 3)
+            {
+                if (CombatPets.Count > 0)
+                {
+                    var oldPetCount = player.NumberOfPets;
+                    var combatPetToRemove = CombatPets[0];
+                    CombatPets.RemoveAt(0);
+                    player.NumberOfPets = CombatPets.Count;
+                    combatPetToRemove.Die();
+                    /*session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"You have too many pets! Killing the oldest! {oldPetCount} old count / {CombatPets.Count} new count.", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));*/
+                }
+            }
+
+            // Add new combat pets to the list and increase player's pet count
+            for (int i = 0; i < visibleCreatures.Count; i++)
+            {
+                var creature = visibleCreatures[i];
+
+                if (creature != null && creature.IsCombatPet && creature.PetOwner == player.Guid.Full && !CombatPets.Contains(creature))
+                {
+                    CombatPets.Add(creature);
+                    player.NumberOfPets = CombatPets.Count;
+                    /*session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"A pet was added {CombatPets.Count}.", ChatMessageType.x1B));
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));*/
+                }
+                if (visibleCreatures.Count(c => c.IsCombatPet && c.PetOwner == player.Guid.Full) > 3 && NumberOfPets > 3)
+                {
+                    if (CombatPets.Count > 0)
+                    {
+                        var oldPetCount = player.NumberOfPets;
+                        var combatPetToRemove = CombatPets[0];
+                        CombatPets.RemoveAt(0);
+                        player.NumberOfPets = CombatPets.Count;
+                        combatPetToRemove.Die();
+                        /*session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have too many pets! Killing the oldest! {oldPetCount} old count / {CombatPets.Count} new count.", ChatMessageType.x1B));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));*/
+                    }
+                }
+            }
+        }
+
+        public static void HandleSpeedRun(Player player, double? currentUnixTime)
+        {
+            if (player.SpeedRunning == false)
+            {
+                if (player.LastTime == null)
+                {
+                    player.LastTime = 0;
+                }
+                if (player.BestTime == null)
+                {
+                    player.BestTime = 0;
+                }
+                player.SpeedrunStartTime = currentUnixTime;
+                player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
+                player.ApplyVisualEffects(PlayScript.VisionUpWhite);
+                player.ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
+                player.SpeedRunning = true;
+                CommandHandlerHelper.WriteOutputInfo(player.Session, $"Let the games begin! Good Luck!", ChatMessageType.Broadcast);
+            }
+            if (player.SpeedRunning == true && player.IsOnSpeedRunLandblock)
+            {
+                player.SpeedrunEndTime = currentUnixTime;
+                var milTime = (double)(player.SpeedrunEndTime - player.SpeedrunStartTime);
+
+                if(milTime >= 1200)
+                {
+                    if (player.Location.LandblockId.Landblock == 0x9204)
+                    {
+                        player.HandleActionTeleToLifestone();
+                        player.LastTime = 0;
+                        player.SpeedRunning = false;
+                        CommandHandlerHelper.WriteOutputInfo(player.Session, $"Times Up!!! You've been disqualified!", ChatMessageType.Broadcast);
+                        EventManager.StopEvent("SR135Active", player, null);
+                        player.QuestManager.Erase("PrimordialMatronKilled");
+                        player.QuestManager.Erase("PartOneDone");
+                        player.QuestManager.Erase("PartTwoDone");
+                        player.QuestManager.Erase("haroldinggemtimer");
+                        player.QuestManager.Erase("GotTheGem");
+                        player.QuestManager.Erase("RoomCleared");
+                        player.QuestManager.Erase("SRRatKilled");
+                        player.QuestManager.Erase("SRRatKilled2");
+                        player.QuestManager.Erase("wildmushroompickup");
+                    }
+                    if (player.Location.LandblockId.Landblock == 0x9203)
+                    {
+                        player.HandleActionTeleToLifestone();
+                        player.LastTime = 0;
+                        player.SpeedRunning = false;
+                        CommandHandlerHelper.WriteOutputInfo(player.Session, $"Times Up!!! You've been disqualified!", ChatMessageType.Broadcast);
+                        EventManager.StopEvent("SR200Active", player, null);
+                        player.QuestManager.Erase("PrimordialMatronKilled");
+                        player.QuestManager.Erase("PartOneDone");
+                        player.QuestManager.Erase("PartTwoDone");
+                        player.QuestManager.Erase("haroldinggemtimer");
+                        player.QuestManager.Erase("GotTheGem");
+                        player.QuestManager.Erase("RoomCleared");
+                        player.QuestManager.Erase("SRRatKilled");
+                        player.QuestManager.Erase("SRRatKilled2");
+                        player.QuestManager.Erase("wildmushroompickup");
+                    }
+                    if (player.Location.LandblockId.Landblock == 0x9202)
+                    {
+                        player.HandleActionTeleToLifestone();
+                        player.LastTime = 0;
+                        player.SpeedRunning = false;
+                        CommandHandlerHelper.WriteOutputInfo(player.Session, $"Times Up!!! You've been disqualified!", ChatMessageType.Broadcast);
+                        EventManager.StopEvent("SR300Active", player, null);
+                        player.QuestManager.Erase("PrimordialMatronKilled");
+                        player.QuestManager.Erase("PartOneDone");
+                        player.QuestManager.Erase("PartTwoDone");
+                        player.QuestManager.Erase("haroldinggemtimer");
+                        player.QuestManager.Erase("GotTheGem");
+                        player.QuestManager.Erase("RoomCleared");
+                        player.QuestManager.Erase("SRRatKilled");
+                        player.QuestManager.Erase("SRRatKilled2");
+                        player.QuestManager.Erase("wildmushroompickup");
+                    }
+                }
+            }
+            if (player.SpeedRunning == true && !player.IsOnSpeedRunLandblock && player.QuestManager.HasQuest("PrimordialMatronKilled"))
+            {
+                player.SpeedrunEndTime = currentUnixTime;
+                var milTime = (double)(player.SpeedrunEndTime - player.SpeedrunStartTime);
+                                               
+                player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
+                player.ApplyVisualEffects(PlayScript.VisionUpWhite);
+                player.ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
+                var span = new TimeSpan(0, 0, (int)milTime); //Or TimeSpan.FromSeconds(seconds);
+                var formatedTime = string.Format("{0}:{1:00}", (int)span.TotalMinutes, span.Seconds);                
+
+                if (milTime < player.BestTime)
+                {
+                    player.BestTime = (int)milTime;
+                    CommandHandlerHelper.WriteOutputInfo(player.Session, $"New Record!!!", ChatMessageType.Broadcast);
+                    player.ApplyVisualEffects(PlayScript.WeddingBliss);
+                }
+                else if (milTime > player.BestTime)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(player.Session, $"Your completion time is: {formatedTime}", ChatMessageType.Broadcast);
+                    player.SpeedRunning = false;
+                    player.SpeedRunTime = $"0";
+                    player.LastTime = (int)milTime;
+
+                    if (player.BestTime == 0)
+                    {
+                        player.BestTime = player.LastTime;
+                    }
+                }                
+            }
+            if (player.SpeedRunning == true && !player.IsOnSpeedRunLandblock && !player.QuestManager.HasQuest("PrimordialMatronKilled"))
+            {               
+                    player.LastTime = 0;
+                    player.SpeedRunning = false;
+                    CommandHandlerHelper.WriteOutputInfo(player.Session, $"You've been disqualified!", ChatMessageType.Broadcast);
+                    player.QuestManager.Erase("PrimordialMatronKilled");
+                    player.QuestManager.Erase("PartOneDone");
+                    player.QuestManager.Erase("PartTwoDone");
+                    player.QuestManager.Erase("haroldinggemtimer");
+                    player.QuestManager.Erase("GotTheGem");
+                    player.QuestManager.Erase("RoomCleared");
+                    player.QuestManager.Erase("SRRatKilled");
+                    player.QuestManager.Erase("SRRatKilled2");
+                    player.QuestManager.Erase("wildmushroompickup");
+            }
+        }
+        
         public static float MaxSpeed = 50;
         public static float MaxSpeedSq = MaxSpeed * MaxSpeed;
 
-        public static bool DebugPlayerMoveToStatePhysics { get; set; } = false;
+        public static bool DebugPlayerMoveToStatePhysics = false;
 
         /// <summary>
         /// Flag indicates if player is doing full physics simulation
@@ -703,12 +1092,7 @@ namespace ACE.Server.WorldObjects
         {
             //Console.WriteLine($"{Name}.HandleMotionDone({(MotionCommand)motionID}, {success})");
 
-            if (!FastTick) return;
-
-            if (FoodState.IsChugging)
-                HandleMotionDone_UseConsumable(motionID, success);
-
-            if (MagicState.IsCasting)
+            if (FastTick && MagicState.IsCasting)
                 HandleMotionDone_Magic(motionID, success);
         }
     }

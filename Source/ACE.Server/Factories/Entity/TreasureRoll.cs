@@ -56,7 +56,7 @@ namespace ACE.Server.Factories.Entity
 
         public bool IsClothing => ItemType == TreasureItemType_Orig.Clothing;
 
-        public bool IsCloak => ItemType == TreasureItemType_Orig.Cloak;
+        public bool IsCloak => ItemType == TreasureItemType_Orig.Cloak;        
 
         /// <summary>
         /// Returns TRUE if wo has an ArmorLevel > 0
@@ -71,5 +71,8 @@ namespace ACE.Server.Factories.Entity
         public bool IsJewelry => ItemType == TreasureItemType_Orig.Jewelry;
 
         public bool IsDinnerware => ItemType == TreasureItemType_Orig.ArtObject;
+
+        public bool IsMirra => IsMirra == true;
+       
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Http;
 using ACE.Entity.Enum;
 using ACE.Server.WorldObjects;
 
@@ -57,6 +58,7 @@ namespace ACE.Server.Network.Structure
 
             return effectiveRL;
         }
+    
     }
 
     public static class ArmorProfileExtensions

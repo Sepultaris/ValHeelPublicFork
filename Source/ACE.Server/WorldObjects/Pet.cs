@@ -1,15 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Numerics;
-
 using log4net;
-
 using ACE.Common;
 using ACE.DatLoader;
 using ACE.DatLoader.FileTypes;
 using ACE.Entity;
 using ACE.Entity.Enum;
-using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Managers;
@@ -24,15 +20,7 @@ namespace ACE.Server.WorldObjects
     {
         public Player P_PetOwner;
 
-        public PetDevice P_PetDevice;
-
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        public uint? PetDevice
-        {
-            get => GetProperty(PropertyInstanceId.PetDevice);
-            set { if (value.HasValue) SetProperty(PropertyInstanceId.PetDevice, value.Value); else RemoveProperty(PropertyInstanceId.PetDevice); }
-        }
 
         /// <summary>
         /// A new biota be created taking all of its values from weenie.
@@ -66,21 +54,21 @@ namespace ACE.Server.WorldObjects
             if (result == null || !result.Value)
                 return result;
 
-            // get physics radius of player and pet
-            var playerRadius = player.PhysicsObj.GetPhysicsRadius();
-            var petRadius = GetPetRadius();
-
-            var spawnDist = playerRadius + petRadius + MinDistance;
-
             if (IsPassivePet)
             {
+                // get physics radius of player and pet
+                var playerRadius = player.PhysicsObj.GetPhysicsRadius();
+                var petRadius = GetPetRadius();
+
+                var spawnDist = playerRadius + petRadius + MinDistance;
+
                 Location = player.Location.InFrontOf(spawnDist, true);
 
                 TimeToRot = -1;
             }
             else
             {
-                Location = player.Location.InFrontOf(spawnDist, false);
+                Location = player.Location.InFrontOf(5.0f);
             }
 
             Location.LandblockId = new LandblockId(Location.GetCell());
@@ -89,9 +77,6 @@ namespace ACE.Server.WorldObjects
 
             PetOwner = player.Guid.Full;
             P_PetOwner = player;
-
-            // All pets don't leave corpses, this maybe should have been in data, but isn't so lets make sure its true.
-            NoCorpse = true;
 
             var success = EnterWorld();
 
@@ -103,11 +88,9 @@ namespace ACE.Server.WorldObjects
 
             player.CurrentActivePet = this;
 
-            petDevice.Pet = Guid.Full;
-            PetDevice = petDevice.Guid.Full;
-            P_PetDevice = petDevice;
-
             if (IsPassivePet)
+                nextSlowTickTime = Time.GetUnixTime();
+            if (IsCombatPet)
                 nextSlowTickTime = Time.GetUnixTime();
 
             return true;
@@ -124,27 +107,32 @@ namespace ACE.Server.WorldObjects
         public bool HandleCurrentActivePet_Replace(Player player)
         {
             // original ace logic
-            if (player.CurrentActivePet == null)
+            if (player.NumberOfPets <= 3)
                 return true;
 
-            if (player.CurrentActivePet is CombatPet)
+           /* if (player.NumberOfPets >= 3)
             {
                 // possibly add the ability to stow combat pets with passive pet devices here?
                 player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
                 return false;
-            }
+            } */
 
             var stowPet = WeenieClassId == player.CurrentActivePet.WeenieClassId;
 
             // despawn passive pet
-            player.CurrentActivePet.Destroy();
+            if (player.NumberOfPets >= 3)
+            {
+                player.CurrentActivePet.Destroy();
+                player.NumberOfPets--;
+            }
+               
 
             return !stowPet;
         }
 
         public bool? HandleCurrentActivePet_Retail(Player player)
         {
-            if (player.CurrentActivePet == null)
+            if (player.NumberOfPets <= 3)
                 return true;
 
             if (IsPassivePet)
@@ -157,19 +145,15 @@ namespace ACE.Server.WorldObjects
             else
             {
                 // using a combat pet device
-                if (player.CurrentActivePet is CombatPet)
+                if (player.NumberOfPets >= 3)
                 {
                     player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
-                }
-                else
-                {
-                    // stow currently active passive pet
-                    // stowing the currently active passive pet w/ a combat pet device will unfortunately start the cooldown timer (and decrease the structure?) on the combat pet device, as per retail
-                    // spawning the combat pet will require another double click in ~45s, as per retail
                     player.CurrentActivePet.Destroy();
+                    player.NumberOfPets--;
 
-                    return null;
+                    return true;
                 }
+    
             }
             return false;
         }
@@ -216,7 +200,11 @@ namespace ACE.Server.WorldObjects
             var dist = GetCylinderDistance(P_PetOwner);
 
             if (dist > MaxDistance)
+            {
+                P_PetOwner.NumberOfPets--;
                 Destroy();
+            }
+                
 
             if (!IsMoving && dist > MinDistance)
                 StartFollow();
@@ -257,11 +245,11 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public override void MoveTo(WorldObject target, float runRate = 1.0f)
         {
-            if (!IsPassivePet)
+            /*if (!IsPassivePet)
             {
                 base.MoveTo(target, runRate);
                 return;
-            }
+            }*/
 
             if (MoveSpeed == 0.0f)
                 GetMovementSpeed();
@@ -284,19 +272,43 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public override void OnMoveComplete(WeenieError status)
         {
-            //Console.WriteLine($"{Name}.OnMoveComplete({status})");
-
-            if (!IsPassivePet)
-            {
-                base.OnMoveComplete(status);
-                return;
-            }
+            //Console.WriteLine($"{Name}.OnMoveComplete({status})");            
 
             if (status != WeenieError.None)
                 return;
 
             PhysicsObj.CachedVelocity = Vector3.Zero;
             IsMoving = false;
+
+
+        }
+
+        public List<Creature> PetGetNearbyMonsters()
+        {
+            var monsters = new List<Creature>();
+
+            foreach (var creature in PhysicsObj.ObjMaint.GetVisibleTargetsValuesOfTypeCreature())
+            {
+                // why does this need to be in here?
+                if (creature.IsDead)
+                {
+                    //Console.WriteLine($"{Name}.GetNearbyMonsters(): refusing to add dead creature {creature.Name} ({creature.Guid})");
+                    continue;
+                }
+
+                // combat pets do not aggro monsters belonging to the same faction as the pet owner?
+                if (SameFaction(creature))
+                {
+                    // unless the pet owner or the pet is being retaliated against?
+                    if (!creature.HasRetaliateTarget(P_PetOwner) && !creature.HasRetaliateTarget(this))
+                        continue;
+                }
+
+                monsters.Add(creature);
+
+            }
+
+            return monsters;
         }
 
         public static Dictionary<uint, float> PetRadiusCache = new Dictionary<uint, float>();

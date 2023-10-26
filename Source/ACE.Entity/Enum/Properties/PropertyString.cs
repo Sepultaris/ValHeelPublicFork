@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace ACE.Entity.Enum.Properties
 {
@@ -96,6 +97,11 @@ namespace ACE.Entity.Enum.Properties
         GodState                        = 9006,
         [ServerOnly]
         TinkerLog                       = 9007,
+        [ServerOnly]
+        SpeedRunTime                    = 9008,
+        [ServerOnly]
+        HcAge                             = 9009
+
     }
 
     public static class PropertyStringExtensions

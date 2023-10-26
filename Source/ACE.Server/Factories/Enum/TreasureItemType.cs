@@ -12,6 +12,7 @@ namespace ACE.Server.Factories.Enum
         Cloak,
         Weapon,
         Jewelry,
-        Dinnerware
+        Dinnerware,
+        Mirra
     }
 }

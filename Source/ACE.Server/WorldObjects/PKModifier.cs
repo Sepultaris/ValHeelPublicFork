@@ -52,9 +52,9 @@ namespace ACE.Server.WorldObjects
             if (!(activator is Player player))
                 return new ActivationResult(false);
 
-            if (player.IsOlthoiPlayer)
+            if (player.IsOnPKLandblock)
             {
-                player.SendWeenieError(WeenieError.OlthoiCannotInteractWithThat);
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat("You cannot change your Player Killer status due to the effects of the area.", ChatMessageType.Help));
                 return new ActivationResult(false);
             }
 

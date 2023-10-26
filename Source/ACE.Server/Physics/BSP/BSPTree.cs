@@ -136,8 +136,6 @@ namespace ACE.Server.Physics.BSP
             var center = path.LocalSpaceCurrCenter[0].Center;
             var localSphere = path.LocalSpaceSphere[0];
 
-            var localSphere_ = path.NumSphere > 1 ? path.LocalSpaceSphere[1] : null;
-
             var movement = localSphere.Center - center;
 
             if (path.InsertType == InsertType.Placement || path.ObstructionEthereal)
@@ -146,7 +144,7 @@ namespace ACE.Server.Physics.BSP
                 if (path.BuildingCheck)
                     clearCell = !path.HitsInteriorCell;
 
-                if (RootNode.sphere_intersects_solid(localSphere, clearCell) || path.NumSphere > 1 && RootNode.sphere_intersects_solid(localSphere_, clearCell))
+                if (RootNode.sphere_intersects_solid(localSphere, clearCell))
                     return TransitionState.Collided;
                 else
                     return TransitionState.OK;
@@ -197,6 +195,7 @@ namespace ACE.Server.Physics.BSP
                 if (path.NumSphere > 1)
                 {
                     Polygon hitPoly_ = null;
+                    var localSphere_ = path.LocalSpaceSphere[1];
 
                     if (RootNode.sphere_intersects_poly(localSphere_, movement, ref hitPoly_, ref contactPoint))
                         return slide_sphere(transition, hitPoly_.Plane.Normal);
@@ -220,6 +219,7 @@ namespace ACE.Server.Physics.BSP
             }
             else if (path.NumSphere > 1)
             {
+                var localSphere_ = path.LocalSpaceSphere[1];
                 if (RootNode.sphere_intersects_poly(localSphere_, movement, ref hitPoly, ref contactPoint) || hitPoly != null)
                 {
                     var collisionNormal = path.LocalSpacePos.LocalToGlobalVec(hitPoly.Plane.Normal);
@@ -337,7 +337,7 @@ namespace ACE.Server.Physics.BSP
             if (changed)
             {
                 var adjusted = validPos.Center - checkPos.Center;
-                var offset = path.LocalSpacePos.LocalToGlobalVec(adjusted) * scale;
+                var offset = path.LocalSpacePos.LocalToGlobalVec(adjusted);
                 path.CheckPos.Frame.Origin += offset;
                 path.CacheGlobalSphere(offset);
 

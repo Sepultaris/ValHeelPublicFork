@@ -80,5 +80,6 @@ namespace ACE.Entity.Enum
         Oak             = 0x0000004B,
         Pine            = 0x0000004C,
         Teak            = 0x0000004D,
+        Liner           = 0x0000804E,
     }
 }

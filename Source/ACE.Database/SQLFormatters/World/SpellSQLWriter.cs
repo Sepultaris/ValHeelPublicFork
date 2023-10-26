@@ -76,7 +76,7 @@ namespace ACE.Database.SQLFormatters.World
             if (input.StatModVal.HasValue)
             {
                 spellLineHdr += ", `stat_Mod_Val`";
-                spellLine += $", {input.StatModVal:0.######}";
+                spellLine += $", {input.StatModVal}";
             }
 
             if (input.EType.HasValue)
@@ -116,25 +116,25 @@ namespace ACE.Database.SQLFormatters.World
             if (input.NumProjectilesVariance.HasValue)
             {
                 spellLineHdr += ", `num_Projectiles_Variance`";
-                spellLine += $", {input.NumProjectilesVariance:0.######}";
+                spellLine += $", {input.NumProjectilesVariance}";
             }
 
             if (input.SpreadAngle.HasValue)
             {
                 spellLineHdr += ", `spread_Angle`";
-                spellLine += $", {input.SpreadAngle:0.######}";
+                spellLine += $", {input.SpreadAngle}";
             }
 
             if (input.VerticalAngle.HasValue)
             {
                 spellLineHdr += ", `vertical_Angle`";
-                spellLine += $", {input.VerticalAngle:0.######}";
+                spellLine += $", {input.VerticalAngle}";
             }
 
             if (input.DefaultLaunchAngle.HasValue)
             {
                 spellLineHdr += ", `default_Launch_Angle`";
-                spellLine += $", {input.DefaultLaunchAngle:0.######}";
+                spellLine += $", {input.DefaultLaunchAngle}";
             }
 
             if (input.NonTracking.HasValue)
@@ -146,65 +146,65 @@ namespace ACE.Database.SQLFormatters.World
             if (input.CreateOffsetOriginX.HasValue)
             {
                 spellLineHdr += ", `create_Offset_Origin_X`";
-                spellLine += $", {input.CreateOffsetOriginX:0.######}";
+                spellLine += $", {input.CreateOffsetOriginX}";
             }
             if (input.CreateOffsetOriginY.HasValue)
             {
                 spellLineHdr += ", `create_Offset_Origin_Y`";
-                spellLine += $", {input.CreateOffsetOriginY:0.######}";
+                spellLine += $", {input.CreateOffsetOriginY}";
             }
             if (input.CreateOffsetOriginZ.HasValue)
             {
                 spellLineHdr += ", `create_Offset_Origin_Z`";
-                spellLine += $", {input.CreateOffsetOriginZ:0.######}";
+                spellLine += $", {input.CreateOffsetOriginZ}";
             }
 
             if (input.PaddingOriginX.HasValue)
             {
                 spellLineHdr += ", `padding_Origin_X`";
-                spellLine += $", {input.PaddingOriginX:0.######}";
+                spellLine += $", {input.PaddingOriginX}";
             }
             if (input.PaddingOriginY.HasValue)
             {
                 spellLineHdr += ", `padding_Origin_Y`";
-                spellLine += $", {input.PaddingOriginY:0.######}";
+                spellLine += $", {input.PaddingOriginY}";
             }
             if (input.PaddingOriginZ.HasValue)
             {
                 spellLineHdr += ", `padding_Origin_Z`";
-                spellLine += $", {input.PaddingOriginZ:0.######}";
+                spellLine += $", {input.PaddingOriginZ}";
             }
 
             if (input.DimsOriginX.HasValue)
             {
                 spellLineHdr += ", `dims_Origin_X`";
-                spellLine += $", {input.DimsOriginX:0.######}";
+                spellLine += $", {input.DimsOriginX}";
             }
             if (input.DimsOriginY.HasValue)
             {
                 spellLineHdr += ", `dims_Origin_Y`";
-                spellLine += $", {input.DimsOriginY:0.######}";
+                spellLine += $", {input.DimsOriginY}";
             }
             if (input.DimsOriginZ.HasValue)
             {
                 spellLineHdr += ", `dims_Origin_Z`";
-                spellLine += $", {input.DimsOriginZ:0.######}";
+                spellLine += $", {input.DimsOriginZ}";
             }
 
             if (input.PeturbationOriginX.HasValue)
             {
                 spellLineHdr += ", `peturbation_Origin_X`";
-                spellLine += $", {input.PeturbationOriginX:0.######}";
+                spellLine += $", {input.PeturbationOriginX}";
             }
             if (input.PeturbationOriginY.HasValue)
             {
                 spellLineHdr += ", `peturbation_Origin_Y`";
-                spellLine += $", {input.PeturbationOriginY:0.######}";
+                spellLine += $", {input.PeturbationOriginY}";
             }
             if (input.PeturbationOriginZ.HasValue)
             {
                 spellLineHdr += ", `peturbation_Origin_Z`";
-                spellLine += $", {input.PeturbationOriginZ:0.######}";
+                spellLine += $", {input.PeturbationOriginZ}";
             }
 
             if (input.ImbuedEffect.HasValue)
@@ -252,7 +252,7 @@ namespace ACE.Database.SQLFormatters.World
             if (input.DrainPercentage.HasValue)
             {
                 spellLineHdr += ", `drain_Percentage`";
-                spellLine += $", {input.DrainPercentage:0.######}";
+                spellLine += $", {input.DrainPercentage}";
             }
 
             if (input.DamageRatio.HasValue)
@@ -300,7 +300,7 @@ namespace ACE.Database.SQLFormatters.World
             if (input.LossPercent.HasValue)
             {
                 spellLineHdr += ", `loss_Percent`";
-                spellLine += $", {input.LossPercent:0.######}";
+                spellLine += $", {input.LossPercent}";
             }
 
             if (input.SourceLoss.HasValue)
@@ -330,13 +330,13 @@ namespace ACE.Database.SQLFormatters.World
             if (input.Index.HasValue)
             {
                 spellLineHdr += ", `index`";
-                spellLine += $", {input.Index} /* {(input.Name.Contains("Tie") ? ("PortalLinkType." + (PortalLinkType)input.Index).ToString() : ("PortalRecallType." + (PortalRecallType)input.Index).ToString())} */";
+                spellLine += $", {input.Index}";
             }
 
             if (input.Link.HasValue)
             {
                 spellLineHdr += ", `link`";
-                spellLine += $", {input.Link} /* PortalSummonType.{((PortalSummonType)input.Link).ToString()} */";
+                spellLine += $", {input.Link}";
             }
 
             if (input.PositionObjCellId.HasValue)
@@ -347,37 +347,37 @@ namespace ACE.Database.SQLFormatters.World
             if (input.PositionOriginX.HasValue)
             {
                 spellLineHdr += ", `position_Origin_X`";
-                spellLine += $", {TrimNegativeZero(input.PositionOriginX):0.######}";
+                spellLine += $", {input.PositionOriginX}";
             }
             if (input.PositionOriginY.HasValue)
             {
                 spellLineHdr += ", `position_Origin_Y`";
-                spellLine += $", {TrimNegativeZero(input.PositionOriginY):0.######}";
+                spellLine += $", {input.PositionOriginY}";
             }
             if (input.PositionOriginZ.HasValue)
             {
                 spellLineHdr += ", `position_Origin_Z`";
-                spellLine += $", {TrimNegativeZero(input.PositionOriginZ):0.######}";
+                spellLine += $", {input.PositionOriginZ}";
             }
             if (input.PositionAnglesW.HasValue)
             {
                 spellLineHdr += ", `position_Angles_W`";
-                spellLine += $", {TrimNegativeZero(input.PositionAnglesW):0.######}";
+                spellLine += $", {input.PositionAnglesW}";
             }
             if (input.PositionAnglesX.HasValue)
             {
                 spellLineHdr += ", `position_Angles_X`";
-                spellLine += $", {TrimNegativeZero(input.PositionAnglesX):0.######}";
+                spellLine += $", {input.PositionAnglesX}";
             }
             if (input.PositionAnglesY.HasValue)
             {
                 spellLineHdr += ", `position_Angles_Y`";
-                spellLine += $", {TrimNegativeZero(input.PositionAnglesY):0.######}";
+                spellLine += $", {input.PositionAnglesY}";
             }
             if (input.PositionAnglesZ.HasValue)
             {
                 spellLineHdr += ", `position_Angles_Z`";
-                spellLine += $", {TrimNegativeZero(input.PositionAnglesZ):0.######}";
+                spellLine += $", {input.PositionAnglesZ}";
             }
 
             if (input.MinPower.HasValue)
@@ -395,7 +395,7 @@ namespace ACE.Database.SQLFormatters.World
             if (input.PowerVariance.HasValue)
             {
                 spellLineHdr += ", `power_Variance`";
-                spellLine += $", {input.PowerVariance:0.######}";
+                spellLine += $", {input.PowerVariance}";
             }
 
             if (input.DispelSchool.HasValue)
@@ -419,7 +419,7 @@ namespace ACE.Database.SQLFormatters.World
             if (input.NumberVariance.HasValue)
             {
                 spellLineHdr += ", `number_Variance`";
-                spellLine += $", {input.NumberVariance:0.######}";
+                spellLine += $", {input.NumberVariance}";
             }
 
             if (input.DotDuration.HasValue)
@@ -439,7 +439,7 @@ namespace ACE.Database.SQLFormatters.World
 
             if (input.PositionObjCellId.HasValue && input.PositionOriginX.HasValue && input.PositionOriginY.HasValue && input.PositionOriginZ.HasValue && input.PositionAnglesX.HasValue && input.PositionAnglesY.HasValue && input.PositionAnglesZ.HasValue && input.PositionAnglesW.HasValue)
             {
-                spellLine += Environment.NewLine + $"/* @teleloc 0x{input.PositionObjCellId.Value:X8} [{TrimNegativeZero(input.PositionOriginX.Value):F6} {TrimNegativeZero(input.PositionOriginY.Value):F6} {TrimNegativeZero(input.PositionOriginZ.Value):F6}] {TrimNegativeZero(input.PositionAnglesW.Value):F6} {TrimNegativeZero(input.PositionAnglesX.Value):F6} {TrimNegativeZero(input.PositionAnglesY.Value):F6} {TrimNegativeZero(input.PositionAnglesZ.Value):F6} */";
+                spellLine += Environment.NewLine + $"/* @teleloc 0x{input.PositionObjCellId.Value:X8} [{input.PositionOriginX.Value:F6} {input.PositionOriginY.Value:F6} {input.PositionOriginZ.Value:F6}] {input.PositionAnglesW.Value:F6} {input.PositionAnglesX.Value:F6} {input.PositionAnglesY.Value:F6} {input.PositionAnglesZ.Value:F6} */";
             }
 
             writer.WriteLine(spellLineHdr);

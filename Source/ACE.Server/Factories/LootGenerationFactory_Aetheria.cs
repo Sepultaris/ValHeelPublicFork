@@ -50,7 +50,7 @@ namespace ACE.Server.Factories
             return wo;
         }
 
-        public static readonly List<uint> IconOverlay_ItemMaxLevel = new List<uint>()
+        private static readonly List<uint> IconOverlay_ItemMaxLevel = new List<uint>()
         {
             0x6006C34,  // 1
             0x6006C35,  // 2
@@ -86,7 +86,15 @@ namespace ACE.Server.Factories
                     }
                 }
             }
-            wo.IconOverlayId = IconOverlay_ItemMaxLevel[wo.ItemMaxLevel.Value - 1];
+            if (tier == 9)
+            {
+                wo.ItemMaxLevel = 5;
+            }
+            if (tier == 10)
+            {
+                wo.ItemMaxLevel = 5;
+            }
+           
         }
 
         private static WorldObject CreateCoalescedMana(TreasureDeath profile)
@@ -111,8 +119,7 @@ namespace ACE.Server.Factories
 
         private static void MutateAetheria_New(WorldObject wo, TreasureDeath profile)
         {
-            wo.ItemMaxLevel = AetheriaChance.Roll_ItemMaxLevel(profile);
-
+            wo.ItemMaxLevel = AetheriaChance.Roll_ItemMaxLevel(profile);            
             wo.IconOverlayId = IconOverlay_ItemMaxLevel[wo.ItemMaxLevel.Value - 1];
         }
 

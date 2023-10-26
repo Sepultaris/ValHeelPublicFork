@@ -18,7 +18,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             ( 1, 0.550f ),
             ( 2, 0.345f ),
             ( 3, 0.100f ),
-            ( 4, 0.005f ),
+            ( 4, 0.010f ),
         };
 
         // lack of data samples here for 4+
@@ -28,7 +28,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             ( 2, 0.34475f ),
             ( 3, 0.10000f ),
             ( 4, 0.00500f ),
-            ( 5, 0.00025f ),
+            ( 5, 0.00030f ),
         };
 
         // also lack of data samples for level 5,
@@ -39,14 +39,16 @@ namespace ACE.Server.Factories.Tables.Wcids
             ( 2, 0.5500f ),
             ( 3, 0.4195f ),
             ( 4, 0.0100f ),
-            ( 5, 0.0005f ),
-        };
+            ( 5, 0.0008f ),
+        };        
 
         private static readonly List<ChanceTable<int>> itemMaxLevels = new List<ChanceTable<int>>()
         {
             T5_ItemMaxLevel,
             T6_ItemMaxLevel,
             T7_ItemMaxLevel,
+            T8_ItemMaxLevel,
+            T8_ItemMaxLevel,
             T8_ItemMaxLevel
         };
 
@@ -56,6 +58,9 @@ namespace ACE.Server.Factories.Tables.Wcids
                 return 0;
 
             var table = itemMaxLevels[profile.Tier - 5];
+
+            if (profile.Tier == 10)
+                return 5;
 
             return table.Roll(profile.LootQualityMod);
         }

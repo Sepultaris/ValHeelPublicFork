@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Timers;
 
 using log4net;
 
@@ -12,7 +13,10 @@ using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Factories;
 using ACE.Server.Managers;
+using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
+using System.Linq;
+using ACE.Server.Network;
 
 namespace ACE.Server.WorldObjects
 {
@@ -28,11 +32,10 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyInt.PetClass);
             set { if (value.HasValue) SetProperty(PropertyInt.PetClass, value.Value); else RemoveProperty(PropertyInt.PetClass); }
         }
-
-        public uint? Pet
+        public bool? MultiPet
         {
-            get => GetProperty(PropertyInstanceId.Pet);
-            set { if (value.HasValue) SetProperty(PropertyInstanceId.Pet, value.Value); else RemoveProperty(PropertyInstanceId.Pet); }
+            get => GetProperty(PropertyBool.MultiPet);
+            set { if (value.HasValue) SetProperty(PropertyBool.MultiPet, value.Value); else RemoveProperty(PropertyBool.MultiPet); }
         }
 
         /// <summary>
@@ -72,7 +75,7 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            if (Structure == 0)
+            if (Structure == 0 )
             {
                 //player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, "You must refill the essence to use it again."));
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat("Your summoning device does not have enough charges to function!", ChatMessageType.Broadcast));
@@ -82,6 +85,8 @@ namespace ACE.Server.WorldObjects
             var wcid = (uint)PetClass;
 
             var result = SummonCreature(player, wcid);
+
+
 
             if (result == null || result.Value)
             {
@@ -97,11 +102,13 @@ namespace ACE.Server.WorldObjects
             else
             {
                 // this would be a good place to send a friendly reminder to install the latest summoning updates from ACE-World-Patch
-            }
-        }
+            }            
+        }    
 
         public override ActivationResult CheckUseRequirements(WorldObject activator)
         {
+            var visibleCreatures = activator.PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature();
+
             if (!(activator is Player player))
                 return new ActivationResult(false);
 
@@ -116,34 +123,53 @@ namespace ACE.Server.WorldObjects
                 return new ActivationResult(false);
             }
 
+            if (player.CurrentActivePet == null)
+                player.NumberOfPets = 0;
+
+            if (player.NumberOfPets < 0)
+            {
+                player.NumberOfPets = 0;
+            }
             // duplicating some of this verification logic here from Pet.Init()
             // since the PetDevice owner and the summoned Pet are separate objects w/ potentially different heartbeat offsets,
             // the cooldown can still expire before the CombatPet's lifespan
             // in this case, if the player tries to re-activate the PetDevice while the CombatPet is still in the world,
             // we want to return an error without re-activating the cooldown
-
-            if (player.CurrentActivePet != null && player.CurrentActivePet is CombatPet)
+            if (player.NumberOfPets < 3 && visibleCreatures.Count(c => c.IsCombatPet && c.PetOwner == player.Guid.Full) < 3)
             {
-                if (PropertyManager.GetBool("pet_stow_replace").Item)
+                return new ActivationResult(true);
+            }
+
+            if (visibleCreatures.Count(c => c.IsCombatPet && c.PetOwner == player.Guid.Full) > 3)
+            {
+                if (CombatPets.Count > 0)
                 {
-                    // original ace
-                    player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
+                    var oldPetCount = player.NumberOfPets;
+                    var combatPetToRemove = CombatPets[0];
+                    CombatPets.RemoveAt(0);
+                    player.NumberOfPets = CombatPets.Count;
+                    combatPetToRemove.Die();
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have too many pets! Killing the oldest! {oldPetCount} old count / {CombatPets.Count} new count.", ChatMessageType.x1B));
+                    player.Session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
                     return new ActivationResult(false);
                 }
-                else
-                {
-                    // retail stow
-                    var weenie = DatabaseManager.World.GetCachedWeenie((uint)PetClass);
-
-                    if (weenie == null || weenie.WeenieType != WeenieType.Pet)
-                    {
-                        player.SendTransientError($"{player.CurrentActivePet.Name} is already active");
-                        return new ActivationResult(false);
-                    }
-                }
             }
-            return new ActivationResult(true);
+
+            if (player.NumberOfPets >= 3)
+            {
+                player.SendTransientError($"You cannot have any more active pets. {player.NumberOfPets}");
+                return new ActivationResult(false);
+            }
+
+            return new ActivationResult(false);
+            
         }
+
+        public List<Creature> CombatPets = new List<Creature>
+        {
+
+        };
 
         public bool? SummonCreature(Player player, uint wcid)
         {
@@ -162,9 +188,13 @@ namespace ACE.Server.WorldObjects
                 log.Error($"{player.Name}.SummonCreature({wcid}) - PetDevice {WeenieClassId} - {WeenieClassName} tried to summon {wo.WeenieClassId} - {wo.WeenieClassName} of unknown type {wo.WeenieType}");
                 return false;
             }
+
             var success = pet.Init(player, this);
 
-            if (success != true) wo.Destroy();
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.GearDamageRating} D / {pet.DamageResistRating} DR", ChatMessageType.Broadcast));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.CritDamageRating} CD / {pet.CritDamageResistRating} CDR", ChatMessageType.Broadcast));
+            player.Session.Network.EnqueueSend(new GameMessageSystemChat($"{pet.Health.MaxValue} H / {pet.Stamina.MaxValue} S / {pet.Mana.MaxValue} M", ChatMessageType.Broadcast));
+            player.NumberOfPets++;
 
             return success;
         }

@@ -12,8 +12,6 @@ namespace ACE.Server.Entity
 
         public ConfirmationType ConfirmationType;
 
-        public uint ContextId;
-
         public Confirmation(ObjectGuid playerGuid, ConfirmationType confirmationType)
         {
             PlayerGuid = playerGuid;
@@ -21,12 +19,15 @@ namespace ACE.Server.Entity
             ConfirmationType = confirmationType;
         }
 
-        public virtual void ProcessConfirmation(bool response, bool timeout = false)
+        public virtual void ProcessConfirmation(bool response)
         {
             // empty base
         }
 
-        public Player Player => PlayerManager.GetOnlinePlayer(PlayerGuid);
+        public Player GetPlayerResponse(bool response)
+        {
+            return response ? PlayerManager.GetOnlinePlayer(PlayerGuid) : null;
+        }
     }
 
     public class Confirmation_AlterAttribute: Confirmation
@@ -39,11 +40,9 @@ namespace ACE.Server.Entity
             AttributeTransferDevice = attributeTransferDevice;
         }
 
-        public override void ProcessConfirmation(bool response, bool timeout = false)
+        public override void ProcessConfirmation(bool response)
         {
-            if (!response) return;
-
-            var player = Player;
+            var player = GetPlayerResponse(response);
             if (player == null) return;
 
             var attributeTransferDevice = player.FindObject(AttributeTransferDevice.Full, Player.SearchLocations.MyInventory) as AttributeTransferDevice;
@@ -63,11 +62,9 @@ namespace ACE.Server.Entity
             SkillAlterationDevice = skillAlterationDevice;
         }
 
-        public override void ProcessConfirmation(bool response, bool timeout = false)
+        public override void ProcessConfirmation(bool response)
         {
-            if (!response) return;
-
-            var player = Player;
+            var player = GetPlayerResponse(response);
             if (player == null) return;
 
             var skillAlterationDevice = player.FindObject(SkillAlterationDevice.Full, Player.SearchLocations.MyInventory) as SkillAlterationDevice;
@@ -87,11 +84,9 @@ namespace ACE.Server.Entity
             AugmentationGuid = augmentationGuid;
         }
 
-        public override void ProcessConfirmation(bool response, bool timeout = false)
+        public override void ProcessConfirmation(bool response)
         {
-            if (!response) return;
-
-            var player = Player;
+            var player = GetPlayerResponse(response);
             if (player == null) return;
 
             var augmentation = player.FindObject(AugmentationGuid.Full, Player.SearchLocations.MyInventory) as AugmentationDevice;
@@ -108,32 +103,30 @@ namespace ACE.Server.Entity
 
         public bool Tinkering;
 
-        public Confirmation_CraftInteration(ObjectGuid playerGuid, ObjectGuid sourceGuid, ObjectGuid targetGuid)
+        public Confirmation_CraftInteration(ObjectGuid playerGuid, ObjectGuid sourceGuid, ObjectGuid targetGuid, bool tinkering = false)
             : base (playerGuid, ConfirmationType.CraftInteraction)
         {
             SourceGuid = sourceGuid;
             TargetGuid = targetGuid;
+
+            Tinkering = tinkering;
         }
 
-        public override void ProcessConfirmation(bool response, bool timeout = false)
+        public override void ProcessConfirmation(bool response)
         {
-            var player = Player;
+            var player = GetPlayerResponse(response);
             if (player == null) return;
 
-            if (!response)
-            {
-                player.SendWeenieError(WeenieError.YouChickenOut);
-
-                return;
-            }
-
-            // inventory only?
             var source = player.FindObject(SourceGuid.Full, Player.SearchLocations.LocationsICanMove);
             var target = player.FindObject(TargetGuid.Full, Player.SearchLocations.LocationsICanMove);
 
-            if (source == null || target == null) return;
-
-            RecipeManager.UseObjectOnTarget(player, source, target, true);
+            if (source != null && target != null)
+            {
+                if (!Tinkering)
+                    RecipeManager.UseObjectOnTarget(player, source, target, true);
+                else
+                    RecipeManager.HandleTinkering(player, source, target, true);
+            }
         }
     }
 
@@ -147,18 +140,10 @@ namespace ACE.Server.Entity
             InviterGuid = inviterGuid;
         }
 
-        public override void ProcessConfirmation(bool response, bool timeout = false)
+        public override void ProcessConfirmation(bool response)
         {
-            //if (!response) return;
-
-            var invited = Player;
+            var invited = PlayerManager.GetOnlinePlayer(PlayerGuid);
             var inviter = PlayerManager.GetOnlinePlayer(InviterGuid);
-
-            if (!response)
-            {
-                inviter?.SendMessage($"{invited.Name} {(timeout ? "did not respond to" : "has declined")} your offer of fellowship.");
-                return;
-            }
 
             if (invited != null && inviter != null && inviter.Fellowship != null)
                 inviter.Fellowship.AddConfirmedMember(inviter, invited, response);
@@ -175,20 +160,12 @@ namespace ACE.Server.Entity
             VassalGuid = vassalGuid;
         }
 
-        public override void ProcessConfirmation(bool response, bool timeout = false)
+        public override void ProcessConfirmation(bool response)
         {
-            //if (!response) return;
-
-            var patron = Player;
+            var patron = GetPlayerResponse(response);
             if (patron == null) return;
 
             var vassal = PlayerManager.GetOnlinePlayer(VassalGuid);
-
-            if (!response)
-            {
-                vassal?.SendMessage($"{patron.Name} {(timeout ? "did not respond to" : "has declined")} your offer of allegiance.");
-                return;
-            }
 
             if (vassal != null)
                 vassal.SwearAllegiance(patron.Guid.Full, true, true);
@@ -208,15 +185,12 @@ namespace ACE.Server.Entity
             Quest = quest;
         }
 
-        public override void ProcessConfirmation(bool response, bool timeout = false)
+        public override void ProcessConfirmation(bool response)
         {
-            var player = Player;
+            var player = PlayerManager.GetOnlinePlayer(PlayerGuid);
             if (player == null) return;
 
             var source = player.FindObject(SourceGuid.Full, Player.SearchLocations.Landblock);
-
-            if (source is Hook hook && hook.Item != null)
-                source = hook.Item;
 
             if (source != null)
                 source.EmoteManager.ExecuteEmoteSet(response ? EmoteCategory.TestSuccess : EmoteCategory.TestFailure, Quest, player);
@@ -233,11 +207,9 @@ namespace ACE.Server.Entity
             Action = action;
         }
 
-        public override void ProcessConfirmation(bool response, bool timeout = false)
+        public override void ProcessConfirmation(bool response)
         {
-            if (!response) return;
-
-            var player = Player;
+            var player = GetPlayerResponse(response);
             if (player == null) return;
 
             Action();

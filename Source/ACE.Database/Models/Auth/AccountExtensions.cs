@@ -97,7 +97,7 @@ namespace ACE.Database.Models.Auth
             byte[] buffer = passwordBytes.Concat(saltBytes).ToArray();
             byte[] hash;
 
-            using (var hasher = SHA512.Create())
+            using (SHA512Managed hasher = new SHA512Managed())
                 hash = hasher.ComputeHash(buffer);
 
             return Convert.ToBase64String(hash);

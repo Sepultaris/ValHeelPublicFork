@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -24,7 +22,6 @@ using ACE.Server.Factories;
 using ACE.Server.Factories.Entity;
 using ACE.Server.Managers;
 using ACE.Server.Network;
-using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Network.Structure;
 using ACE.Server.WorldObjects;
@@ -1054,7 +1051,7 @@ namespace ACE.Server.Command.Handlers
         }
 
         // gamecast <message>
-        [CommandHandler("gamecast", AccessLevel.Envoy, CommandHandlerFlag.None, 1,
+        [CommandHandler("gamecast", AccessLevel.Envoy, CommandHandlerFlag.RequiresWorld, 1,
             "Sends a world-wide broadcast.",
             "<message>\n" +
             "This command sends a world-wide broadcast to everyone in the game. Text is prefixed with 'Broadcast from (admin-name)> '.\n" +
@@ -1066,12 +1063,7 @@ namespace ACE.Server.Command.Handlers
             // See Also: @gamecast, @gamecastemote, @gamecastlocal, @gamecastlocalemote.
             // @gamecast - Sends a world-wide broadcast.
 
-            //session.Player.HandleActionWorldBroadcast($"Broadcast from {session.Player.Name}> {string.Join(" ", parameters)}", ChatMessageType.WorldBroadcast);
-
-            var msg = $"Broadcast from {(session != null ? session.Player.Name : "System")}> {string.Join(" ", parameters)}";
-            GameMessageSystemChat sysMessage = new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast);
-            PlayerManager.BroadcastToAll(sysMessage);
-            PlayerManager.LogBroadcastChat(Channel.AllBroadcast, session?.Player, msg);
+            session.Player.HandleActionWorldBroadcast($"Broadcast from {session.Player.Name}> {string.Join(" ", parameters)}", ChatMessageType.WorldBroadcast);
         }
 
         // add <spell>
@@ -1303,16 +1295,16 @@ namespace ACE.Server.Command.Handlers
                     var msg = "HUD Report:\n";
                     msg += "=========================================================\n";
 
-                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P2} available for purchase)\n", "Apartments:", apartments, apartmentsTotal, apartmentsAvail);
-                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P2} available for purchase)\n", "Cottages:", cottages, cottagesTotal, cottagesAvail);
-                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P2} available for purchase)\n", "Villas:", villas, villasTotal, villasAvail);
-                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P2} available for purchase)\n", "Mansions:", mansions, mansionsTotal, mansionsAvail);
+                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P} available for purchase)\n", "Apartments:", apartments, apartmentsTotal, apartmentsAvail);
+                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P} available for purchase)\n", "Cottages:", cottages, cottagesTotal, cottagesAvail);
+                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P} available for purchase)\n", "Villas:", villas, villasTotal, villasAvail);
+                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P} available for purchase)\n", "Mansions:", mansions, mansionsTotal, mansionsAvail);
 
                     var housesTotal = apartmentsTotal + cottagesTotal + villasTotal + mansionsTotal;
                     var housesSold = apartments + cottages + villas + mansions;
                     var housesAvail = (housesTotal - housesSold) / housesTotal;
 
-                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P2} available for purchase)\n", "Total:", housesSold, housesTotal, housesAvail);
+                    msg += string.Format("{0, -12} {1, 4:0} / {2, 4:0} ({3, 7:P} available for purchase)\n", "Total:", housesSold, housesTotal, housesAvail);
 
                     msg += "=========================================================\n";
 
@@ -1739,12 +1731,7 @@ namespace ACE.Server.Command.Handlers
         }
 
         // bornagain deletedCharID[, newCharName[, accountName]]
-        [CommandHandler("bornagain", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, 1,
-            "Restores a deleted character to an account.",
-            "deletedCharID(, newCharName)(, accountName)\n" +
-            "Given the ID of a deleted character, this command restores that character to its owner.  (You can find the ID of a deleted character using the @finger command.)\n" +
-            "If the deleted character's name has since been taken by a new character, you can specify a new name for the restored character as the second parameter.  (You can find if the name has been taken by also using the @finger command.)  Use a comma to separate the arguments.\n" +
-            "If needed, you can specify an account name as a third parameter if the character should be restored to an account other than its original owner.  Again, use a comma between the arguments.")]
+        [CommandHandler("bornagain", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, 1)]
         public static void HandleBornAgain(Session session, params string[] parameters)
         {
             // usage: @bornagain deletedCharID[, newCharName[, accountName]]
@@ -1753,413 +1740,18 @@ namespace ACE.Server.Command.Handlers
             // If needed, you can specify an account name as a third parameter if the character should be restored to an account other than its original owner.  Again, use a comma between the arguments.
             // @bornagain - Restores a deleted character to an account.
 
-            var hexNumber = parameters[0];
-
-            if (hexNumber.StartsWith("0x"))
-                hexNumber = hexNumber.Substring(2);
-
-            if (hexNumber.EndsWith(","))
-                hexNumber = hexNumber[..^1];
-
-            if (uint.TryParse(hexNumber, NumberStyles.HexNumber, CultureInfo.CurrentCulture, out var existingCharIID))
-            {
-                var args = string.Join(" ", parameters);
-
-                if (args.Contains(','))
-                {
-                    var twoCommas = args.Count(c => c == ',') == 2;
-
-                    var names = string.Join(" ", parameters).Split(",");
-
-                    var newCharName = names[1].TrimStart(' ').TrimEnd(' ');                    
-
-                    if (newCharName.StartsWith("+"))
-                        newCharName = newCharName.Substring(1);
-                    newCharName = newCharName.First().ToString().ToUpper() + newCharName.Substring(1);
-
-                    string newAccountName;
-                    if (twoCommas)
-                    {
-                        newAccountName = names[2].TrimStart(' ').TrimEnd(' ').ToLower();
-
-                        var account = DatabaseManager.Authentication.GetAccountByName(newAccountName);
-
-                        if (account == null)
-                        {
-                            CommandHandlerHelper.WriteOutputInfo(session, $"Error, cannot restore. Account \"{newAccountName}\" is not in database.", ChatMessageType.Broadcast);
-                            return;
-                        }
-
-                        if (PlayerManager.IsAccountAtMaxCharacterSlots(account.AccountName))
-                        {
-                            CommandHandlerHelper.WriteOutputInfo(session, $"Error, cannot restore. Account \"{newAccountName}\" has no free character slots.", ChatMessageType.Broadcast);
-                            return;
-                        }
-
-                        DoCopyChar(session, $"0x{existingCharIID:X8}", existingCharIID, true, newCharName, account.AccountId);
-                    }
-                    else
-                    {
-                        if (PlayerManager.IsAccountAtMaxCharacterSlots(session.Player.Account.AccountName))
-                        {
-                            CommandHandlerHelper.WriteOutputInfo(session, $"Error, cannot restore. Account \"{session.Player.Account.AccountName}\" has no free character slots.", ChatMessageType.Broadcast);
-                            return;
-                        }
-
-                        DoCopyChar(session, $"0x{existingCharIID:X8}", existingCharIID, true, newCharName);
-                    }
-                }
-                else
-                {
-                    if (PlayerManager.IsAccountAtMaxCharacterSlots(session.Player.Account.AccountName))
-                    {
-                        CommandHandlerHelper.WriteOutputInfo(session, $"Error, cannot restore. Account \"{session.Player.Account.AccountName}\" has no free character slots.", ChatMessageType.Broadcast);
-                        return;
-                    }
-
-                    DoCopyChar(session, $"0x{existingCharIID:X8}", existingCharIID, true);
-                }
-            }
-            else
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, "Error, cannot restore. You must include an existing character id in hex form.\nExample: @copychar 0x500000AC\n         @copychar 0x500000AC, Newly Restored\n         @copychar 0x500000AC, Newly Restored, differentaccount\n", ChatMessageType.Broadcast);
-            }
+            // TODO: output
         }
 
         // copychar < character name >, < copy name >
-        [CommandHandler("copychar", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 2,
-            "Copies an existing character into your character list.",
-            "< Existing Character Name >, < New Character Name >\n" +
-            "Given the name of an existing character \"character name\", this command makes a copy of that character with the name \"copy name\" and places it into your character list.")]
+        [CommandHandler("copychar", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 2)]
         public static void HandleCopychar(Session session, params string[] parameters)
         {
             // usage: @copychar < character name >, < copy name >
             // Given the name of an existing character "character name", this command makes a copy of that character with the name "copy name" and places it into your character list.
             // @copychar - Copies an existing character into your character list.
 
-            if (!string.Join(" ", parameters).Contains(','))
-            {
-                CommandHandlerHelper.WriteOutputInfo(session, "Error, cannot copy. You must include the existing character name followed by a comma and then the new name.\n Example: @copychar Old Name, New Name", ChatMessageType.Broadcast);
-                return;
-            }
-
-            var names = string.Join(" ", parameters).Split(",");
-
-            var existingCharName = names[0].TrimStart(' ').TrimEnd(' ');
-            var newCharName = names[1].TrimStart(' ').TrimEnd(' ');
-
-            if (existingCharName.StartsWith("+"))
-                existingCharName = existingCharName.Substring(1);
-            if (newCharName.StartsWith("+"))
-                newCharName = newCharName.Substring(1);
-
-            newCharName = newCharName.First().ToString().ToUpper() + newCharName.Substring(1);
-
-            var existingPlayer = PlayerManager.FindByName(existingCharName);
-
-            if (existingPlayer == null || session.Characters.Count >= PropertyManager.GetLong("max_chars_per_account").Item)
-            {
-                //CommandHandlerHelper.WriteOutputInfo(session, $"Failed to copy the character \"{existingCharName}\" to a new character \"{newCharName}\" for the account \"{session.Account}\"! Does the character exist _AND_ is not currently logged in? Is the new character name already taken, or is the account out of free character slots?", ChatMessageType.Broadcast);
-                CommandHandlerHelper.WriteOutputInfo(session, $"Failed to copy the character \"{existingCharName}\" to a new character \"{newCharName}\" for the account \"{session.Account}\"! Does the character exist? Is the new character name already taken, or is the account out of free character slots?", ChatMessageType.Broadcast);
-                return;
-            }
-
-            DoCopyChar(session, existingCharName, existingPlayer.Guid.Full, false, newCharName);
-        }
-
-        private static void DoCopyChar(Session session, string existingCharName, uint existingCharId, bool isDeletedChar, string newCharacterName = null, uint newAccountId = 0)
-        {
-            DatabaseManager.Shard.GetCharacter(existingCharId, existingCharacter =>
-            {
-                if (existingCharacter != null)
-                {
-                    var newCharName = newCharacterName ?? existingCharacter.Name;
-
-                    var existingPlayerBiota = DatabaseManager.Shard.BaseDatabase.GetBiota(existingCharId);
-
-                    DatabaseManager.Shard.GetPossessedBiotasInParallel(existingCharId, existingPossessions =>
-                    {
-                        DatabaseManager.Shard.IsCharacterNameAvailable(newCharName, isAvailable =>
-                        {
-                            if (!isAvailable)
-                            {
-                                CommandHandlerHelper.WriteOutputInfo(session, $"{newCharName} is not available to use for the {(isDeletedChar ? "restored" : "copied")} character name, try another name.", ChatMessageType.Broadcast);
-                                return;
-                            }
-
-                            var newPlayerGuid = GuidManager.NewPlayerGuid();
-
-                            var newCharacter = new Database.Models.Shard.Character
-                            {
-                                Id = newPlayerGuid.Full,
-                                AccountId = newAccountId > 0 ? newAccountId : session.Player.Account.AccountId,
-                                Name = newCharName,
-                                CharacterOptions1 = existingCharacter.CharacterOptions1,
-                                CharacterOptions2 = existingCharacter.CharacterOptions2,
-                                DefaultHairTexture = existingCharacter.DefaultHairTexture,
-                                GameplayOptions = existingCharacter.GameplayOptions,
-                                HairTexture = existingCharacter.HairTexture,
-                                IsPlussed = existingCharacter.IsPlussed,
-                                SpellbookFilters = existingCharacter.SpellbookFilters,
-                                TotalLogins = 1 // existingCharacter.TotalLogins
-                            };
-
-                            foreach (var entry in existingCharacter.CharacterPropertiesContractRegistry)
-                                newCharacter.CharacterPropertiesContractRegistry.Add(new Database.Models.Shard.CharacterPropertiesContractRegistry { CharacterId = newPlayerGuid.Full, ContractId = entry.ContractId, DeleteContract = entry.DeleteContract, SetAsDisplayContract = entry.SetAsDisplayContract });
-
-                            foreach (var entry in existingCharacter.CharacterPropertiesFillCompBook)
-                                newCharacter.CharacterPropertiesFillCompBook.Add(new Database.Models.Shard.CharacterPropertiesFillCompBook { CharacterId = newPlayerGuid.Full, QuantityToRebuy = entry.QuantityToRebuy, SpellComponentId = entry.SpellComponentId });
-
-                            foreach (var entry in existingCharacter.CharacterPropertiesFriendList)
-                                newCharacter.CharacterPropertiesFriendList.Add(new Database.Models.Shard.CharacterPropertiesFriendList { CharacterId = newPlayerGuid.Full, FriendId = entry.FriendId });
-
-                            foreach (var entry in existingCharacter.CharacterPropertiesQuestRegistry)
-                                newCharacter.CharacterPropertiesQuestRegistry.Add(new Database.Models.Shard.CharacterPropertiesQuestRegistry { CharacterId = newPlayerGuid.Full, LastTimeCompleted = entry.LastTimeCompleted, NumTimesCompleted = entry.NumTimesCompleted, QuestName = entry.QuestName });
-
-                            foreach (var entry in existingCharacter.CharacterPropertiesShortcutBar)
-                                newCharacter.CharacterPropertiesShortcutBar.Add(new Database.Models.Shard.CharacterPropertiesShortcutBar { CharacterId = newPlayerGuid.Full, ShortcutBarIndex = entry.ShortcutBarIndex, ShortcutObjectId = entry.ShortcutObjectId });
-
-                            foreach (var entry in existingCharacter.CharacterPropertiesSpellBar)
-                                newCharacter.CharacterPropertiesSpellBar.Add(new Database.Models.Shard.CharacterPropertiesSpellBar { CharacterId = newPlayerGuid.Full, SpellBarIndex = entry.SpellBarIndex, SpellBarNumber = entry.SpellBarNumber, SpellId = entry.SpellId });
-
-                            foreach (var entry in existingCharacter.CharacterPropertiesSquelch)
-                                newCharacter.CharacterPropertiesSquelch.Add(new Database.Models.Shard.CharacterPropertiesSquelch { CharacterId = newPlayerGuid.Full, SquelchAccountId = entry.SquelchAccountId, SquelchCharacterId = entry.SquelchCharacterId, Type = entry.Type });
-
-                            foreach (var entry in existingCharacter.CharacterPropertiesTitleBook)
-                                newCharacter.CharacterPropertiesTitleBook.Add(new Database.Models.Shard.CharacterPropertiesTitleBook { CharacterId = newPlayerGuid.Full, TitleId = entry.TitleId });
-
-                            var idSwaps = new ConcurrentDictionary<uint, uint>();
-
-                            var newPlayerBiota = Database.Adapter.BiotaConverter.ConvertToEntityBiota(existingPlayerBiota);
-
-                            idSwaps[newPlayerBiota.Id] = newPlayerGuid.Full;
-
-                            newPlayerBiota.Id = newPlayerGuid.Full;
-                            if (newPlayerBiota.PropertiesAllegiance != null)
-                                newPlayerBiota.PropertiesAllegiance.Clear();
-                            if (newPlayerBiota.HousePermissions != null)
-                                newPlayerBiota.HousePermissions.Clear();
-
-                            var newTempWieldedItems = new List<Biota>();
-                            foreach (var item in existingPossessions.WieldedItems)
-                            {
-                                var newItemBiota = Database.Adapter.BiotaConverter.ConvertToEntityBiota(item);
-                                var newGuid = GuidManager.NewDynamicGuid();
-                                idSwaps[newItemBiota.Id] = newGuid.Full;
-                                newItemBiota.Id = newGuid.Full;
-                                newTempWieldedItems.Add(newItemBiota);
-                            }
-
-                            var newTempInventoryItems = new List<Biota>();
-                            foreach (var item in existingPossessions.Inventory)
-                            {
-                                if (item.WeenieClassId == (uint)WeenieClassName.W_DEED_CLASS)
-                                    continue;
-
-                                var newItemBiota = Database.Adapter.BiotaConverter.ConvertToEntityBiota(item);
-                                var newGuid = GuidManager.NewDynamicGuid();
-                                idSwaps[newItemBiota.Id] = newGuid.Full;
-                                newItemBiota.Id = newGuid.Full;
-                                newTempInventoryItems.Add(newItemBiota);
-                            }
-
-
-                            var newWieldedItems = new List<Database.Models.Shard.Biota>();
-                            foreach (var item in newTempWieldedItems)
-                            {
-                                if (item.PropertiesEnchantmentRegistry != null)
-                                {
-                                    foreach (var entry in item.PropertiesEnchantmentRegistry)
-                                    {
-                                        if (idSwaps.ContainsKey(entry.CasterObjectId))
-                                            entry.CasterObjectId = idSwaps[entry.CasterObjectId];
-                                    }
-                                }
-
-                                if (item.PropertiesIID != null)
-                                {
-                                    if (item.PropertiesIID.TryGetValue(PropertyInstanceId.Owner, out var ownerId))
-                                    {
-                                        if (idSwaps.ContainsKey(ownerId))
-                                        {
-                                            item.PropertiesIID.Remove(PropertyInstanceId.Owner);
-                                            item.PropertiesIID.Add(PropertyInstanceId.Owner, idSwaps[ownerId]);
-                                        }
-                                    }
-
-                                    if (item.PropertiesIID.TryGetValue(PropertyInstanceId.Wielder, out var wielderId))
-                                    {
-                                        if (idSwaps.ContainsKey(wielderId))
-                                        {
-                                            item.PropertiesIID.Remove(PropertyInstanceId.Wielder);
-                                            item.PropertiesIID.Add(PropertyInstanceId.Wielder, idSwaps[wielderId]);
-                                        }
-                                    }
-
-                                    if (item.PropertiesIID.TryGetValue(PropertyInstanceId.AllowedActivator, out var allowedActivatorId))
-                                    {
-                                        if (idSwaps.ContainsKey(allowedActivatorId))
-                                        {
-                                            item.PropertiesIID.Remove(PropertyInstanceId.AllowedActivator);
-                                            item.PropertiesIID.Add(PropertyInstanceId.AllowedActivator, idSwaps[allowedActivatorId]);
-
-                                            item.PropertiesString.Remove(PropertyString.CraftsmanName);
-                                            item.PropertiesString.Add(PropertyString.CraftsmanName, newCharName);
-                                        }
-                                    }
-
-                                    if (item.PropertiesIID.TryGetValue(PropertyInstanceId.AllowedWielder, out var allowedWielderId))
-                                    {
-                                        if (idSwaps.ContainsKey(allowedWielderId))
-                                        {
-                                            item.PropertiesIID.Remove(PropertyInstanceId.AllowedWielder);
-                                            item.PropertiesIID.Add(PropertyInstanceId.AllowedWielder, idSwaps[allowedWielderId]);
-
-                                            item.PropertiesString.Remove(PropertyString.CraftsmanName);
-                                            item.PropertiesString.Add(PropertyString.CraftsmanName, newCharName);
-                                        }
-                                    }
-                                }
-
-                                newWieldedItems.Add(Database.Adapter.BiotaConverter.ConvertFromEntityBiota(item));
-                            }
-
-                            var newInventoryItems = new List<Database.Models.Shard.Biota>();
-                            foreach (var item in newTempInventoryItems)
-                            {
-                                if (item.PropertiesEnchantmentRegistry != null)
-                                {
-                                    foreach (var entry in item.PropertiesEnchantmentRegistry)
-                                    {
-                                        if (idSwaps.ContainsKey(entry.CasterObjectId))
-                                            entry.CasterObjectId = idSwaps[entry.CasterObjectId];
-                                    }
-                                }
-
-                                if (item.PropertiesIID != null)
-                                {
-                                    if (item.PropertiesIID.TryGetValue(PropertyInstanceId.Owner, out var ownerId))
-                                    {
-                                        if (idSwaps.ContainsKey(ownerId))
-                                        {
-                                            item.PropertiesIID.Remove(PropertyInstanceId.Owner);
-                                            item.PropertiesIID.Add(PropertyInstanceId.Owner, idSwaps[ownerId]);
-                                        }
-                                    }
-
-                                    if (item.PropertiesIID.TryGetValue(PropertyInstanceId.Container, out var containerId))
-                                    {
-                                        if (idSwaps.ContainsKey(containerId))
-                                        {
-                                            item.PropertiesIID.Remove(PropertyInstanceId.Container);
-                                            item.PropertiesIID.Add(PropertyInstanceId.Container, idSwaps[containerId]);
-                                        }
-                                    }
-
-                                    if (item.PropertiesIID.TryGetValue(PropertyInstanceId.AllowedActivator, out var allowedActivatorId))
-                                    {
-                                        if (idSwaps.ContainsKey(allowedActivatorId))
-                                        {
-                                            item.PropertiesIID.Remove(PropertyInstanceId.AllowedActivator);
-                                            item.PropertiesIID.Add(PropertyInstanceId.AllowedActivator, idSwaps[allowedActivatorId]);
-
-                                            item.PropertiesString.Remove(PropertyString.CraftsmanName);
-                                            item.PropertiesString.Add(PropertyString.CraftsmanName, $"{(existingCharacter.IsPlussed ? "+" : "")}{newCharName}");
-                                        }
-                                    }
-
-                                    if (item.PropertiesIID.TryGetValue(PropertyInstanceId.AllowedWielder, out var allowedWielderId))
-                                    {
-                                        if (idSwaps.ContainsKey(allowedWielderId))
-                                        {
-                                            item.PropertiesIID.Remove(PropertyInstanceId.AllowedWielder);
-                                            item.PropertiesIID.Add(PropertyInstanceId.AllowedWielder, idSwaps[allowedWielderId]);
-
-                                            item.PropertiesString.Remove(PropertyString.CraftsmanName);
-                                            item.PropertiesString.Add(PropertyString.CraftsmanName, $"{(existingCharacter.IsPlussed ? "+" : "")}{newCharName}");
-                                        }
-                                    }
-                                }
-
-                                newInventoryItems.Add(Database.Adapter.BiotaConverter.ConvertFromEntityBiota(item));
-                            }
-
-                            Player newPlayer;
-                            if (newPlayerBiota.WeenieType == WeenieType.Admin)
-                                newPlayer = new Admin(newPlayerBiota, newInventoryItems, newWieldedItems, newCharacter, session);
-                            else if (newPlayerBiota.WeenieType == WeenieType.Sentinel)
-                                newPlayer = new Sentinel(newPlayerBiota, newInventoryItems, newWieldedItems, newCharacter, session);
-                            else
-                                newPlayer = new Player(newPlayerBiota, newInventoryItems, newWieldedItems, newCharacter, session);
-
-                            newPlayer.Name = newCharName;
-                            newPlayer.ChangesDetected = true;
-                            newPlayer.CharacterChangesDetected = true;
-
-                            newPlayer.Allegiance = null;
-                            newPlayer.AllegianceOfficerRank = null;
-                            newPlayer.MonarchId = null;
-                            newPlayer.PatronId = null;
-                            newPlayer.HouseId = null;
-                            newPlayer.HouseInstance = null;
-
-                            if (newPlayer.Character.CharacterPropertiesShortcutBar != null)
-                            {
-                                foreach (var entry in newPlayer.Character.CharacterPropertiesShortcutBar)
-                                {
-                                    if (idSwaps.ContainsKey(entry.ShortcutObjectId))
-                                        entry.ShortcutObjectId = idSwaps[entry.ShortcutObjectId];
-                                }
-                            }
-
-                            if (newPlayer.Biota.PropertiesEnchantmentRegistry != null)
-                            {
-                                foreach (var entry in newPlayer.Biota.PropertiesEnchantmentRegistry)
-                                {
-                                    if (idSwaps.ContainsKey(entry.CasterObjectId))
-                                        entry.CasterObjectId = idSwaps[entry.CasterObjectId];
-                                }
-                            }
-
-                            var possessions = newPlayer.GetAllPossessions();
-                            var possessedBiotas = new Collection<(Biota biota, ReaderWriterLockSlim rwLock)>();
-                            foreach (var possession in possessions)
-                                possessedBiotas.Add((possession.Biota, possession.BiotaDatabaseLock));
-
-                            // We must await here -- 
-                            DatabaseManager.Shard.AddCharacterInParallel(newPlayer.Biota, newPlayer.BiotaDatabaseLock, possessedBiotas, newPlayer.Character, newPlayer.CharacterDatabaseLock, saveSuccess =>
-                            {
-                                if (!saveSuccess)
-                                {
-                                    //CommandHandlerHelper.WriteOutputInfo(session, $"Failed to copy the character \"{(existingCharacter.IsPlussed ? "+" : "")}{existingCharacter.Name}\" to a new character \"{newPlayer.Name}\" for the account \"{newPlayer.Account.AccountName}\"! Does the character exist _AND_ is not currently logged in? Is the new character name already taken, or is the account out of free character slots?", ChatMessageType.Broadcast);
-                                    CommandHandlerHelper.WriteOutputInfo(session, $"Failed to {(isDeletedChar ? "restore" : "copy")} the character \"{(existingCharacter.IsPlussed ? "+" : "")}{existingCharacter.Name}\" to a new character \"{newPlayer.Name}\" for the account \"{newPlayer.Account.AccountName}\"! Does the character exist? Is the new character name already taken, or is the account out of free character slots?", ChatMessageType.Broadcast);
-                                    return;
-                                }
-
-                                PlayerManager.AddOfflinePlayer(newPlayer);
-
-                                if (newAccountId == 0)
-                                    session.Characters.Add(newPlayer.Character);
-                                else
-                                {
-                                    var foundActiveSession = Network.Managers.NetworkManager.Find(newAccountId);
-
-                                    if (foundActiveSession != null)
-                                        foundActiveSession.Characters.Add(newPlayer.Character);
-                                }
-
-                                var msg = $"Successfully {(isDeletedChar ? "restored" : "copied")} the character \"{(existingCharacter.IsPlussed ? "+" : "")}{existingCharacter.Name}\" to a new character \"{newPlayer.Name}\" for the account \"{newPlayer.Account.AccountName}\".";
-                                CommandHandlerHelper.WriteOutputInfo(session, msg, ChatMessageType.Broadcast);
-                                PlayerManager.BroadcastToAuditChannel(session.Player, msg);
-                            });
-                        });
-                    });
-                }
-                else
-                {
-                    CommandHandlerHelper.WriteOutputInfo(session, $"Failed to {(isDeletedChar ? "restore" : "copy")} the character \"{existingCharName}\" to a new character \"{newCharacterName}\" for the account \"{session.Account}\"! Does the character exist? Is the new character name already taken, or is the account out of free character slots?", ChatMessageType.Broadcast);
-                }
-            });
+            // TODO: output
         }
 
         /// <summary>
@@ -2617,7 +2209,7 @@ namespace ACE.Server.Command.Handlers
         }
 
         // de_n name, text
-        [CommandHandler("de_n", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 2, "Sends text to named player, formatted exactly as entered.", "<name>, <text>")]
+        [CommandHandler("de_n", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 2, "Sends text to named player, formatted exactly as entered.", "<name> <text>")]
         public static void Handlede_n(Session session, params string[] parameters)
         {
             // usage: @de_n name, text
@@ -2625,11 +2217,11 @@ namespace ACE.Server.Command.Handlers
             // Sends text to named player, formatted exactly as entered, with no prefix of any kind.
             // @direct_emote_name - Sends text to named player, formatted exactly as entered.
 
-            Handledirect_emote_name(session, parameters);
+            // TODO: output
         }
 
         // direct_emote_name name, text
-        [CommandHandler("direct_emote_name", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 2, "Sends text to named player, formatted exactly as entered.", "<name>, <text>")]
+        [CommandHandler("direct_emote_name", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 2, "Sends text to named player, formatted exactly as entered.", "<name> <text>")]
         public static void Handledirect_emote_name(Session session, params string[] parameters)
         {
             // usage: @de_n name, text
@@ -2637,23 +2229,7 @@ namespace ACE.Server.Command.Handlers
             // Sends text to named player, formatted exactly as entered, with no prefix of any kind.
             // @direct_emote_name - Sends text to named player, formatted exactly as entered.
 
-            var args = string.Join(" ", parameters);
-            if (!args.Contains(","))
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"There was no player name specified.", ChatMessageType.Broadcast));
-            }
-            else
-            {
-                var split = args.Split(",");
-                var playerName = split[0];
-                var msg = string.Join(" ", parameters).Remove(0, playerName.Length + 2);
-
-                var player = PlayerManager.GetOnlinePlayer(playerName);
-                if (player != null)
-                    player.SendMessage(msg);
-                else
-                    session.Network.EnqueueSend(new GameMessageSystemChat($"Player {playerName} is not online.", ChatMessageType.Broadcast));
-            }
+            // TODO: output
         }
 
         // de_s text
@@ -2665,7 +2241,7 @@ namespace ACE.Server.Command.Handlers
             // Sends text to selected player, formatted exactly as entered, with no prefix of any kind.
             // @direct_emote_select - Sends text to selected player, formatted exactly as entered.
 
-            Handledirect_emote_select(session, parameters);
+            // TODO: output
         }
 
         // direct_emote_select text
@@ -2677,37 +2253,7 @@ namespace ACE.Server.Command.Handlers
             // Sends text to selected player, formatted exactly as entered, with no prefix of any kind.
             // @direct_emote_select - Sends text to selected player, formatted exactly as entered.
 
-            var objectId = ObjectGuid.Invalid;
-
-            if (session.Player.HealthQueryTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.HealthQueryTarget);
-            else if (session.Player.ManaQueryTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.ManaQueryTarget);
-            else if (session.Player.CurrentAppraisalTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.CurrentAppraisalTarget);
-
-            if (objectId == ObjectGuid.Invalid)
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You must select a player to send them a message.", ChatMessageType.Broadcast));
-                return;
-            }    
-
-            var wo = session.Player.CurrentLandblock?.GetObject(objectId);
-
-            if (wo is null)
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"Unable to locate what you have selected.", ChatMessageType.Broadcast));
-            }
-            else if (wo is Player player)
-            {
-                var msg = string.Join(" ", parameters);
-
-                player.SendMessage(msg);
-            }
-            else
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot send text to {wo.Name} because it is not a player.", ChatMessageType.Broadcast));
-            }
+            // TODO: output
         }
 
         // dispel
@@ -2722,7 +2268,7 @@ namespace ACE.Server.Command.Handlers
         }
 
         // event
-        [CommandHandler("event", AccessLevel.Developer, CommandHandlerFlag.None, 2,
+        [CommandHandler("event", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 2,
             "Maniuplates the state of an event",
             "[ start | stop | disable | enable | clear | status ] (name)\n"
             + "@event clear < name > - clears event with name <name> or all events if you put in 'all' (All clears registered generators, <name> does not)\n"
@@ -2743,22 +2289,22 @@ namespace ACE.Server.Command.Handlers
             switch (eventCmd)
             {
                 case "start":
-                    if (EventManager.StartEvent(eventName, session?.Player, null))
+                    if (EventManager.StartEvent(eventName, session.Player, null))
                     {
-                        CommandHandlerHelper.WriteOutputInfo(session, $"Event {eventName} started successfully.", ChatMessageType.Broadcast);
-                        PlayerManager.BroadcastToAuditChannel(session?.Player, $"{(session != null ? session.Player.Name : "CONSOLE")} has started event {eventName}.");
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Event {eventName} started successfully.", ChatMessageType.Broadcast));
+                        PlayerManager.BroadcastToAuditChannel(session.Player, $"{session.Player.Name} has started event {eventName}.");
                     }
                     else
                         session.Network.EnqueueSend(new GameMessageSystemChat($"Unable to start event named {eventName} .", ChatMessageType.Broadcast));
                     break;
                 case "stop":
-                    if (EventManager.StopEvent(eventName, session?.Player, null))
+                    if (EventManager.StopEvent(eventName, session.Player, null))
                     {
-                        CommandHandlerHelper.WriteOutputInfo(session, $"Event {eventName} stopped successfully.", ChatMessageType.Broadcast);
-                        PlayerManager.BroadcastToAuditChannel(session?.Player, $"{(session != null ? session.Player.Name : "CONSOLE")} has stopped event {eventName}.");
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Event {eventName} stopped successfully.", ChatMessageType.Broadcast));
+                        PlayerManager.BroadcastToAuditChannel(session.Player, $"{session.Player.Name} has stopped event {eventName}.");
                     }
                     else
-                        CommandHandlerHelper.WriteOutputInfo(session, $"Unable to stop event named {eventName} .", ChatMessageType.Broadcast);
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Unable to stop event named {eventName} .", ChatMessageType.Broadcast));
                     break;
                 case "disable":
                     break;
@@ -2769,11 +2315,11 @@ namespace ACE.Server.Command.Handlers
                 case "status":
                     if (eventName != "all" && eventName != "")
                     {
-                        CommandHandlerHelper.WriteOutputInfo(session, $"Event {eventName} - GameEventState.{EventManager.GetEventStatus(eventName)}", ChatMessageType.Broadcast);
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"Event {eventName} - GameEventState.{EventManager.GetEventStatus(eventName)}", ChatMessageType.Broadcast));
                     }
                     break;
                 default:
-                    CommandHandlerHelper.WriteOutputInfo(session, "That is not a valid event command", ChatMessageType.Broadcast);
+                    session.Network.EnqueueSend(new GameMessageSystemChat("That is not a valid event command", ChatMessageType.Broadcast));
                     break;
             }
         }
@@ -2784,93 +2330,7 @@ namespace ACE.Server.Command.Handlers
         {
             // @fumble - Forces the selected target to drop everything they contain to the ground.
 
-            var objectId = ObjectGuid.Invalid;
-
-            if (session.Player.HealthQueryTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.HealthQueryTarget);
-            else if (session.Player.ManaQueryTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.ManaQueryTarget);
-            else if (session.Player.CurrentAppraisalTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.CurrentAppraisalTarget);
-
-            if (objectId == ObjectGuid.Invalid)
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You must select a player to force them to drop everything.", ChatMessageType.Broadcast));
-                return;
-            }
-
-            var wo = session.Player.CurrentLandblock?.GetObject(objectId);
-
-            if (wo is null)
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"Unable to locate what you have selected.", ChatMessageType.Broadcast));
-            }
-            else if (wo is Player player)
-            {
-                var items = new List<WorldObject>();
-                var playerLoc = new Position(player.Location);
-
-                foreach (var item in player.Inventory)
-                {
-                    if (player.TryRemoveFromInventoryWithNetworking(item.Key, out var worldObject, Player.RemoveFromInventoryAction.DropItem))
-                        items.Add(worldObject);
-                }
-
-                foreach (var item in player.EquippedObjects)
-                {
-                    if (player.TryDequipObjectWithNetworking(item.Key.Full, out var worldObject, Player.DequipObjectAction.DropItem))
-                        items.Add(worldObject);
-                }
-
-                player.SavePlayerToDatabase();
-
-                foreach (var item in items)
-                {
-                    item.Location = new Position(playerLoc);
-                    item.Location.PositionZ += .5f;
-                    item.Placement = Placement.Resting;  // This is needed to make items lay flat on the ground.
-
-                    // increased precision for non-ethereal objects
-                    var ethereal = item.Ethereal;
-                    item.Ethereal = true;
-
-                    if (session.Player.CurrentLandblock?.AddWorldObject(item) ?? false)
-                    {
-                        item.Location.LandblockId = new LandblockId(item.Location.GetCell());
-
-                        // try slide to new position
-                        var transit = item.PhysicsObj.transition(item.PhysicsObj.Position, new Physics.Common.Position(item.Location), false);
-
-                        if (transit != null && transit.SpherePath.CurCell != null)
-                        {
-                            item.PhysicsObj.SetPositionInternal(transit);
-
-                            item.SyncLocation();
-
-                            item.SendUpdatePosition(true);
-                        }
-                        item.Ethereal = ethereal;
-
-                        // drop success
-                        player.Session.Network.EnqueueSend(
-                            new GameMessagePublicUpdateInstanceID(item, PropertyInstanceId.Container, ObjectGuid.Invalid),
-                            new GameMessagePublicUpdateInstanceID(item, PropertyInstanceId.Wielder, ObjectGuid.Invalid),
-                            new GameEventItemServerSaysMoveItem(player.Session, item),
-                            new GameMessageUpdatePosition(item));
-
-                        player.EnqueueBroadcast(new GameMessageSound(player.Guid, Sound.DropItem));
-
-                        item.EmoteManager.OnDrop(player);
-                        item.SaveBiotaToDatabase();
-                    }
-                    else
-                        log.Warn($"0x{item.Guid}:{item.Name} for player {player.Name} lost from fumble failure.");
-                }
-            }
-            else
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot force {wo.Name} to drop everything because it is not a player.", ChatMessageType.Broadcast));
-            }
+            // TODO: output
         }
 
         // god
@@ -3332,32 +2792,8 @@ namespace ACE.Server.Command.Handlers
             // This command fully restores your(or the selected creature's) health, mana, and stamina.
             // @heal - Heals yourself(or the selected creature).
 
-            var objectId = ObjectGuid.Invalid;
-
-            if (session.Player.HealthQueryTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.HealthQueryTarget);
-            else if (session.Player.ManaQueryTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.ManaQueryTarget);
-            else if (session.Player.CurrentAppraisalTarget.HasValue)
-                objectId = new ObjectGuid((uint)session.Player.CurrentAppraisalTarget);
-
-            if (objectId == ObjectGuid.Invalid)
-                objectId = session.Player.Guid;
-
-            var wo = session.Player.CurrentLandblock?.GetObject(objectId);
-
-            if (wo is null)
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"Unable to locate what you have selected.", ChatMessageType.Broadcast));
-            }
-            else if (wo is Player player)
-            {
-                player.SetMaxVitals();
-            }
-            else
-            {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot heal {wo.Name} because it is not a player.", ChatMessageType.Broadcast));
-            }
+            // TODO: Check if player has a selected target, heal target otherwise heal player.
+            session.Player.SetMaxVitals();
         }
 
         // housekeep
@@ -3382,7 +2818,7 @@ namespace ACE.Server.Command.Handlers
         }
 
         // gamecastlocalemote <message>
-        [CommandHandler("gamecastlocalemote", AccessLevel.Developer, CommandHandlerFlag.None, 1,
+        [CommandHandler("gamecastlocalemote", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 1,
             "Sends text to all players within chat range, formatted exactly as entered.",
             "<message>\n" +
             "Sends text to all players within chat range, formatted exactly as entered, with no prefix of any kind.\n" +
@@ -3538,7 +2974,7 @@ namespace ACE.Server.Command.Handlers
         // qst
         [CommandHandler("qst", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 1,
             "Query, stamp, and erase quests on the targeted player",
-            "(fellow) [list | bestow | erase]\n"
+            "[list | bestow | erase]\n"
             + "qst list - List the quest flags for the targeted player\n"
             + "qst bestow - Stamps the specific quest flag on the targeted player. If this fails, it's probably because you spelled the quest flag wrong.\n"
             + "qst stamp - Stamps the specific quest flag on the targeted player the specified number of times. If this fails, it's probably because you spelled the quest flag wrong.\n"
@@ -3662,20 +3098,19 @@ namespace ACE.Server.Command.Handlers
 
                 if (parameters[0].Equals("stamp"))
                 {
-                    var numCompletions = int.MinValue;
-
-                    if (parameters.Length > 2 && !int.TryParse(parameters[2], out numCompletions))
+                    if (parameters.Length < 3)
+                    {
+                        session.Player.SendMessage($"You must specify a quest to stamp and number completions using the following command: /qst stamp questname number");
+                        return;
+                    }
+                    if (!int.TryParse(parameters[2], out var numCompletions))
                     {
                         session.Player.SendMessage($"{parameters[2]} is not a valid int");
                         return;
                     }
                     var questName = parameters[1];
 
-                    if (numCompletions != int.MinValue)
-                        creature.QuestManager.SetQuestCompletions(questName, numCompletions);
-                    else
-                        creature.QuestManager.Update(questName);
-
+                    creature.QuestManager.SetQuestCompletions(questName, numCompletions);
                     var quest = creature.QuestManager.GetQuest(questName);
                     if (quest != null)
                     {
@@ -3687,280 +3122,6 @@ namespace ACE.Server.Command.Handlers
                         session.Player.SendMessage($"Couldn't stamp {questName} on {creature.Name}");
                     }
                     return;
-                }
-
-                if (parameters[0].Equals("bits"))
-                {
-                    if (parameters.Length < 2)
-                    {
-                        var msg = "@qst - Query, stamp, and erase quests on the targeted player\n";
-                        msg += "Usage: @qst bits [on | off | show] <questname> <bits>\n";
-                        msg += "qst bits on  - Stamps the specific quest flag on the targeted player with specified bits ON. If this fails, it's probably because you spelled the quest flag wrong.\n";
-                        msg += "qst bits off - Stamps the specific quest flag on the targeted player with specified bits OFF. If this fails, it's probably because you spelled the quest flag wrong.\n";
-                        msg += "qst bits show - List the specific quest flag bits for the targeted player.\n";
-                        session.Player.SendMessage(msg);
-                        return;
-                    }
-
-                    if (parameters[1].Equals("on"))
-                    {
-                        if (parameters.Length < 3)
-                        {
-                            session.Player.SendMessage($"You must specify bits to turn on or off.");
-                            return;
-                        }
-                        if (parameters.Length < 2)
-                        {
-                            session.Player.SendMessage($"You must specify a quest to set its bits.");
-                            return;
-                        }
-
-                        var questName = parameters[2];
-
-                        var questBits = parameters[3];
-
-                        if (!uint.TryParse(questBits.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? questBits[2..] : questBits, NumberStyles.HexNumber, CultureInfo.CurrentCulture, out var bits))
-                        {
-                            session.Player.SendMessage($"{parameters[3]} is not a valid hex number");
-                            return;
-                        }
-
-                        if (creature.QuestManager.HasQuestBits(questName, (int)bits))
-                        {
-                            session.Player.SendMessage($"{creature.Name} already has set 0x{bits:X} bits to ON for {questName}");
-                            return;
-                        }
-
-                        creature.QuestManager.SetQuestBits(questName, (int)bits);
-                        session.Player.SendMessage($"{creature.Name} has set 0x{bits:X} bits to ON for {questName}");
-                        return;
-                    }
-
-                    if (parameters[1].Equals("off"))
-                    {
-                        if (parameters.Length < 3)
-                        {
-                            session.Player.SendMessage($"You must specify bits to turn on or off.");
-                            return;
-                        }
-                        if (parameters.Length < 2)
-                        {
-                            session.Player.SendMessage($"You must specify a quest to set its bits.");
-                            return;
-                        }
-
-                        var questName = parameters[2];
-
-                        var questBits = parameters[3];
-
-                        if (!uint.TryParse(questBits.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? questBits[2..] : questBits, NumberStyles.HexNumber, CultureInfo.CurrentCulture, out var bits))
-                        {
-                            session.Player.SendMessage($"{parameters[3]} is not a valid uint");
-                            return;
-                        }
-
-                        if (creature.QuestManager.HasNoQuestBits(questName, (int)bits))
-                        {
-                            session.Player.SendMessage($"{creature.Name} already has set 0x{bits:X} bits to OFF for {questName}");
-                            return;
-                        }
-
-                        creature.QuestManager.SetQuestBits(questName, (int)bits, false);
-                        session.Player.SendMessage($"{creature.Name} has set 0x{bits:X} bits to OFF for {questName}");
-                        return;
-                    }
-
-                    if (parameters[1].Equals("show"))
-                    {
-                        if (parameters.Length < 2)
-                        {
-                            session.Player.SendMessage($"You must specify a quest to show its bits.");
-                            return;
-                        }
-
-                        var questName = parameters[2];
-
-                        var questsHdr = $"Quest Bits Registry for {creature.Name} (0x{creature.Guid}):\n";
-                        questsHdr += "================================================\n";
-
-                        var quest = creature.QuestManager.GetQuest(questName);
-
-                        if (quest == null)
-                        {
-                            session.Player.SendMessage($"{questName} not found.");
-                            return;
-                        }
-
-                        var maxSolves = creature.QuestManager.GetMaxSolves(questName);
-                        var maxSolvesBinary = Convert.ToString(maxSolves, 2);
-
-                        var questEntry = "";
-                        questEntry += $"Quest Name: {quest.QuestName}\n";
-                        questEntry += $"Current Set Bits: 0x{quest.NumTimesCompleted:X}\n";
-                        questEntry += $"Allowed Max Bits: 0x{maxSolves:X}\n";
-                        questEntry += $"Last Set On: {quest.LastTimeCompleted} ({Common.Time.GetDateTimeFromTimestamp(quest.LastTimeCompleted).ToLocalTime()})\n";
-
-                        //var nextSolve = creature.QuestManager.GetNextSolveTime(quest.QuestName);
-
-                        //if (nextSolve == TimeSpan.MinValue)
-                        //    questEntry += "Can Solve: Immediately\n";
-                        //else if (nextSolve == TimeSpan.MaxValue)
-                        //    questEntry += "Can Solve: Never again\n";
-                        //else
-                        //    questEntry += $"Can Solve: In {nextSolve:%d} days, {nextSolve:%h} hours, {nextSolve:%m} minutes and, {nextSolve:%s} seconds. ({(DateTime.UtcNow + nextSolve).ToLocalTime()})\n";
-
-                        questEntry += $"-= Binary String Representation =-\n  C: {Convert.ToString(quest.NumTimesCompleted, 2).PadLeft(maxSolvesBinary.Length, '0')}\n  A: {Convert.ToString(maxSolves, 2)}\n";
-
-                        questEntry += "--====--\n";
-                        session.Player.SendMessage(questsHdr + questEntry);
-                    }
-                }
-
-                if (parameters[0].Equals("fellow"))
-                {
-                    if (creature is Player player)
-                    {
-                        var fellowship = player.Fellowship;
-
-                        if (fellowship == null)
-                        {
-                            session.Player.SendMessage($"Selected player {wo.Name} (0x{objectId}) is not in a fellowship.");
-                            return;
-                        }
-
-                        if (parameters.Length < 2)
-                        {
-                            var msg = "@qst - Query, stamp, and erase quests on the targeted player\n";
-                            msg += "Usage: @qst fellow [list | bestow | erase]\n";
-                            msg += "qst fellow list - List the quest flags for the Fellowship of targeted player\n";
-                            msg += "qst fellow bestow - Stamps the specific quest flag on the Fellowship of targeted player. If this fails, it's probably because you spelled the quest flag wrong.\n";
-                            msg += "qst fellow stamp - Stamps the specific quest flag on the Fellowship of targeted player the specified number of times. If this fails, it's probably because you spelled the quest flag wrong.\n";
-                            msg += "qst fellow erase - Erase the specific quest flag from the Fellowship of targeted player. If no quest flag is given, it erases the entire quest table for the Fellowship of targeted player.\n";
-                            session.Player.SendMessage(msg);
-                            return;
-                        }
-
-                        if (parameters[1].Equals("list"))
-                        {
-                            var questsHdr = $"Quest Registry for Fellowship of {creature.Name} (0x{creature.Guid}):\n";
-                            questsHdr += "================================================\n";
-                            session.Player.SendMessage(questsHdr);
-
-                            var quests = fellowship.QuestManager.GetQuests();
-
-                            if (quests.Count == 0)
-                            {
-                                session.Player.SendMessage("No quests found.");
-                                return;
-                            }
-
-                            foreach (var quest in quests)
-                            {
-                                var questEntry = "";
-                                questEntry += $"Quest Name: {quest.QuestName}\nCompletions: {quest.NumTimesCompleted} | Last Completion: {quest.LastTimeCompleted} ({Common.Time.GetDateTimeFromTimestamp(quest.LastTimeCompleted).ToLocalTime()})\n";
-                                var nextSolve = fellowship.QuestManager.GetNextSolveTime(quest.QuestName);
-
-                                if (nextSolve == TimeSpan.MinValue)
-                                    questEntry += "Can Solve: Immediately\n";
-                                else if (nextSolve == TimeSpan.MaxValue)
-                                    questEntry += "Can Solve: Never again\n";
-                                else
-                                    questEntry += $"Can Solve: In {nextSolve:%d} days, {nextSolve:%h} hours, {nextSolve:%m} minutes and, {nextSolve:%s} seconds. ({(DateTime.UtcNow + nextSolve).ToLocalTime()})\n";
-
-                                questEntry += "--====--\n";
-                                session.Player.SendMessage(questEntry);
-                            }
-                            return;
-                        }
-
-                        if (parameters[1].Equals("bestow"))
-                        {
-                            if (parameters.Length < 3)
-                            {
-                                // delete all quests?
-                                // seems unsafe, maybe a confirmation?
-                                return;
-                            }
-                            var questName = parameters[2];
-                            if (fellowship.QuestManager.HasQuest(questName))
-                            {
-                                session.Player.SendMessage($"Fellowship of {creature.Name} already has {questName}");
-                                return;
-                            }
-
-                            var canSolve = fellowship.QuestManager.CanSolve(questName);
-                            if (canSolve)
-                            {
-                                fellowship.QuestManager.Update(questName);
-                                session.Player.SendMessage($"{questName} bestowed on Fellowship of {creature.Name}");
-                                return;
-                            }
-                            else
-                            {
-                                session.Player.SendMessage($"Couldn't bestow {questName} on Fellowship of {creature.Name}");
-                                return;
-                            }
-                        }
-
-                        if (parameters[1].Equals("erase"))
-                        {
-                            if (parameters.Length < 3)
-                            {
-                                // delete all quests?
-                                // seems unsafe, maybe a confirmation?
-                                session.Player.SendMessage($"You must specify a quest to erase, if you want to erase all quests use the following command: /qst fellow erase *");
-                                return;
-                            }
-                            var questName = parameters[2];
-
-                            if (questName == "*")
-                            {
-                                fellowship.QuestManager.EraseAll();
-                                session.Player.SendMessage($"All quests erased.");
-                                return;
-                            }
-
-                            if (!fellowship.QuestManager.HasQuest(questName))
-                            {
-                                session.Player.SendMessage($"{questName} not found.");
-                                return;
-                            }
-                            fellowship.QuestManager.Erase(questName);
-                            session.Player.SendMessage($"{questName} erased.");
-                            return;
-                        }
-
-                        if (parameters[1].Equals("stamp"))
-                        {
-                            var numCompletions = int.MinValue;
-
-                            if (parameters.Length > 3 && !int.TryParse(parameters[3], out numCompletions))
-                            {
-                                session.Player.SendMessage($"{parameters[3]} is not a valid int");
-                                return;
-                            }
-                            var questName = parameters[2];
-
-                            if (numCompletions != int.MinValue)
-                                fellowship.QuestManager.SetQuestCompletions(questName, numCompletions);
-                            else
-                                fellowship.QuestManager.Update(questName);
-
-                            var quest = fellowship.QuestManager.GetQuest(questName);
-                            if (quest != null)
-                            {
-                                var numTimesCompleted = quest.NumTimesCompleted;
-                                session.Player.SendMessage($"{questName} stamped with {numTimesCompleted} completions.");
-                            }
-                            else
-                            {
-                                session.Player.SendMessage($"Couldn't stamp {questName} on {creature.Name}");
-                            }
-                            return;
-                        }
-                    }
-                    else
-                        session.Player.SendMessage($"Selected object {wo.Name} (0x{objectId}) is not a player and cannot have a fellowship.");
                 }
             }
             else
@@ -4104,7 +3265,7 @@ namespace ACE.Server.Command.Handlers
         }
 
         // gamecastlocal <message>
-        [CommandHandler("gamecastlocal", AccessLevel.Developer, CommandHandlerFlag.None, 1,
+        [CommandHandler("gamecastlocal", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 1,
             "Sends a server-wide broadcast.",
             "<message>\n" +
             "This command sends the specified text to every player on the current server.\n" +
@@ -4185,7 +3346,7 @@ namespace ACE.Server.Command.Handlers
         }
 
         // gamecastemote <message>
-        [CommandHandler("gamecastemote", AccessLevel.Developer, CommandHandlerFlag.None, 1,
+        [CommandHandler("gamecastemote", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 1,
             "Sends text to all players, formatted exactly as entered.",
             "<message>\n" +
             "See Also: @gamecast, @gamecastemote, @gamecastlocal, @gamecastlocalemote.")]
@@ -4198,15 +3359,11 @@ namespace ACE.Server.Command.Handlers
 
             string msg = string.Join(" ", parameters);
             msg = msg.Replace("\\n", "\n");
-            //session.Player.HandleActionWorldBroadcast($"{msg}", ChatMessageType.WorldBroadcast);
-
-            GameMessageSystemChat sysMessage = new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast);
-            PlayerManager.BroadcastToAll(sysMessage);
-            PlayerManager.LogBroadcastChat(Channel.AllBroadcast, session?.Player, msg);
+            session.Player.HandleActionWorldBroadcast($"{msg}", ChatMessageType.WorldBroadcast);
         }
 
         // we <message>
-        [CommandHandler("we", AccessLevel.Developer, CommandHandlerFlag.None, 1,
+        [CommandHandler("we", AccessLevel.Developer, CommandHandlerFlag.RequiresWorld, 1,
             "Sends text to all players, formatted exactly as entered.",
             "<message>\n" +
             "See Also: @gamecast, @gamecastemote, @gamecastlocal, @gamecastlocalemote.")]

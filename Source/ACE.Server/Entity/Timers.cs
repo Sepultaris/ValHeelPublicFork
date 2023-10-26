@@ -24,9 +24,9 @@ namespace ACE.Server.Entity
 
 
         /// <summary>
-        /// DerethDateTime.UtcNowToEMUTime at the time the server started.
+        /// DerethDateTime.UtcNowToLoreTime at the time the server started.
         /// </summary>
-        public static DerethDateTime WorldStartLoreTime { get; } = DerethDateTime.UtcNowToEMUTime;
+        public static DerethDateTime WorldStartLoreTime { get; } = DerethDateTime.UtcNowToLoreTime;
 
         /// <summary>
         /// Returns DerethDateTime.UtcNowToLoreTime

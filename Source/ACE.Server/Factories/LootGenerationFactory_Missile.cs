@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common;
 using ACE.Database.Models.World;
 using ACE.Entity.Enum;
+using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity;
-using ACE.Server.Entity.Mutations;
 using ACE.Server.Factories.Entity;
 using ACE.Server.Factories.Enum;
 using ACE.Server.Factories.Tables;
@@ -37,6 +38,7 @@ namespace ACE.Server.Factories
             return wo;
         }
 
+        
         private static void MutateMissileWeapon(WorldObject wo, TreasureDeath profile, bool isMagical, int? wieldDifficulty = null, TreasureRoll roll = null)
         {
             if (roll == null)
@@ -143,6 +145,120 @@ namespace ACE.Server.Factories
 
             // long description
             wo.LongDesc = GetLongDesc(wo);
+
+            // Empwoered missile weapons T9 only.
+
+            var cleavingRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+            var empowered = ThreadSafeRandom.Next(0.0f, 1.0f);
+            wo.Empowered = false;
+
+            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && profile.TreasureType == 3111 || profile.Tier == 9 && isMagical && profile.TreasureType == 3112)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 10;
+                var basexp = 10000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Empowered {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.DamageMod);
+                float damagebonus = 0.2f;
+                float newweapondamage = (float)(weapondamage + damagebonus);                
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.3f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.2f);
+                if (cleavingRoll <= 0.1f)
+                    wo.SetProperty(PropertyInt.Cleaving, 2);
+                wo.Empowered = true;
+                wo.SetProperty(PropertyInt.WieldDifficulty, 392);
+
+            }
+            // Proto Missile Weapons
+
+            if (profile.Tier == 9 && isMagical && profile.TreasureType == 4111)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 20;
+                var basexp = 10000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.DamageMod);
+                float damagebonus = 0.4f;
+                float newweapondamage = (float)(weapondamage + damagebonus);
+
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 497);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+
+            }
+
+            if (profile.Tier == 10 && isMagical)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 50;
+                var basexp = 10000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.DamageMod);
+                float damagebonus = 0.6f;
+                float newweapondamage = (float)(weapondamage + damagebonus);
+
+                wo.Arramoran = true;
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.Sockets = 1;
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.DamageMod, newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.3f);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 697);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+
+            }
+
         }
 
         private static string GetMissileScript(TreasureWeaponType weaponType, bool isElemental = false)
@@ -183,6 +299,7 @@ namespace ACE.Server.Factories
                 360 => 6,
                 375 => 7,
                 385 => 8,
+                520 => 9,
                 _ => 0,  // Default/Else
             };
             return index;

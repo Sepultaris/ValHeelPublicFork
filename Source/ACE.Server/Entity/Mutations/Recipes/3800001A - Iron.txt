@@ -1,8 +1,0 @@
-0x3800001A Mutation #1:
-
-Tier chances: 1
-
-    - Chance: 100%:
-        Damage += 1
-        NumTimesTinkered (>= 1 ? add : set) 1
-

@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Net.Sockets;
+using System.Resources;
 
 namespace ACE.Entity.Enum.Properties
 {
@@ -179,7 +181,6 @@ namespace ACE.Entity.Enum.Properties
         VendorHappyVariance                      = 127,
         CloakStatus                              = 128,
         [SendOnLogin]
-        VitaeCpPool                              = 129,
         NumServicesSold                          = 130,
         MaterialType                             = 131,
         [SendOnLogin]
@@ -629,6 +630,62 @@ namespace ACE.Entity.Enum.Properties
         /// </summary>
         [ServerOnly]
         InventoryOrder                          = 9015,
+        [ServerOnly]
+        RaisedStr = 9016,
+        [ServerOnly]
+        RaisedEnd = 9017,
+        [ServerOnly]
+        RaisedCoord = 9018,
+        [ServerOnly]
+        RaisedQuick = 9019,
+        [ServerOnly]
+        RaisedFocus = 9020,
+        [ServerOnly]
+        RaisedSelf = 9021,
+        // new vitals
+        [ServerOnly]
+        RaisedHealth = 9022,
+        [ServerOnly]
+        RaisedStamina = 9023,
+        [ServerOnly]
+        RaisedMana = 9024,
+        [ServerOnly]
+        LastLevel = 9035,
+        [ServerOnly]
+        NumberOfPets = 9036,
+        [ServerOnly]
+        TotalPrestige = 9037,
+        [ServerOnly]
+        AvailablePrestige = 9037,
+        [Ephemeral]
+        MirraArmorBonus = 9038,
+        MirraWeaponBonus = 9039,      
+        Sockets = 9041,
+        MirraRaingBonus = 9042,
+        [ServerOnly]
+        LastTime = 9043,
+        [ServerOnly]
+        BestTime = 9044,
+        [ServerOnly]
+        BankAccountNumber = 9045,
+        [ServerOnly]
+        MonsterKillsMilestones = 9046,
+        HcPyrealsWonMilestones = 9047,
+        HcScoreMilestones = 9048,
+        LevelMilestones = 9049,
+        PrestigeMilestones = 9050,
+        [ServerOnly]
+        HoTTicks = 9051,
+        HoTDuration = 9052,
+        MaxHoTTicks = 9053,
+        MaxHoTDuration = 9054,
+        WarChannelTimerDuration = 9055,
+        DoTOwnerGuid = 9056,
+        NumOfChannelCasts = 9057,
+        TankDefenseRatingIncrease = 9058,
+        DamageRatingIncrease = 9059,
+        HoTsTicked = 9060,
+        HoTLevel = 9061,
     }
 
     public static class PropertyIntExtensions
@@ -675,7 +732,6 @@ namespace ACE.Entity.Enum.Properties
                 case PropertyInt.FriendType:
                     return System.Enum.GetName(typeof(CreatureType), value);
                 case PropertyInt.DamageType:
-                case PropertyInt.ResistanceModifierType:
                     return System.Enum.GetName(typeof(DamageType), value);
                 case PropertyInt.CurrentWieldedLocation:
                 case PropertyInt.ValidLocations:
@@ -692,7 +748,6 @@ namespace ACE.Entity.Enum.Properties
                 case PropertyInt.GeneratorType:
                     return System.Enum.GetName(typeof(GeneratorType), value);
                 case PropertyInt.HeritageGroup:
-                case PropertyInt.HeritageSpecificArmor:
                     return System.Enum.GetName(typeof(HeritageGroup), value);
                 case PropertyInt.HookType:
                     return System.Enum.GetName(typeof(HookType), value);
@@ -756,7 +811,7 @@ namespace ACE.Entity.Enum.Properties
 
                 case PropertyInt.GeneratorStartTime:
                 case PropertyInt.GeneratorEndTime:
-                    return DateTimeOffset.FromUnixTimeSeconds(value).DateTime.ToString(CultureInfo.InvariantCulture);
+                    return DateTimeOffset.FromUnixTimeSeconds(value).DateTime.ToUniversalTime().ToString(CultureInfo.InvariantCulture);
 
                 case PropertyInt.ArmorType:
                     return System.Enum.GetName(typeof(ArmorType), value);
@@ -769,25 +824,7 @@ namespace ACE.Entity.Enum.Properties
 
                 case PropertyInt.UseCreatesContractId:
                     return System.Enum.GetName(typeof(ContractId), value);
-
-                case PropertyInt.Faction1Bits:
-                case PropertyInt.Faction2Bits:
-                case PropertyInt.Faction3Bits:
-                case PropertyInt.Hatred1Bits:
-                case PropertyInt.Hatred2Bits:
-                case PropertyInt.Hatred3Bits:
-                    return System.Enum.GetName(typeof(FactionBits), value);
-
-                case PropertyInt.UseRequiresSkill:
-                case PropertyInt.UseRequiresSkillSpec:
-                case PropertyInt.SkillToBeAltered:
-                    return System.Enum.GetName(typeof(Skill), value);
-
-                case PropertyInt.HookGroup:
-                    return System.Enum.GetName(typeof(HookGroupType), value);
-
-                //case PropertyInt.TypeOfAlteration:
-                //    return System.Enum.GetName(typeof(SkillAlterationType), value);
+              
             }
 
             return null;

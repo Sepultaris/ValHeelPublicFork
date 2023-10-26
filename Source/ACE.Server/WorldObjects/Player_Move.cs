@@ -34,6 +34,13 @@ namespace ACE.Server.WorldObjects
             lastCompletedMove = moveToChainCounter;
         }
 
+        /// <summary>
+        /// Move to a position in the world
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="callback"></param>
+        /// <param name="useRadius"></param>
+        /// <param name="rotate"></param>
         public void CreateMoveToChain(WorldObject target, Action<bool> callback, float? useRadius = null, bool rotate = true)
         {
             if (FastTick)

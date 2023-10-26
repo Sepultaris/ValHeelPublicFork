@@ -4,7 +4,9 @@ using System.Linq;
 
 using ACE.Entity;
 using ACE.Entity.Enum;
+using ACE.Server.Managers;
 using ACE.Server.WorldObjects;
+using Org.BouncyCastle.Bcpg;
 
 namespace ACE.Server.Entity
 {
@@ -28,6 +30,8 @@ namespace ACE.Server.Entity
         /// and the total amount of damage they have inflicted
         /// </summary>
         public readonly Dictionary<ObjectGuid, DamageHistoryInfo> TotalDamage = new Dictionary<ObjectGuid, DamageHistoryInfo>();
+
+        public readonly Dictionary<ObjectGuid, DamageHistoryInfo> TotalThreat = new Dictionary<ObjectGuid, DamageHistoryInfo>();
 
         /// <summary>
         /// Returns the list of players or creatures who inflicted damage
@@ -66,6 +70,15 @@ namespace ACE.Server.Entity
             return sorted.FirstOrDefault();
         }
 
+        public DamageHistoryInfo HighestThreat => GetHighestThreat();
+
+        public DamageHistoryInfo GetHighestThreat(bool includeSelf = true)
+        {
+            var sorted = TotalThreat.Values.Where(wo => includeSelf || wo.Guid != Creature.Guid).OrderByDescending(wo => wo.TotalThreat);
+
+            return sorted.FirstOrDefault();
+        }
+
         /// <summary>
         /// Constructs a new DamageHistory for a Player / Creature
         /// </summary>
@@ -99,9 +112,40 @@ namespace ACE.Server.Entity
         private void AddInternal(WorldObject attacker, uint amount)
         {
             if (TotalDamage.TryGetValue(attacker.Guid, out var value))
-                value.TotalDamage += amount;
+            {
+                if (attacker is Player p && p.IsTank)
+                    value.TotalDamage += amount;
+                else
+                    value.TotalDamage += amount;
+            }
+            if (TotalThreat.TryGetValue(attacker.Guid, out var value2))
+            {
+                if (attacker is Player p && p.IsTank)
+                {
+                    if (p.TauntTimerActive)
+                        value2.TotalThreat += amount * 5.0f * 2.0f; 
+                    else
+                    value2.TotalThreat += amount * 5.0f;
+                }
+                else
+                    value2.TotalThreat += amount * 0.5f;
+            }
             else
-                TotalDamage.Add(attacker.Guid, new DamageHistoryInfo(attacker, amount));
+            {
+                if (attacker is Player p && p.IsTank)
+                {
+                    if (p.TauntTimerActive)
+                        TotalThreat.Add(attacker.Guid, new DamageHistoryInfo(attacker, amount * 5.0f * 2.0f)); 
+                    else
+                    TotalThreat.Add(attacker.Guid, new DamageHistoryInfo(attacker, amount * 5.0f));
+                    TotalDamage.Add(attacker.Guid, new DamageHistoryInfo(attacker, amount));
+                }
+                else
+                {
+                    TotalThreat.Add(attacker.Guid, new DamageHistoryInfo(attacker, amount));
+                    TotalDamage.Add(attacker.Guid, new DamageHistoryInfo(attacker, amount));
+                }
+            }  
         }
 
         /// <summary>
@@ -111,8 +155,43 @@ namespace ACE.Server.Entity
         {
             // todo: investigate, this shouldn't happen?
             // key 0 from BuildTotalDamage()
-            if (TotalDamage.ContainsKey(attacker))      
-                TotalDamage[attacker].TotalDamage += amount;
+            List<Player> online = new List<Player>();
+
+            foreach (var player in PlayerManager.GetAllOnline())
+                online.Add(player);
+
+            bool attackerFound = false;
+            foreach (var p in online)
+            {
+                if (p.Guid == attacker)
+                {
+                    attackerFound = true; 
+
+                    if (p.IsTank)
+                    {
+                        if (TotalDamage.ContainsKey(attacker))
+                            TotalDamage[attacker].TotalDamage += amount;
+                        if (p.TauntTimerActive)
+                            TotalThreat[attacker].TotalThreat += amount * 5.0f * 2.0f; // 100% bonus threat from taunt
+                        else
+                            TotalThreat[attacker].TotalThreat += amount * 5.0f;
+                    }
+                    else
+                    {
+                        if (TotalDamage.ContainsKey(attacker))
+                            TotalDamage[attacker].TotalDamage += amount;
+                        if (TotalThreat.ContainsKey(attacker))
+                            TotalThreat[attacker].TotalThreat += amount * 0.5f;
+                    }
+                }
+            }
+            if (!attackerFound)
+            {
+                if (TotalDamage.ContainsKey(attacker))
+                    TotalDamage[attacker].TotalDamage += amount;
+                if (TotalThreat.ContainsKey(attacker))
+                    TotalThreat[attacker].TotalThreat += amount;
+            }
         }
 
         /// <summary>
@@ -225,6 +304,15 @@ namespace ACE.Server.Entity
                     TotalDamage.Remove(key);
             }
 
+            // Remove entries from TotalThreat as well
+            foreach (var key in keys)
+            {
+                if (guids.Contains(key))
+                    TotalThreat[key].TotalThreat = 0;
+                else
+                    TotalThreat.Remove(key);
+            }
+
             // TotalDamage is now reset
 
             foreach (var entry in Log)
@@ -256,7 +344,7 @@ namespace ACE.Server.Entity
             var table = "";
 
             foreach (var attacker in TotalDamage.Values)
-                table += $"{attacker.Name} ({attacker.Guid}) - {attacker.TotalDamage}\n";
+                table += $"{attacker.Name} ({attacker.Guid}) - {attacker.TotalDamage} {attacker.TotalThreat}\n";
 
             return table;
         }

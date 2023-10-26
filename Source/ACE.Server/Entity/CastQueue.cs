@@ -1,5 +1,3 @@
-using ACE.Server.WorldObjects;
-
 namespace ACE.Server.Entity
 {
     /// <summary>
@@ -10,16 +8,14 @@ namespace ACE.Server.Entity
         public CastQueueType Type;
         public uint TargetGuid;
         public uint SpellId;
-        //public bool BuiltInSpell;
-        public WorldObject CasterItem;
+        public bool BuiltInSpell;
 
-        public CastQueue(CastQueueType type, uint targetGuid, uint spellId, WorldObject casterItem)
+        public CastQueue(CastQueueType type, uint targetGuid, uint spellId, bool builtInSpell)
         {
             Type = type;
             TargetGuid = targetGuid;
             SpellId = spellId;
-            //BuiltInSpell = builtInSpell;
-            CasterItem = casterItem;
+            BuiltInSpell = builtInSpell;
         }
     }
 

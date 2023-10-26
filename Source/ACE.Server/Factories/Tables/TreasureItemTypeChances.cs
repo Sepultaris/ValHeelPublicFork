@@ -31,7 +31,7 @@ namespace ACE.Server.Factories.Tables
             ( TreasureItemType.Armor,      0.24f ),
             ( TreasureItemType.Weapon,     0.30f ),
             ( TreasureItemType.Clothing,   0.13f ),
-            ( TreasureItemType.Cloak,      0.01f ),
+            ( TreasureItemType.Cloak,      0.02f ),
             ( TreasureItemType.Jewelry,    0.10f ),
             ( TreasureItemType.Dinnerware, 0.08f )
         };
@@ -78,7 +78,7 @@ namespace ACE.Server.Factories.Tables
             ( TreasureItemType.Clothing,   0.14f ),
             //( TreasureItemType.Gem,        0.05f ),    // 100% aetheria
             //( TreasureItemType.Dinnerware, 0.05f ),
-            ( TreasureItemType.Cloak,      0.01f ),
+            ( TreasureItemType.Cloak,      0.02f )
         };
     }
 }

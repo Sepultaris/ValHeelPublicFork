@@ -246,7 +246,7 @@ namespace ACE.Server.WorldObjects
                 //Console.WriteLine($"{stackStr}{item.Name} ({item.Guid})");
                 logLine += $"{stackStr}{item.Name} ({item.Guid})" + Environment.NewLine;
 
-                if (IsTrading && item.IsBeingTradedOrContainsItemBeingTraded(ItemsInTradeWindow))
+                if (IsTrading && ItemsInTradeWindow.Contains(item.Guid))
                 {
                     //Console.WriteLine($"{stackStr}{item.Name} ({item.Guid}) is currently being traded, skipping.");
                     logLine += $"{stackStr}{item.Name} ({item.Guid}) is currently being traded, skipping." + Environment.NewLine;
@@ -498,8 +498,6 @@ namespace ACE.Server.WorldObjects
                 slumlord.SetAndBroadcastName();
 
                 slumlord.SaveBiotaToDatabase();
-
-                HouseList.AddToAvailable(slumlord, house);
             }
 
             HouseId = null;
@@ -541,20 +539,10 @@ namespace ACE.Server.WorldObjects
             if (House == null) LoadHouse(houseInstance);
             if (House == null || House.SlumLord == null) return;
 
-            var houseOwner = GetHouseOwner();
+            var purchaseTime = (uint)(HousePurchaseTimestamp ?? 0);
 
-            // var purchaseTime = (uint)(houseOwner.HousePurchaseTimestamp ?? 0);
-
-            if (HousePurchaseTimestamp != houseOwner.HousePurchaseTimestamp)
-            {
-                HousePurchaseTimestamp = houseOwner.HousePurchaseTimestamp;
-                Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.HousePurchaseTimestamp, HousePurchaseTimestamp ?? 0), new GameMessageSystemChat("Updating housing information...", ChatMessageType.Broadcast), new GameEventHouseStatus(Session, WeenieError.HouseEvicted));
-            }
-
-            // var rentTime = (uint)(houseOwner.HouseRentTimestamp ?? 0);
-
-            if (HouseRentTimestamp != houseOwner.HouseRentTimestamp)
-                HouseRentTimestamp  = houseOwner.HouseRentTimestamp;
+            if (HouseRentTimestamp == null)
+                HouseRentTimestamp = (int)House.GetRentDue(purchaseTime);
 
             if (!House.SlumLord.InventoryLoaded)
             {
@@ -610,11 +598,8 @@ namespace ACE.Server.WorldObjects
             // set player properties
             HouseId = house.HouseId;
             HouseInstance = house.Guid.Full;
-
-            var housePurchaseTimestamp = Time.GetUnixTime();
-            if (house.HouseType != HouseType.Apartment)
-                HousePurchaseTimestamp = (int)housePurchaseTimestamp;
-            HouseRentTimestamp = (int)house.GetRentDue((uint)housePurchaseTimestamp);
+            HousePurchaseTimestamp = (int)Time.GetUnixTime();
+            HouseRentTimestamp = (int)house.GetRentDue((uint)HousePurchaseTimestamp.Value);
             houseRentWarnTimestamp = 0;
 
             // set house properties
@@ -645,13 +630,10 @@ namespace ACE.Server.WorldObjects
             slumlord.ClearInventory();
 
             slumlord.SaveBiotaToDatabase();
-
-            HouseList.RemoveFromAvailable(slumlord, house);
-
+            
             SaveBiotaToDatabase();
 
-            if (house.HouseType != HouseType.Apartment)
-                Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.HousePurchaseTimestamp, HousePurchaseTimestamp ?? 0));
+            Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.HousePurchaseTimestamp, HousePurchaseTimestamp ?? 0));
 
             // set house data
             // why has this changed? use callback?
@@ -748,7 +730,7 @@ namespace ACE.Server.WorldObjects
                 //Console.WriteLine($"{stackStr}{item.Name} ({item.Guid})");
                 logLine += $"{stackStr}{item.Name} ({item.Guid})" + Environment.NewLine;
 
-                if (IsTrading && item.IsBeingTradedOrContainsItemBeingTraded(ItemsInTradeWindow))
+                if (IsTrading && ItemsInTradeWindow.Contains(item.Guid))
                 {
                     //Console.WriteLine($"{stackStr}{item.Name} ({item.Guid}) is currently being traded, skipping.");
                     logLine += $"{stackStr}{item.Name} ({item.Guid}) is currently being traded, skipping." + Environment.NewLine;
@@ -979,9 +961,8 @@ namespace ACE.Server.WorldObjects
                 return;
             }
 
-            var accountPlayers = PlayerManager.GetAccountPlayers(Account.AccountId);
-
-            if (Guests.ContainsKey(guest.Guid) || accountPlayers.ContainsKey(guest.Guid.Full))
+            var accountPlayers = Player.GetAccountPlayers(Account.AccountId).Select(p => p.Guid).ToList();
+            if (Guests.ContainsKey(guest.Guid) || accountPlayers.Contains(guest.Guid))
             {
                 Session.Network.EnqueueSend(new GameMessageSystemChat($"{guest.Name} is already on your guest list.", ChatMessageType.Broadcast));
                 return;
@@ -1741,11 +1722,16 @@ namespace ACE.Server.WorldObjects
             Session.Network.EnqueueSend(new GameMessageSystemChat($"You have revoked your monarchy's access to the allegiance housing storage.", ChatMessageType.Broadcast));
         }
 
+        public static List<IPlayer> GetAccountPlayers(uint accountID)
+        {
+            return PlayerManager.GetAllPlayers().Where(i => i.Account != null && i.Account.AccountId == accountID).ToList();
+        }
+
         public IPlayer GetAccountHouseOwner()
         {
-            var accountPlayers = PlayerManager.GetAccountPlayers(Account.AccountId);
+            var accountPlayers = GetAccountPlayers(Account.AccountId);
 
-            var accountHouseOwners = accountPlayers.Values.Where(i => i.HouseInstance != null);
+            var accountHouseOwners = accountPlayers.Where(i => i.HouseInstance != null);
 
             return accountHouseOwners.OrderBy(i => i.HousePurchaseTimestamp).FirstOrDefault();
         }

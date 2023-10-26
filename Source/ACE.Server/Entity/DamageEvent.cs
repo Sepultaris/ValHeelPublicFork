@@ -11,6 +11,8 @@ using ACE.Entity.Models;
 using ACE.Server.Managers;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
+using ACE.Server.Factories;
+using ACE.Database;
 
 namespace ACE.Server.Entity
 {
@@ -21,15 +23,15 @@ namespace ACE.Server.Entity
         // factors:
         // - lifestone protection
         // - evade
-        //   - offense mod (heart seeker)
-        //      - accuracy mod (missile)
-        //   - defense mod (defender)
-        //      - stamina mod
+        // - offense mod (heart seeker)
+        // - accuracy mod (missile)
+        // - defense mod (defender)
+        // - stamina mod
         // - base damage / mod
         // - damage rating / mod
-        //   - recklessness
-        //   - sneak attack
-        //   - heritage bonus
+        // - recklessness
+        // - sneak attack
+        // - heritage bonus
         // - damage resistance rating /mod
         // - power meter mod
         // - critical (chance % mod / critical damage mod)
@@ -38,7 +40,7 @@ namespace ACE.Server.Entity
         // - elemental damage bonus
         // - slayer mod
         // - resistance mod (natural, prot, vuln)
-        //   - resistance cleaving
+        // - resistance cleaving
         // - shield mod
         // - rending mod
 
@@ -76,8 +78,7 @@ namespace ACE.Server.Entity
         public float DamageRatingBaseMod;
         public float RecklessnessMod;
         public float SneakAttackMod;
-        public float HeritageMod;
-        public float PkDamageMod;
+        public float HeritageMod;  
 
         public float DamageRatingMod;
 
@@ -98,9 +99,10 @@ namespace ACE.Server.Entity
 
         public float DamageResistanceRatingBaseMod;
         public float DamageResistanceRatingMod;
-        public float PkDamageResistanceMod;
 
         public float DamageMitigated;
+
+        public float Threat;
 
         // creature attacker
         public MotionCommand? AttackMotion;
@@ -110,7 +112,7 @@ namespace ACE.Server.Entity
         // creature defender
         public Quadrant Quadrant;
 
-        public bool IgnoreMagicArmor =>  (Weapon?.IgnoreMagicArmor ?? false) || (Attacker?.IgnoreMagicArmor ?? false);      // ignores impen / banes
+        public bool IgnoreMagicArmor => (Weapon?.IgnoreMagicArmor ?? false) || (Attacker?.IgnoreMagicArmor ?? false);      // ignores impen / banes
 
         public bool IgnoreMagicResist => (Weapon?.IgnoreMagicResist ?? false) || (Attacker?.IgnoreMagicResist ?? false);    // ignores life armor / prots
 
@@ -151,10 +153,22 @@ namespace ACE.Server.Entity
             var damageEvent = new DamageEvent();
             damageEvent.AttackMotion = attackMotion;
             damageEvent.AttackHook = attackHook;
+
             if (damageSource == null)
                 damageSource = attacker;
 
             var damage = damageEvent.DoCalculateDamage(attacker, defender, damageSource);
+
+            // Threat calculation
+            if (attacker is Player p && p.IsTank)
+            {
+                if (p.TauntTimerActive)
+                    damageEvent.Threat += damage * 10.0f;
+                else
+                    damageEvent.Threat += damage * 5.0f;
+            }
+            else
+                damageEvent.Threat += damage * 0.5f;
 
             damageEvent.HandleLogging(attacker, defender);
 
@@ -166,8 +180,6 @@ namespace ACE.Server.Entity
             var playerAttacker = attacker as Player;
             var playerDefender = defender as Player;
 
-            var pkBattle = playerAttacker != null && playerDefender != null;
-
             Attacker = attacker;
             Defender = defender;
 
@@ -175,7 +187,7 @@ namespace ACE.Server.Entity
 
             DamageSource = damageSource;
 
-            Weapon = damageSource.ProjectileSource == null ? attacker.GetEquippedMeleeWeapon() : (damageSource.ProjectileLauncher ?? damageSource.ProjectileAmmo);
+            Weapon = damageSource.ProjectileSource == null ? attacker.GetEquippedMeleeWeapon() : damageSource.ProjectileLauncher;
 
             AttackType = attacker.AttackType;
             AttackHeight = attacker.AttackHeight ?? AttackHeight.Medium;
@@ -212,13 +224,10 @@ namespace ACE.Server.Entity
             else
                 GetBaseDamage(attacker, AttackMotion ?? MotionCommand.Invalid, AttackHook);
 
-            if (DamageType == DamageType.Undef)
+            if (DamageType == DamageType.Undef && !AllowDamageTypeUndef.Contains(damageSource.WeenieClassId))
             {
-                if ((attacker?.Guid.IsPlayer() ?? false) || (damageSource?.Guid.IsPlayer() ?? false))
-                {
-                    log.Error($"DamageEvent.DoCalculateDamage({attacker?.Name} ({attacker?.Guid}), {defender?.Name} ({defender?.Guid}), {damageSource?.Name} ({damageSource?.Guid})) - DamageType == DamageType.Undef");
-                    GeneralFailure = true;
-                }
+                log.Error($"DamageEvent.DoCalculateDamage({attacker?.Name} ({attacker?.Guid}), {defender?.Name} ({defender?.Guid}), {damageSource?.Name} ({damageSource?.Guid})) - DamageType == DamageType.Undef");
+                GeneralFailure = true;
             }
 
             if (GeneralFailure) return 0.0f;
@@ -236,12 +245,6 @@ namespace ACE.Server.Entity
 
             DamageRatingMod = Creature.AdditiveCombine(DamageRatingBaseMod, RecklessnessMod, SneakAttackMod, HeritageMod);
 
-            if (pkBattle)
-            {
-                PkDamageMod = Creature.GetPositiveRatingMod(attacker.GetPKDamageRating());
-                DamageRatingMod = Creature.AdditiveCombine(DamageRatingMod, PkDamageMod);
-            }
-
             // damage before mitigation
             DamageBeforeMitigation = BaseDamage * AttributeMod * PowerMod * SlayerMod * DamageRatingMod;
 
@@ -256,7 +259,7 @@ namespace ACE.Server.Entity
             if (playerDefender != null && (playerDefender.IsLoggingOut || playerDefender.PKLogout))
                 CriticalChance = 1.0f;
 
-            if (CriticalChance > ThreadSafeRandom.Next(0.0f, 1.0f))
+            if (CriticalChance > ThreadSafeRandom.Next(0.0f, 1.0f) || playerAttacker != null && playerAttacker.IsSneaking)
             {
                 if (playerDefender != null && playerDefender.AugmentationCriticalDefense > 0)
                 {
@@ -280,9 +283,6 @@ namespace ACE.Server.Entity
                     // recklessness excluded from crits
                     RecklessnessMod = 1.0f;
                     DamageRatingMod = Creature.AdditiveCombine(DamageRatingBaseMod, CriticalDamageRatingMod, SneakAttackMod, HeritageMod);
-
-                    if (pkBattle)
-                        DamageRatingMod = Creature.AdditiveCombine(DamageRatingMod, PkDamageMod);
 
                     DamageBeforeMitigation = BaseDamageMod.MaxDamage * AttributeMod * PowerMod * SlayerMod * DamageRatingMod * CriticalDamageMod;
                 }
@@ -351,22 +351,135 @@ namespace ACE.Server.Entity
                 DamageResistanceRatingMod = Creature.AdditiveCombine(DamageResistanceRatingBaseMod, CriticalDamageResistanceRatingMod);
             }
 
-            if (pkBattle)
-            {
-                PkDamageResistanceMod = Creature.GetNegativeRatingMod(defender.GetPKDamageResistRating());
-
-                DamageResistanceRatingMod = Creature.AdditiveCombine(DamageResistanceRatingMod, PkDamageResistanceMod);
-            }
-
             // get shield modifier
             ShieldMod = defender.GetShieldMod(attacker, DamageType, Weapon);
 
             // calculate final output damage
-            Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;
+            Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;           
 
             DamageMitigated = DamageBeforeMitigation - Damage;
+            // OP damage
+            if (attacker.Overpower != null)
+            {
+                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;/* * ((int)(attacker.Overpower * 0.16f + 1) + ((int)(attacker.Level * 0.005f) * 20.1f));*/
+            }
+            if (defender.Overpower != null)
+            {
+                Damage = DamageBeforeMitigation * ArmorMod * ShieldMod * ResistanceMod * DamageResistanceRatingMod;/* / ((int)(defender.OverpowerResist * 0.16f + 1) + ((int)(defender.Level * 0.005f) * 20.1f));*/
+            }
+            if (damageSource.WeenieClassId == 300444)
+            {
+                var weaponDamage = damageSource.ProjectileLauncher.Damage.Value;
+                Damage = Damage + weaponDamage;
+            }
+            if (defender is Player pDefender && pDefender.Hardcore)
+                Damage = Damage + Damage * 0.33f;
 
-            return Damage;
+            // Brutalize damage mod
+            if (attacker is Player pAttacker && pAttacker.DoBrutalizeAttack)
+            {
+                var ammo = pAttacker.GetEquippedAmmo();
+                var launcher = pAttacker.GetEquippedMissileLauncher();
+                var caster = pAttacker.GetEquippedWand();
+
+                // Melee
+                if (damageSource == pAttacker.GetEquippedWeapon())
+                {
+                    var burtalizeDamage = Damage * 5.0f;
+
+                    Damage = burtalizeDamage;
+                }
+                // Missile
+                if (ammo != null && launcher != null && damageSource.ProjectileLauncher == launcher)
+                {
+                    var burtalizeDamage = Damage * 5.0f;
+
+                    Damage = burtalizeDamage;
+                }
+                // Magic
+                if (caster != null && damageSource.ProjectileSource == pAttacker.GetEquippedWand())
+                {
+                    var burtalizeDamage = Damage * 5.0f;
+
+                    Damage = burtalizeDamage;
+                }
+            }
+
+            /// Global Damage Modifiers
+
+            //monster damage mod
+            if (playerDefender != null)
+            {
+                if (attacker != null && attacker.IsMonster)
+                {
+                    double globalDamageMod = PropertyManager.GetDouble("global_monster_damage_mod").Item;
+                    Damage = Damage * (float)globalDamageMod;
+                }
+            }
+            //player damage mod
+            if (playerAttacker != null)
+            {
+                if (defender != null && defender.IsMonster)
+                {
+                    double globalDamageMod = PropertyManager.GetDouble("global_player_damage_mod").Item;
+                    Damage = Damage * (float)globalDamageMod;
+                }
+                //pvp damage mod
+                if (defender != null && defender is Player)
+                {
+                    double globalDamageMod = PropertyManager.GetDouble("global_pvp_damage_mod").Item;
+                    Damage = Damage * (float)globalDamageMod;
+                }
+            }
+
+            /// Class Damage Modifiers
+
+            // Tank
+            if (attacker.IsTank)
+            {
+                Damage = Damage - Damage * 0.2f;
+                return Damage;
+            }
+            else if (defender.IsTank)
+            {
+                var newDamage = Damage - Damage * 0.50f;
+
+                Damage = newDamage;
+                return Damage;
+            }
+            // DPS
+            else if (attacker.IsDps)
+            {
+                Damage = Damage + Damage * 0.2f;
+                return Damage;
+            }
+            else if (defender.IsDps)
+            {
+                var newDamage = Damage - Damage * 0.25f;
+
+                Damage = newDamage;
+                return Damage;
+            }
+            // Healer
+            else if (attacker.IsHealer)
+            {
+                Damage = Damage - Damage * 0.2f;
+                return Damage;
+            }
+            else if (defender.IsHealer)
+            {
+                var newDamage = Damage - Damage * 0.35f;
+
+                Damage = newDamage;
+                return Damage;
+            }
+            else
+            {
+                var newDamage = Damage - Damage * 0.35f;
+
+                Damage = newDamage;
+                return Damage;
+            }
         }
 
         public Quadrant GetQuadrant(Creature defender, Creature attacker, AttackHeight attackHeight, WorldObject damageSource)
@@ -389,11 +502,33 @@ namespace ACE.Server.Entity
 
             EffectiveAttackSkill = attacker.GetEffectiveAttackSkill();
 
-            //var attackType = attacker.GetCombatType();
+            if (attacker.IsCombatPet)
+            {
+                if (attacker is CombatPet combatPet && combatPet.P_PetOwner != null)
+                {
+                    var attackSkillBonus = combatPet.P_PetOwner.GetCreatureSkill(Skill.Summoning).Current;
+                    EffectiveAttackSkill = combatPet.P_PetOwner.GetEffectiveAttackSkill() + attackSkillBonus;
+                }                                                 
+            }
+                
+            // var attackType = attacker.GetCombatType();
 
             EffectiveDefenseSkill = defender.GetEffectiveDefenseSkill(CombatType);
 
             var evadeChance = 1.0f - SkillCheck.GetSkillChance(EffectiveAttackSkill, EffectiveDefenseSkill);
+
+            if (defender.IsCombatPet)
+            {
+                if (defender is CombatPet combatPet && combatPet.P_PetOwner != null)
+                {
+                    // var defenseSkillBonus = combatPet.P_PetOwner.GetCreatureSkill(Skill.Summoning).Current;
+
+                    EffectiveDefenseSkill = (uint)(combatPet.P_PetOwner.GetEffectiveDefenseSkill(CombatType) * 0.9) + (uint)(combatPet.P_PetOwner.GetCreatureSkill(Skill.Summoning).Current * 0.1);
+                    // EffectiveDefenseSkill += defenseSkillBonus;
+
+                    evadeChance = 1.0f - SkillCheck.GetSkillChance(EffectiveAttackSkill, EffectiveDefenseSkill);
+                }
+            }
             return (float)evadeChance;
         }
 
@@ -426,9 +561,10 @@ namespace ACE.Server.Entity
                 BaseDamageMod.DamageBonus += Weapon.Damage ?? 0;
 
             if (DamageSource.ItemType == ItemType.MissileWeapon)
-                BaseDamageMod.ElementalBonus = WorldObject.GetMissileElementalDamageBonus(Weapon, attacker, DamageType);
+                BaseDamageMod.ElementalBonus = WorldObject.GetMissileElementalDamageBonus(Weapon, attacker, DamageType);         
 
             BaseDamage = (float)ThreadSafeRandom.Next(BaseDamageMod.MinDamage, BaseDamageMod.MaxDamage);
+           
         }
 
         /// <summary>
@@ -599,9 +735,6 @@ namespace ACE.Server.Entity
             if (SneakAttackMod != 0.0f && SneakAttackMod != 1.0f)
                 info += $"SneakAttackMod: {SneakAttackMod}\n";
 
-            if (PkDamageMod != 0.0f && PkDamageMod != 1.0f)
-                info += $"PkDamageMod: {PkDamageMod}\n";
-
             if (DamageRatingMod != 0.0f && DamageRatingMod != 1.0f)
                 info += $"DamageRatingMod: {DamageRatingMod}\n";
 
@@ -641,11 +774,8 @@ namespace ACE.Server.Entity
             if (CriticalDamageResistanceRatingMod != 0.0f && CriticalDamageResistanceRatingMod != 1.0f)
                 info += $"CriticalDamageResistanceRatingMod: {CriticalDamageResistanceRatingMod}\n";
 
-            if (PkDamageResistanceMod != 0.0f && PkDamageResistanceMod != 1.0f)
-                info += $"PkDamageResistanceMod: {PkDamageResistanceMod}\n";
-
             if (DamageResistanceRatingMod != 0.0f && DamageResistanceRatingMod != 1.0f)
-                info += $"DamageResistanceRatingMod: {DamageResistanceRatingMod}\n";
+                info += $"DamageResistanceRatingMod: {DamageResistanceRatingBaseMod}\n";
 
             if (IgnoreMagicArmor)
                 info += $"IgnoreMagicArmor: {IgnoreMagicArmor}\n";

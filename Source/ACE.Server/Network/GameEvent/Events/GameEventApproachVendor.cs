@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using ACE.Database;
 using ACE.Entity.Models;
@@ -8,7 +9,7 @@ namespace ACE.Server.Network.GameEvent.Events
 {
     public class GameEventApproachVendor : GameEventMessage
     {
-        public GameEventApproachVendor(Session session, Vendor vendor, uint altCurrencySpent)
+        public GameEventApproachVendor(Session session, Vendor vendor, List<WorldObject> items, uint altCurrencySpent)
             : base(GameEventType.ApproachVendor, GameMessageGroup.UIQueue, session)
         {        
             Writer.Write(vendor.Guid.Full);
@@ -41,24 +42,17 @@ namespace ACE.Server.Network.GameEvent.Events
             }
             else
             {
-                Writer.Write(0);
-                Writer.WriteString16L(string.Empty);
+                Writer.Write((uint)0);
+                Writer.WriteString16L("");
             }
 
-            var numItems = vendor.DefaultItemsForSale.Count + vendor.UniqueItemsForSale.Count;
+            Writer.Write((uint)items.Count);    
 
-            Writer.Write(numItems);
-
-            vendor.forEachItem((obj) =>
+            foreach (WorldObject obj in items)
             {
-                int stackSize = obj.VendorShopCreateListStackSize ?? obj.StackSize ?? 1; // -1 = unlimited supply
-
-                // packed value: (stackSize & 0xFFFFFF) | (pwdType << 24)
-                // pwdType: flag indicating whether the new or old PublicWeenieDesc is used; -1 = PublicWeenieDesc, 1 = OldPublicWeenieDesc; -1 always used.
-                Writer.Write(stackSize & 0xFFFFFF | -1 << 24);
-
+                Writer.Write(-1);   // -1 = unlimited supply?
                 obj.SerializeGameDataOnly(Writer);
-            });
+            }
 
             Writer.Align();
         }

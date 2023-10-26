@@ -54,18 +54,26 @@ namespace ACE.Server.Factories
                 {
                     case 1001: // Mana Forge Chest, Advanced Equipment Chest, and Mixed Equipment Chest
                     case 2001:
+                    case 3001:
+
                         lootBias = LootBias.MixedEquipment;
                         break;
                     case 1002: // Armor Chest
                     case 2002:
+                    case 3002:
+
                         lootBias = LootBias.Armor;
                         break;
                     case 1003: // Magic Chest
                     case 2003:
+                    case 3003:
+
                         lootBias = LootBias.MagicEquipment;
                         break;
                     case 1004: // Weapon Chest
                     case 2004:
+                    case 3004:
+                        
                         lootBias = LootBias.Weapons;
                         break;
                     default: // Default to unbiased loot profile
@@ -334,7 +342,12 @@ namespace ACE.Server.Factories
                     // TODO: Will likely need some adjustment/fine tuning
                     wo = CreateDinnerware(profile, isMagical);
                     break;
+
+                case (TreasureItemType)ItemType.Mirra:
+                    wo = CreateMirra(profile, isMagical, true);
+                    break;
             }
+
             return wo;
         }
 
@@ -359,13 +372,12 @@ namespace ACE.Server.Factories
             var roll = new TreasureRoll();
 
             roll.Wcid = (WeenieClassName)item.WeenieClassId;
-            roll.BaseArmorLevel = item.ArmorLevel ?? 0;
 
             if (roll.Wcid == WeenieClassName.coinstack)
             {
                 roll.ItemType = TreasureItemType_Orig.Pyreal;
                 MutateCoins(item, profile);
-            }
+            }            
             else if (GemMaterialChance.Contains(roll.Wcid))
             {
                 roll.ItemType = TreasureItemType_Orig.Gem;
@@ -424,8 +436,7 @@ namespace ACE.Server.Factories
             {
                 roll.ItemType = TreasureItemType_Orig.SocietyArmor;     // collapsed for mutation
                 roll.ArmorType = TreasureArmorType.Society;
-                var legacyArmorType = roll.ArmorType.ToACE();
-                MutateArmor(item, profile, isMagical, legacyArmorType, roll);
+                MutateSocietyArmor(item, profile, isMagical, roll);
             }
             else if (ClothingWcids.Contains(roll.Wcid))
             {
@@ -448,6 +459,7 @@ namespace ACE.Server.Factories
                 // mundane add-on
                 MutateAetheria_New(item, profile);
             }
+            
             // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
             // it should be safe to return false here, for the 1 caller that currently uses this method
             // since it's not this function's responsibility to determine if an item is a lootgen item,
@@ -574,7 +586,7 @@ namespace ACE.Server.Factories
         ///
         /// This was a temporary function to give some color to loot until further work was put in for "proper" color handling. Leave it here as an option for future potential use (perhaps config option?)
         /// </summary>
-        private static WorldObject RandomizeColorTotallyRandom(WorldObject wo)
+        public static WorldObject RandomizeColorTotallyRandom(WorldObject wo)
         {
             // Make sure the item has a ClothingBase...otherwise we can't properly randomize the colors.
             if (wo.ClothingBase != null)
@@ -622,7 +634,7 @@ namespace ACE.Server.Factories
         /// Assign a random color (Int.PaletteTemplate and Float.Shade) to a World Object based on the material assigned to it.
         /// </summary>
         /// <returns>WorldObject with a random applicable PaletteTemplate and Shade applied, if available</returns>
-        private static void MutateColor(WorldObject wo)
+        public static void MutateColor(WorldObject wo)
         {
             if (wo.MaterialType > 0 && wo.TsysMutationData != null && wo.ClothingBase != null)
             {
@@ -633,23 +645,17 @@ namespace ACE.Server.Factories
                 // BYTE gemCode = (tsysMutationData >> 8) & 0xFF;
                 // BYTE materialCode = (tsysMutationData >> 0) & 0xFF;
 
-                List<TreasureMaterialColor> colors = DatabaseManager.World.GetCachedTreasureMaterialColors((int)wo.MaterialType, colorCode);
+                List<TreasureMaterialColor> colors;
+                // This is a unique situation that typically applies to Under Clothes.
+                // If the Color Code is 0, they can be PaletteTemplate 1-18, assuming there is a MaterialType
+                // (gems have ColorCode of 0, but also no MaterialCode as they are defined by the weenie)
+                if (colorCode == 0 && (uint)wo.MaterialType > 0)
+                    colors = clothingColors;
+                else
+                    colors = DatabaseManager.World.GetCachedTreasureMaterialColors((int)wo.MaterialType, colorCode);
 
                 if (colors == null)
-                {
-                    // legacy support for hardcoded colorCode 0 table
-                    if (colorCode == 0 && (uint)wo.MaterialType > 0)
-                    {
-                        // This is a unique situation that typically applies to Under Clothes.
-                        // If the Color Code is 0, they can be PaletteTemplate 1-18, assuming there is a MaterialType
-                        // (gems have ColorCode of 0, but also no MaterialCode as they are defined by the weenie)
-
-                        // this can be removed after all servers have upgraded to latest db
-                        colors = clothingColors;
-                    }
-                    else
-                        return;
-                }
+                    return;
 
                 // Load the clothingBase associated with the WorldObject
                 DatLoader.FileTypes.ClothingTable clothingBase = DatLoader.DatManager.PortalDat.ReadFromDat<DatLoader.FileTypes.ClothingTable>((uint)wo.ClothingBase);
@@ -781,6 +787,8 @@ namespace ACE.Server.Factories
             (400, 3500),    // T6
             (600, 4000),    // T7
             (600, 4500),    // T8
+            (3000, 10000),  // T9
+            (20000, 75000)  // T10
         };
 
         private static int Roll_ItemValue(WorldObject wo, int tier)
@@ -903,6 +911,8 @@ namespace ACE.Server.Factories
             1000,   // T6
             2000,   // T7
             3000,   // T8
+            4000,   // T9
+            10000   // T10
         };
 
         /// <summary>
@@ -929,14 +939,14 @@ namespace ACE.Server.Factories
 
         // new methods
 
-        public static TreasureRoll RollWcid(TreasureDeath treasureDeath, TreasureItemCategory category, TreasureItemType_Orig treasureItemType = TreasureItemType_Orig.Undef)
+        public static TreasureRoll RollWcid(TreasureDeath treasureDeath, TreasureItemCategory category, TreasureItemType_Orig treasureItemType = TreasureItemType_Orig.Undef, TreasureItemType treasureItemType1 = TreasureItemType.Undef)
         {
             if (treasureItemType == TreasureItemType_Orig.Undef)
                 treasureItemType = RollItemType(treasureDeath, category);
 
             if (treasureItemType == TreasureItemType_Orig.Undef)
             {
-                log.Error($"LootGenerationFactory.RollWcid({treasureDeath.TreasureType}, {category}): treasureItemType == Undef");
+                // log.Error($"LootGenerationFactory.RollWcid({treasureDeath.TreasureType}, {category}): treasureItemType == Undef");
                 return null;
             }
 
@@ -992,8 +1002,6 @@ namespace ACE.Server.Factories
 
                 case TreasureItemType_Orig.Caster:
 
-                    // only called if TreasureItemType.Caster was specified directly
-                    treasureRoll.WeaponType = TreasureWeaponType.Caster;
                     treasureRoll.Wcid = CasterWcids.Roll(treasureDeath.Tier);
                     break;
 
@@ -1052,8 +1060,10 @@ namespace ACE.Server.Factories
                 case TreasureItemType_Orig.EncapsulatedSpirit:
 
                     treasureRoll.Wcid = WeenieClassName.ace49485_encapsulatedspirit;
-                    break;
+                    break;               
+
             }
+            
             return treasureRoll;
         }
 
@@ -1089,20 +1099,15 @@ namespace ACE.Server.Factories
 
         public static WorldObject CreateAndMutateWcid(TreasureDeath treasureDeath, TreasureRoll treasureRoll, bool isMagical)
         {
-            WorldObject wo = null;
+            var wo = WorldObjectFactory.CreateNewWorldObject((uint)treasureRoll.Wcid);
 
-            if (treasureRoll.ItemType != TreasureItemType_Orig.Scroll)
+            if (wo == null)
             {
-                wo = WorldObjectFactory.CreateNewWorldObject((uint)treasureRoll.Wcid);
-
-                if (wo == null)
-                {
-                    log.Error($"CreateAndMutateWcid({treasureDeath.TreasureType}, {(int)treasureRoll.Wcid} - {treasureRoll.Wcid}, {treasureRoll.GetItemType()}, {isMagical}) - failed to create item");
-                    return null;
-                }
-
-                treasureRoll.BaseArmorLevel = wo.ArmorLevel ?? 0;
+                log.Error($"CreateAndMutateWcid({treasureDeath.TreasureType}, {(int)treasureRoll.Wcid} - {treasureRoll.Wcid}, {treasureRoll.GetItemType()}, {isMagical}) - failed to create item");
+                return null;
             }
+
+            treasureRoll.BaseArmorLevel = wo.ArmorLevel ?? 0;
 
             switch (treasureRoll.ItemType)
             {
@@ -1167,17 +1172,15 @@ namespace ACE.Server.Factories
                     }
                     break;
 
-                case TreasureItemType_Orig.Caster:
-
-                    // alternate path -- only called if TreasureItemType.Caster was specified directly
-                    MutateCaster(wo, treasureDeath, isMagical, null, treasureRoll);
-                    break;
-
                 case TreasureItemType_Orig.Armor:
-                case TreasureItemType_Orig.SocietyArmor:    // collapsed, after rolling for initial wcid
 
                     var armorType = treasureRoll.ArmorType.ToACE();
                     MutateArmor(wo, treasureDeath, isMagical, armorType, treasureRoll);
+                    break;
+
+                case TreasureItemType_Orig.SocietyArmor:    // collapsed, after rolling for initial wcid
+
+                    MutateSocietyArmor(wo, treasureDeath, isMagical, treasureRoll);
                     break;
 
                 case TreasureItemType_Orig.Clothing:
@@ -1196,10 +1199,25 @@ namespace ACE.Server.Factories
                     MutatePetDevice(wo, treasureDeath.Tier);
                     break;
 
-                // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
+                    // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
             }
+
+            double mirraDrop = PropertyManager.GetDouble("mirra_drop").Item;
+
+            float mirraDropFloat = (float)mirraDrop;
+
+            if (mirraDropFloat <= 0f)
+                mirraDropFloat = 40000f;
+
+            var mirraChance = ThreadSafeRandom.Next(0f, mirraDropFloat);
+
+            if (mirraChance <= 1)
+            {               
+                wo = CreateMirra(treasureDeath, isMagical, true);
+            }
+                    
             return wo;
-        }
+        }       
 
         /// <summary>
         /// The min/max amount of pyreals that can be rolled per tier, from magloot corpse logs
@@ -1214,6 +1232,8 @@ namespace ACE.Server.Factories
             (250, 5000), // T6
             (250, 5000), // T7
             (250, 5000), // T8
+            (500, 10000),// T9
+            (500, 10000) // T10
         };
 
         private static void MutateCoins(WorldObject wo, TreasureDeath profile)
@@ -1268,19 +1288,42 @@ namespace ACE.Server.Factories
 
             if (profile.Tier == 8)
             {
-                // t8 had a 90% chance for 180
+                // t8 had a 90% chance for 180               
                 // loot quality mod?
                 var rng = ThreadSafeRandom.Next(0.0f, 1.0f);
 
                 if (rng < 0.9f)
-                    wieldLevelReq = 180;
-            }
+                    wieldLevelReq = 180;                
+
+            }           
 
             wo.WieldRequirements = WieldRequirement.Level;
             wo.WieldDifficulty = wieldLevelReq;
 
             // as per retail pcaps, must be set to appear in client
             wo.WieldSkillType = 1;  
+        }
+
+        private static void RollWieldLevelReq_T9(WorldObject wo, TreasureDeath profile)
+        {
+            var wieldLevelReq = 180;
+
+            if (profile.Tier == 9)
+            {
+                // t8 had a 90% chance for 350               
+                // loot quality mod?
+                var rng = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                if (rng <= 1.0f)
+                    wieldLevelReq = 275;
+
+            }
+
+            wo.WieldRequirements = WieldRequirement.Level;
+            wo.WieldDifficulty = wieldLevelReq;
+
+            // as per retail pcaps, must be set to appear in client
+            wo.WieldSkillType = 1;
         }
     }         
 }

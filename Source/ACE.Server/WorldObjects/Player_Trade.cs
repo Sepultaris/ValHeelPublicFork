@@ -11,7 +11,6 @@ using ACE.Server.Managers;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Network;
 using ACE.Server.Network.GameEvent.Events;
-using ACE.Server.Network.GameMessages.Messages;
 
 namespace ACE.Server.WorldObjects
 {
@@ -29,21 +28,10 @@ namespace ACE.Server.WorldObjects
 
         public void HandleActionOpenTradeNegotiations(uint tradePartnerGuid, bool initiator = false)
         {
-            if (IsOlthoiPlayer)
-            {
-                Session.Network.EnqueueSend(new GameMessageSystemChat($"As a mindless engine of destruction an Olthoi cannot participate in trade negotiations!", ChatMessageType.Magic));
-                return;
-            }
-
             var tradePartner = PlayerManager.GetOnlinePlayer(tradePartnerGuid);
             if (tradePartner == null) return;
 
-            //Check to see if potential trading partner is an Olthoi player
-            if (initiator && tradePartner.IsOlthoiPlayer)
-            {
-                Session.Network.EnqueueSend(new GameMessageSystemChat($"The Olthoi's hunger for destruction is too great to understand a request for trade negotiations!", ChatMessageType.Broadcast));
-                return;
-            }
+            TradePartner = tradePartner.Guid;
 
             //Check to see if partner is not allowing trades
             if (initiator && tradePartner.GetCharacterOption(CharacterOption.IgnoreAllTradeRequests))
@@ -77,7 +65,13 @@ namespace ACE.Server.WorldObjects
                         return;
                     }
 
+                    ItemsInTradeWindow.Clear();
+
                     Session.Network.EnqueueSend(new GameEventRegisterTrade(Session, Guid, tradePartner.Guid));
+
+                    // this fixes current version of DoThingsBot
+                    // ideally future version of DTB should be updated to be based on RegisterTrade event, instead of ResetTrade
+                    Session.Network.EnqueueSend(new GameEventResetTrade(Session, Guid));
 
                     tradePartner.HandleActionOpenTradeNegotiations(Guid.Full, false);
                 });
@@ -89,13 +83,13 @@ namespace ACE.Server.WorldObjects
                 TradeTransferInProgress = false;
                 tradePartner.TradeTransferInProgress = false;
 
-                TradePartner = tradePartner.Guid;
-                tradePartner.TradePartner = Guid;
-
                 ItemsInTradeWindow.Clear();
-                tradePartner.ItemsInTradeWindow.Clear();
 
                 Session.Network.EnqueueSend(new GameEventRegisterTrade(Session, tradePartner.Guid, tradePartner.Guid));
+
+                // this fixes current version of DoThingsBot
+                // ideally future version of DTB should be updated to be based on RegisterTrade event, instead of ResetTrade
+                Session.Network.EnqueueSend(new GameEventResetTrade(Session, tradePartner.Guid));
             }
         }
 
@@ -140,13 +134,6 @@ namespace ACE.Server.WorldObjects
             if (wo.IsAttunedOrContainsAttuned)
             {
                 Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, "You cannot trade that!"));
-                Session.Network.EnqueueSend(new GameEventTradeFailure(Session, itemGuid, WeenieError.AttunedItem));
-                return;
-            }
-
-            if (wo is PetDevice petDevice && petDevice.Pet is not null)
-            {
-                Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, "You must unsummon your pet before you can trade this item!"));
                 Session.Network.EnqueueSend(new GameEventTradeFailure(Session, itemGuid, WeenieError.AttunedItem));
                 return;
             }
@@ -282,26 +269,22 @@ namespace ACE.Server.WorldObjects
             actionChain.EnqueueChain();
         }
 
-        private bool GetItemsInTradeWindow(Player player, out List<WorldObject> itemsToBeTraded)
+        private List<WorldObject> GetItemsInTradeWindow(Player player)
         {
-            itemsToBeTraded = null;
             var results = new List<WorldObject>();
 
             foreach (ObjectGuid itemGuid in player.ItemsInTradeWindow)
             {
-                var wo = player.GetInventoryItem(itemGuid); // look in inventory for item
+                var wo = player.GetInventoryItem(itemGuid);
 
-                if (wo == null) // if item is equipped, it won't be found above, so if not found, look in equipped objects
+                if (wo == null)
                     wo = player.GetEquippedItem(itemGuid);
 
                 if (wo != null)
                     results.Add(wo);
-                else // item was not found in inventory or equipped
-                    return false;
             }
 
-            itemsToBeTraded = results;
-            return true;
+            return results;
         }
 
         public void HandleActionDeclineTrade(Session session)
@@ -311,14 +294,14 @@ namespace ACE.Server.WorldObjects
             session.Player.TradeAccepted = false;
 
             session.Network.EnqueueSend(new GameEventDeclineTrade(session,session.Player.Guid));
-            session.Network.EnqueueSend(new GameEventCommunicationTransientString(session, "Trade confirmation failed..."));
+            session.Network.EnqueueSend(new GameEventCommunicationTransientString(session, "Trade confirmation failed"));
             
             var target = PlayerManager.GetOnlinePlayer(session.Player.TradePartner);
 
             if (target != null)
             {
                 target.Session.Network.EnqueueSend(new GameEventDeclineTrade(target.Session, session.Player.Guid));
-                target.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(target.Session, "Trade confirmation failed..."));
+                target.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(target.Session, "Trade confirmation failed"));
             }
         }
 
@@ -361,20 +344,8 @@ namespace ACE.Server.WorldObjects
 
         private bool VerifyTrade_Inventory(Player partner)
         {
-            var selfItemsVerified = GetItemsInTradeWindow(this, out var self_items);
-            var partnerItemsVerified = GetItemsInTradeWindow(partner, out var partner_items);
-
-            if (!selfItemsVerified)
-            {
-                HandleActionDeclineTrade(Session);
-                return false;
-            }
-
-            if (!partnerItemsVerified)
-            {
-                partner.HandleActionDeclineTrade(partner.Session);
-                return false;
-            }
+            var self_items = GetItemsInTradeWindow(this);
+            var partner_items = GetItemsInTradeWindow(partner);
 
             var playerACanAddToInventory = CanAddToInventory(partner_items, out var selfEncumbered, out var selfPackSpace);
             var playerBCanAddToInventory = partner.CanAddToInventory(self_items, out var partnerEncumbered, out var partnerPackSpace);

@@ -14,6 +14,11 @@ using ACE.Server.Managers;
 using ACE.Server.Network.Structure;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Entity.Enum.Properties;
+using ACE.Server.Factories.Tables;
+using MySqlX.XDevAPI.Common;
+using ACE.Common;
+using log4net.Core;
 
 namespace ACE.Server.WorldObjects
 {
@@ -58,19 +63,16 @@ namespace ACE.Server.WorldObjects
 
             if (!AddKnownSpell(spellId))
             {
-                if (uiOutput)
-                {
-                    GameMessageSystemChat errorMessage = new GameMessageSystemChat("You already know that spell!", ChatMessageType.Broadcast);
-                    Session.Network.EnqueueSend(errorMessage);
-                }
+                GameMessageSystemChat errorMessage = new GameMessageSystemChat("That spell is already known", ChatMessageType.Broadcast);
+                Session.Network.EnqueueSend(errorMessage);
                 return;
             }
 
             GameEventMagicUpdateSpell updateSpellEvent = new GameEventMagicUpdateSpell(Session, (ushort)spellId);
             Session.Network.EnqueueSend(updateSpellEvent);
 
-            // Check to see if we echo output to the client text area and do playscript animation
-            if (uiOutput)
+            //Check to see if we echo output to the client
+            if (uiOutput == true)
             {
                 // Always seems to be this SkillUpPurple effect
                 ApplyVisualEffects(PlayScript.SkillUpPurple);
@@ -78,10 +80,6 @@ namespace ACE.Server.WorldObjects
                 string message = $"You learn the {spells.Spells[spellId].Name} spell.\n";
                 GameMessageSystemChat learnMessage = new GameMessageSystemChat(message, ChatMessageType.Broadcast);
                 Session.Network.EnqueueSend(learnMessage);
-            }
-            else
-            {
-                Session.Network.EnqueueSend(new GameEventCommunicationTransientString(Session, "You have learned a new spell."));
             }
         }
 
@@ -187,17 +185,1354 @@ namespace ACE.Server.WorldObjects
 
         public void OnItemLevelUp(WorldObject item, int prevItemLevel)
         {
-            if (!item.HasItemSet) return;
+            if (!item.HasItemLevel) return;
 
             var setItems = EquippedObjects.Values.Where(i => i.HasItemSet && i.EquipmentSetId == item.EquipmentSetId).ToList();
 
             var levelDiff = prevItemLevel - (item.ItemLevel ?? 0);
+
+            var levelDiff1 = (item.ItemLevel) - prevItemLevel;
 
             var prevSpells = GetSpellSet(setItems, levelDiff);
 
             var spells = GetSpellSet(setItems);
 
             EquipDequipItemFromSet(item, spells, prevSpells);
+
+            // grant level up bonus
+            for (int j = 0; j < levelDiff1; j++)
+            {
+                var actionChain = new ActionChain();
+                actionChain.AddAction(this, () =>
+
+
+                {
+                    var itemtype = item.GetProperty(PropertyInt.ItemType) ?? 0;
+
+                    EnqueueBroadcast(new GameMessageScript(Guid, PlayScript.AetheriaLevelUp));
+
+                    // decide what do with each ItemType
+                    var proto = item.GetProperty(PropertyBool.Proto);
+                    var itemLevel = item.ItemLevel;
+                    var bonusLevel = itemLevel % 10;
+
+                    if (itemtype == 256 && proto == false && item.Arramoran != true || itemtype == 256 && proto == null && item.Arramoran != true) // MissileWeapon
+                    {
+                        item.ElementalDamageBonus++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonus = item.GetProperty(PropertyInt.ElementalDamageBonus) ?? 0;
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ElementalDamageBonus, ElementalDamageBonus ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Damage Bonus has increased by 1. And is now {damagebonus} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+                    }
+
+                    if (item.HasArmorLevel() && proto == false && item.Arramoran != true || item.HasArmorLevel() && proto == null && item.Arramoran != true) // Armor
+                    {
+                        item.ArmorLevel++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var armorlevel = item.GetProperty(PropertyInt.ArmorLevel) ?? 0;
+                        var armorbonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ArmorLevel, ArmorLevel ?? 0);
+                        var gearvitalitybonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearMaxHealth, GearMaxHealth ?? 0);
+                        var bonusmessage = $"Your {name}'s Armor Level has increased by 1. And is now {armorlevel} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(armorbonusupdate);
+                        Session.Network.EnqueueSend(gearvitalitybonus);
+                    }
+
+                    if (itemtype == 1 && proto == false && item.Arramoran != true || itemtype == 1 && proto == null && item.Arramoran != true) // MelleeWeapon
+                    {
+                        item.Damage++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonus = item.GetProperty(PropertyInt.Damage) ?? 0;
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.Damage, Damage ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Damage has increased by 1. And is now {damagebonus} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+                    }
+
+                    if (itemtype == 32768 && proto == false && item.Arramoran != true || itemtype == 32768 && proto == null && item.Arramoran != true) // Caster
+                    {
+                        var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
+                        float increment = 0.005f;
+                        float newweapondamage = (float)(weapondamage + increment);
+
+                        item.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyFloat(item, PropertyFloat.ElementalDamageMod, ElementalDamageMod ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Elemental Damage Bonus has increased by 1%. And is now {newweapondamage} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+                    }
+
+                    //Proto Weapons
+                    var damageType = item.GetProperty(PropertyInt.DamageType);
+
+                    if (itemtype == 256 && proto == true && item.Arramoran != true) // MissileWeapon
+                    {
+
+                        item.ElementalDamageBonus++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonus = item.GetProperty(PropertyInt.ElementalDamageBonus) ?? 0;
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ElementalDamageBonus, ElementalDamageBonus ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Damage Bonus has increased by 1. And is now {damagebonus} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            if (damageType == 1)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 8);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335C);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676444);
+                                Session.Network.EnqueueSend(underlayUpdate);
+                            }
+                            if (damageType == 2)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676443);
+                                Session.Network.EnqueueSend(underlayUpdate);
+                            }
+
+                            if (damageType == 4)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 32);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335A);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676442);
+                                Session.Network.EnqueueSend(underlayUpdate);
+                            }
+
+                            if (damageType == 8)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 128);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003353);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676435);
+                                Session.Network.EnqueueSend(underlayUpdate);
+                            }
+                            if (damageType == 16)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 512);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003359);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676440);
+                                Session.Network.EnqueueSend(underlayUpdate);
+                            }
+
+                            if (damageType == 32)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 64);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003355);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676437);
+                                Session.Network.EnqueueSend(underlayUpdate);
+                            }
+
+                            if (damageType == 64)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 256);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003354);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 100676436);
+                                Session.Network.EnqueueSend(underlayUpdate);
+                            }
+                            if (damageType == 1024)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16384);
+                            }
+                        }
+                        // Add cleaving at level 200
+                        if (itemLevel >= 8)
+                        {
+                           
+                            item.SetProperty(PropertyInt.Cleaving, 3); 
+
+                        }
+                        // Add spell proc at level 100
+                        if (itemLevel >= 4)
+                        {
+                            if (damageType == 1) // Slash
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4457);
+                            }
+                            if (damageType == 2) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+
+                            if (damageType == 4) // Bludgeon
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4455);
+                            }
+
+                            if (damageType == 8) // Cold
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4447);
+                            }
+                            if (damageType == 16) // Fire
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4439);
+                            }
+
+                            if (damageType == 32) // Acid
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4433);
+                            }
+
+                            if (damageType == 64) // Electric
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4451);
+                            }
+                            if (damageType == 1024) // Nether
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 5356);
+                            }
+
+                        }
+                        // Increase SpellProcRate every 100 levels from level 300 - 500
+                        if (itemLevel >= 12)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
+
+                        }
+                        if (itemLevel >= 16)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
+
+                        }
+                        if (itemLevel >= 20)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
+
+                        }
+
+
+                    }
+                    if (itemtype == 2 && proto == true && !Arramoran) // Armor
+                    {
+
+                        item.ArmorLevel++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var armorlevel = item.GetProperty(PropertyInt.ArmorLevel) ?? 0;
+                        var armorbonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ArmorLevel, ArmorLevel ?? 0);
+                        var gearvitalitybonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearMaxHealth, GearMaxHealth ?? 0);
+                        var bonusmessage = $"Your {name}'s Armor Level has increased by 1. And is now {armorlevel} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(armorbonusupdate);
+                        Session.Network.EnqueueSend(gearvitalitybonus);
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            var protoFirstLevel = $"Your {name}'s has awakened! And is now symbiotically bonded to you!";
+                            Session.Network.EnqueueSend(new GameMessageSystemChat(protoFirstLevel, ChatMessageType.Broadcast));
+                        }
+
+                    }
+                    if (itemtype == 1 && proto == true && !Arramoran) // MelleeWeapon
+                    {
+
+                        item.Damage++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonus = item.GetProperty(PropertyInt.Damage) ?? 0;
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.Damage, Damage ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Damage has increased by 1. And is now {damagebonus} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+                        var attacktype = item.GetProperty(PropertyInt.AttackType);
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            if (damageType == 1)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 8);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335C);
+                            }
+                            if (damageType == 2)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
+                            if (damageType == 3)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
+                            if (damageType == 4)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 32);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335A);
+                            }
+
+                            if (damageType == 8)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 128);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003353);
+                            }
+                            if (damageType == 16)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 512);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003359);
+                            }
+
+                            if (damageType == 32)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 64);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003355);
+                            }
+
+                            if (damageType == 64)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 256);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003354);
+                            }
+                            if (damageType == 1024)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16384);
+                            }
+                        }
+                        // Add cleaving at level 200
+                        if (itemLevel >= 8)
+                        {
+                            if (attacktype > 34)
+                            {
+                                item.SetProperty(PropertyInt.Cleaving, 5);
+                            }
+                            else 
+                                item.SetProperty(PropertyInt.Cleaving, 3);
+
+
+                        }
+                        // Add spell proc at level 100
+                        if (itemLevel >= 4)
+                        {
+                            if (damageType == 1) // Slash
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4457);
+                            }
+                            if (damageType == 2) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+                            if (damageType == 3) // Slash/Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+                            if (damageType == 4) // Bludgeon
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4455);
+                            }
+
+                            if (damageType == 8) // Cold
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4447);
+                            }
+                            if (damageType == 16) // Fire
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4439);
+                            }
+
+                            if (damageType == 32) // Acid
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4433);
+                            }
+
+                            if (damageType == 64) // Electric
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4451);
+                            }
+                            if (damageType == 1024) // Nether
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 5356);
+                            }
+
+                        }
+                        // Increase SpellProcRate every 100 levels from level 300 - 500
+                        if (itemLevel >= 12)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
+
+                        }
+                        if (itemLevel >= 16)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
+
+                        }
+                        if (itemLevel >= 20)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
+
+                        }
+                    }
+                    if (itemtype == 32768 && proto == true && item.Arramoran != true) // Caster
+                    {
+                        var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
+                        float increment = 0.005f;
+                        float newweapondamage = (float)(weapondamage + increment);
+                        item.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+
+
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyFloat(item, PropertyFloat.ElementalDamageMod, ElementalDamageMod ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Elemental Damage Bonus has increased by 1%. And is now {newweapondamage} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded                      
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            if (damageType == 1)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 8);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335C);
+                            }
+                            if (damageType == 2)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
+
+                            if (damageType == 4)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 32);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335A);
+                            }
+
+                            if (damageType == 8)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 128);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003353);
+                            }
+                            if (damageType == 16)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 512);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003359);
+                            }
+
+                            if (damageType == 32)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 64);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003355);
+                            }
+
+                            if (damageType == 64)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 256);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003354);
+                            }
+                            if (damageType == 1024)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16384);
+                            }
+                        }
+                        // Add cleaving at level 200
+                        if (itemLevel >= 8)
+                        {                            
+                                item.SetProperty(PropertyInt.Cleaving, 3);
+                        }
+                        // Add spell proc at level 100
+                        if (itemLevel >= 4)
+                        {
+                            if (damageType == 1) // Slash
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4457);
+                            }
+                            if (damageType == 2) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+
+                            if (damageType == 4) // Bludgeon
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4455);
+                            }
+
+                            if (damageType == 8) // Cold
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4447);
+                            }
+                            if (damageType == 16) // Fire
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4439);
+                            }
+
+                            if (damageType == 32) // Acid
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4433);
+                            }
+
+                            if (damageType == 64) // Electric
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4451);
+                            }
+                            if (damageType == 1024) // Nether
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 5356);
+                            }
+
+                        }
+                        // Increase SpellProcRate every 100 levels from level 300 - 500
+                        if (itemLevel >= 12)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
+
+                        }
+                        if (itemLevel >= 16)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
+
+                        }
+                        if (itemLevel >= 20)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
+
+                        }
+
+                    }
+                    if (itemtype == 8 && proto == true) // Jewelry
+                    {                             
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded                      
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            if (itemLevel >= 1 && !item.HasProc)
+                            {
+                                var spellProc = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                                if (spellProc <= 0.3f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4643);
+                                }
+                                else if (spellProc > 0.3f && spellProc < 0.6f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4644);
+                                }
+                                else if (spellProc >= 0.3f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4645);
+                                }
+                            }
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
+                        }
+                       
+                        // Increase to proc rate
+                        if (itemLevel >= 8)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.09f);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 4)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.07f);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 12)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.11);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 16)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.13);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 20)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.15);
+                        }
+
+                        var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);
+                        var name = item.GetProperty(PropertyString.Name);
+                        var bonusmessage = $"Your {name}'s spell proc rate has increased. And is now {procrate} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                    }
+
+                    // T10 Arramoran gear
+                    if (itemtype == 256 && item.Arramoran == true && Proto == false) // MissileWeapon
+                    {
+
+                        item.ElementalDamageBonus++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonus = item.GetProperty(PropertyInt.ElementalDamageBonus) ?? 0;
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ElementalDamageBonus, ElementalDamageBonus ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Damage Bonus has increased by 1. And is now {damagebonus} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            if (damageType == 1)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 8);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335C);
+                            }
+                            if (damageType == 2)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
+                            if (damageType == 3)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
+                            if (damageType == 4)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 32);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335A);
+                            }
+
+                            if (damageType == 8)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 128);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003353);
+                            }
+                            if (damageType == 16)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 512);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003359);
+                            }
+
+                            if (damageType == 32)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 64);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003355);
+                            }
+
+                            if (damageType == 64)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 256);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003354);
+                            }
+                            if (damageType == 1024)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16384);
+                            }
+                        }
+                        // Add cleaving at level 200
+                        if (itemLevel >= 20)
+                        {
+
+                            item.SetProperty(PropertyInt.Cleaving, 3);
+                            
+
+                        }
+                        // Add spell proc at level 100
+                        if (itemLevel >= 10)
+                        {
+                            if (damageType == 1) // Slash
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4457);
+                            }
+                            if (damageType == 2) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+                            if (damageType == 3) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+                            if (damageType == 4) // Bludgeon
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4455);
+                            }
+
+                            if (damageType == 8) // Cold
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4447);
+                            }
+                            if (damageType == 16) // Fire
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4439);
+                            }
+
+                            if (damageType == 32) // Acid
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4433);
+                            }
+
+                            if (damageType == 64) // Electric
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4451);
+                            }
+                            if (damageType == 1024) // Nether
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 5356);
+                            }
+
+                            
+
+                        }
+                        // Increase SpellProcRate every 100 levels from level 300 - 500
+                        if (itemLevel >= 30)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
+                            
+
+                        }
+                        if (itemLevel >= 40)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
+                            
+
+                        }
+                        if (itemLevel >= 50)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
+                            
+
+                        }
+
+
+                    }
+                    if (itemtype == 2 && item.Arramoran || item.Arramoran && HasArmorLevel()) // Armor
+                    {
+
+                        item.ArmorLevel++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var armorlevel = item.GetProperty(PropertyInt.ArmorLevel) ?? 0;
+                        var armorbonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.ArmorLevel, ArmorLevel ?? 0);
+                        var gearvitalitybonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearMaxHealth, GearMaxHealth ?? 0);
+                        var bonusmessage = $"Your {name}'s Armor Level has increased by 1. And is now {armorlevel} !";
+                        var gearHealingBoost = item.GearHealingBoost;
+                        var gearMaxHealth = item.GearMaxHealth;
+                        var gearCritDamage = item.GearCritDamage;
+                        var gearCritDamageResist = item.GearCritDamageResist;
+                        var gearDamage = item.GearDamage;
+                        var gearDamageResist = item.GearDamageResist;
+                        var ratingIncrease = ThreadSafeRandom.Next(1, 5);                       
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(armorbonusupdate);
+                        Session.Network.EnqueueSend(gearvitalitybonus);
+                        if (itemLevel == 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            var protoFirstLevel = $"Your {name}'s has awakened! And is now symbiotically bonded to you!";
+                            Session.Network.EnqueueSend(new GameMessageSystemChat(protoFirstLevel, ChatMessageType.Broadcast));
+                        }
+                        item.GearHealingBoost += 1;
+                        item.GearMaxHealth += 1;
+                        item.GearCritDamage += 1;
+                        item.GearCritDamageResist += 1;
+                        item.GearDamage += 1;
+                        item.GearDamageResist += 1;
+                        item.ArmorModVsPierce += 0.02f;
+                        item.ArmorModVsSlash += 0.02f;
+                        item.ArmorModVsBludgeon += 0.02f;
+                        item.ArmorModVsAcid += 0.02f;
+                        item.ArmorModVsFire += 0.02f;
+                        item.ArmorModVsCold += 0.02f;
+                        item.ArmorModVsElectric += 0.02f;
+                    }
+                    if (itemtype == 1 && item.Arramoran) // MelleeWeapon
+                    {
+
+                        item.Damage++;
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonus = item.GetProperty(PropertyInt.Damage) ?? 0;
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.Damage, Damage ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Damage has increased by 1. And is now {damagebonus} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+                        var attacktype = item.GetProperty(PropertyInt.AttackType);
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            if (damageType == 1)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 8);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335C);
+                                var underlayUpdate = new GameMessagePrivateUpdateDataID(item, PropertyDataId.IconUnderlay, IconUnderlayId ?? 0);
+                                Session.Network.EnqueueSend(underlayUpdate);
+                            }
+                            if (damageType == 2)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
+                            if (damageType == 3)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
+
+                            if (damageType == 4)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 32);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335A);
+                            }
+
+                            if (damageType == 8)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 128);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003353);
+                            }
+                            if (damageType == 16)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 512);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003359);
+                            }
+
+                            if (damageType == 32)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 64);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003355);
+                            }
+
+                            if (damageType == 64)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 256);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003354);
+                            }
+                            if (damageType == 1024)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16384);
+                            }
+                        }
+                        // Add cleaving at level 200
+                        if (itemLevel >= 20)
+                        {
+                            if (attacktype == 34 || attacktype == 36 || attacktype == 128 || attacktype == 130)
+                            {
+                                item.SetProperty(PropertyInt.Cleaving, 5);                                
+                            }
+                            else
+                                item.SetProperty(PropertyInt.Cleaving, 3);
+                        }
+                        // Add spell proc at level 100
+                        if (itemLevel >= 10)
+                        {
+                            if (damageType == 1) // Slash
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4457);
+                            }
+                            if (damageType == 2) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+                            if (damageType == 3) // Slash/Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+                            if (damageType == 4) // Bludgeon
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4455);
+                            }
+                            if (damageType == 8) // Cold
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4447);
+                            }
+                            if (damageType == 16) // Fire
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4439);
+                            }
+                            if (damageType == 32) // Acid
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4433);
+                            }
+                            if (damageType == 64) // Electric
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4451);
+                            }
+                            if (damageType == 1024) // Nether
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 5356);
+                            }
+                        }
+                        // Increase SpellProcRate every 100 levels from level 300 - 500
+                        if (itemLevel >= 30)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
+                        }
+                        if (itemLevel >= 40)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
+                        }
+                        if (itemLevel >= 50)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
+                        }
+                    }
+                    if (itemtype == 32768 && item.Arramoran == true) // Caster
+                    {
+                        var weapondamage = item.GetProperty(PropertyFloat.ElementalDamageMod);
+                        float increment = 0.005f;
+                        float newweapondamage = (float)(weapondamage + increment);
+                        item.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+
+                        var name = item.GetProperty(PropertyString.Name);
+                        var damagebonusupdate = new GameMessagePrivateUpdatePropertyFloat(item, PropertyFloat.ElementalDamageMod, ElementalDamageMod ?? 0);
+                        var geardamagebonus = new GameMessagePrivateUpdatePropertyInt(item, PropertyInt.GearDamage, GearDamage ?? 0);
+                        var bonusmessage = $"Your {name}'s Elemental Damage Bonus has increased by {increment}. And is now {newweapondamage} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                        Session.Network.EnqueueSend(damagebonusupdate);
+                        Session.Network.EnqueueSend(geardamagebonus);
+
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded                      
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                            if (damageType == 1)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 8);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335C);
+                            }
+                            if (damageType == 2)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335B);
+                            }
+
+                            if (damageType == 4)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 32);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x600335A);
+                            }
+
+                            if (damageType == 8)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 128);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003353);
+                            }
+                            if (damageType == 16)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 512);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003359);
+                            }
+
+                            if (damageType == 32)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 64);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003355);
+                            }
+
+                            if (damageType == 64)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 256);
+                                item.SetProperty(PropertyDataId.IconUnderlay, 0x6003354);
+                            }
+                            if (damageType == 1024)
+                            {
+                                item.SetProperty(PropertyInt.ImbuedEffect, 16384);
+                            }
+                        }
+                        // Add cleaving at level 200
+                        if (itemLevel >= 20)
+                        {
+                            item.SetProperty(PropertyInt.Cleaving, 3);
+                        }
+                        // Add spell proc at level 100
+                        if (itemLevel >= 10)
+                        {
+                            if (damageType == 1) // Slash
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4457);
+                            }
+                            if (damageType == 2) // Pierce
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4443);
+                            }
+
+                            if (damageType == 4) // Bludgeon
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4455);
+                            }
+
+                            if (damageType == 8) // Cold
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4447);
+                            }
+                            if (damageType == 16) // Fire
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4439);
+                            }
+
+                            if (damageType == 32) // Acid
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4433);
+                            }
+
+                            if (damageType == 64) // Electric
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 4451);
+                            }
+                            if (damageType == 1024) // Nether
+                            {
+                                item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                item.SetProperty(PropertyFloat.ProcSpellRate, 0.3);
+                                item.SetProperty(PropertyDataId.ProcSpell, 5356);
+                            }
+                        }
+                        // Increase SpellProcRate every 100 levels from level 300 - 500
+                        if (itemLevel >= 30)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.6);
+                        }
+                        if (itemLevel >= 40)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.8);
+                        }
+                        if (itemLevel >= 50)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 1.0);
+                        }
+
+                    }
+                    if (itemtype == 8 && item.Arramoran) // Jewelry
+                    {
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+
+                        var gearHealingBoost = item.GearHealingBoost;
+                        var gearMaxHealth = item.GearMaxHealth;
+                        var gearCritDamage = item.GearCritDamage;
+                        var gearCritDamageResist = item.GearCritDamageResist;
+                        var gearDamage = item.GearDamage;
+                        var gearDamageResist = item.GearDamageResist;
+                        var ratingIncrease = ThreadSafeRandom.Next(5, 15);
+
+                        item.GearHealingBoost += 1;
+                        item.GearMaxHealth += 1;
+                        item.GearCritDamage += 1;
+                        item.GearCritDamageResist += 1;
+                        item.GearDamage += 1;
+                        item.GearDamageResist += 1;
+
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+
+                            if (itemLevel >= 1 && !item.HasProc)
+                            {
+                                var spellProc = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                                if (spellProc <= 0.3f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4643);
+                                }
+                                else if (spellProc > 0.3f && spellProc < 0.6f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4644);
+                                }
+                                else if (spellProc >= 0.3f)
+                                {
+                                    item.SetProperty(PropertyInt.ItemSpellcraft, 999);
+                                    item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
+                                    item.SetProperty(PropertyDataId.ProcSpell, 4645);
+                                }
+                            }
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.05f);
+                        }
+
+                        // Increase to proc rate
+                        if (itemLevel >= 20)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.09f);
+
+                            return;
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 10)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.10);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 30)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.11);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 40)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.13);
+                        }
+                        // Increase to proc rate
+                        if (itemLevel >= 50)
+                        {
+                            item.SetProperty(PropertyFloat.ProcSpellRate, 0.15);
+                        }
+
+                        var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);
+                        var name = item.GetProperty(PropertyString.Name);
+                        var bonusmessage = $"Your {name}'s spell proc rate has increased. And is now {procrate} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                    }
+
+                    if (item.ArmorType == 1 && item.Arramoran && item.HasArmorLevel()) // Armor
+                    {
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+
+                        var gearHealingBoost = item.GearHealingBoost;
+                        var gearMaxHealth = item.GearMaxHealth;
+                        var gearCritDamage = item.GearCritDamage;
+                        var gearCritDamageResist = item.GearCritDamageResist;
+                        var gearDamage = item.GearDamage;
+                        var gearDamageResist = item.GearDamageResist;
+                        var ratingIncrease = ThreadSafeRandom.Next(5, 15);
+
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+                            
+                        }
+
+                        item.GearHealingBoost += 1;
+                        item.GearMaxHealth += 1;
+                        item.GearCritDamage += 1;
+                        item.GearCritDamageResist += 1;
+                        item.GearDamage += 1;
+                        item.GearDamageResist += 1;
+                        item.ArmorModVsPierce += 0.02f;
+                        item.ArmorModVsSlash += 0.02f;
+                        item.ArmorModVsBludgeon += 0.02f;
+                        item.ArmorModVsAcid += 0.02f;
+                        item.ArmorModVsFire += 0.02f;
+                        item.ArmorModVsCold += 0.02f;
+                        item.ArmorModVsElectric += 0.02f;
+                        
+                        var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);
+                        var name = item.GetProperty(PropertyString.Name);
+                        var bonusmessage = $"Your {name}'s ratings and defensive bonuses have increased!";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                    }
+                    if (item.ArmorType == 1 && item.Arramoran && Proto == false && !item.HasArmorLevel()) // Clothing
+                    {
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+
+                        var gearHealingBoost = item.GearHealingBoost;
+                        var gearMaxHealth = item.GearMaxHealth;
+                        var gearCritDamage = item.GearCritDamage;
+                        var gearCritDamageResist = item.GearCritDamageResist;
+                        var gearDamage = item.GearDamage;
+                        var gearDamageResist = item.GearDamageResist;
+                        var ratingIncrease = ThreadSafeRandom.Next(5, 15);
+
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                        }
+
+                        item.GearHealingBoost += 1;
+                        item.GearMaxHealth += 1;
+                        item.GearCritDamage += 1;
+                        item.GearCritDamageResist += 1;
+                        item.GearDamage += 1;
+                        item.GearDamageResist += 1;                        
+
+                        var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);
+                        var name = item.GetProperty(PropertyString.Name);
+                        var bonusmessage = $"Your {name}'s ratings have increased!";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                    }
+                    if (item.GetProperty(PropertyInt.ValidLocations) == 0x8000000 && item.Arramoran && Proto == false && !item.HasArmorLevel()) // Cloaks
+                    {
+                        // Proto Evolution
+                        // Item "wakes up" and becomes Attuned and Bonded
+
+                        var gearHealingBoost = item.GearHealingBoost;
+                        var gearMaxHealth = item.GearMaxHealth;
+                        var gearCritDamage = item.GearCritDamage;
+                        var gearCritDamageResist = item.GearCritDamageResist;
+                        var gearDamage = item.GearDamage;
+                        var gearDamageResist = item.GearDamageResist;
+                        var ratingIncrease = ThreadSafeRandom.Next(5, 15);
+
+                        if (itemLevel >= 1)
+                        {
+                            item.SetProperty(PropertyInt.Bonded, 1);
+                            item.SetProperty(PropertyInt.Attuned, 1);
+
+                        }
+                        item.GearHealingBoost += 1;
+                        item.GearMaxHealth += 1;
+                        item.GearCritDamage += 1;
+                        item.GearCritDamageResist += 1;
+                        item.GearDamage += 1;
+                        item.GearDamageResist += 1;                       
+
+                        var procrate = item.GetProperty(PropertyFloat.ProcSpellRate);
+                        var name = item.GetProperty(PropertyString.Name);
+                        var bonusmessage = $"Your {name}'s spell proc rate has increased. And is now {procrate} !";
+                        Session.Network.EnqueueSend(new GameMessageSystemChat(bonusmessage, ChatMessageType.Broadcast));
+                    }
+                });
+                actionChain.EnqueueChain();                
+            }
         }
 
         public void CreateSentinelBuffPlayers(IEnumerable<Player> players, bool self = false, ulong maxLevel = 8)
@@ -264,17 +1599,19 @@ namespace ACE.Server.WorldObjects
                     var critterBuffsForPlayer = buffsForPlayer.Where(k => k.Spell.School == MagicSchool.CreatureEnchantment).ToList();
                     var itemBuffsForPlayer = buffsForPlayer.Where(k => k.Spell.School == MagicSchool.ItemEnchantment).ToList();
 
+                    uint dmg = 0;
+                    EnchantmentStatus ec;
                     lifeBuffsForPlayer.ForEach(spl =>
                     {
-                        CreateEnchantmentSilent(spl.Spell, targetPlayer);
+                        bool casted = targetPlayer.LifeMagic(spl.Spell, out dmg, out ec, targetPlayer);
                     });
                     critterBuffsForPlayer.ForEach(spl =>
                     {
-                        CreateEnchantmentSilent(spl.Spell, targetPlayer);
+                        ec = targetPlayer.CreatureMagic(targetPlayer, spl.Spell);
                     });
                     itemBuffsForPlayer.ForEach(spl =>
                     {
-                        CreateEnchantmentSilent(spl.Spell, targetPlayer);
+                        ec = targetPlayer.ItemMagic(targetPlayer, spl.Spell);
                     });
                 }
                 if (buffMessages.Any(k => k.Bane))
@@ -287,23 +1624,15 @@ namespace ACE.Server.WorldObjects
                         foreach (var item in items)
                         {
                             if ((item.WeenieType == WeenieType.Clothing || item.IsShield) && item.IsEnchantable)
-                                CreateEnchantmentSilent(itemBuff.Spell, item);
+                            {
+                                itemBuff.SetLandblockMessage(item.Guid);
+                                var enchantmentStatus = targetPlayer.ItemMagic(item, itemBuff.Spell, this);
+                                targetPlayer?.EnqueueBroadcast(itemBuff.LandblockMessage);
+                            }
                         }
                     }
                 }
             });
-        }
-
-        private void CreateEnchantmentSilent(Spell spell, WorldObject target)
-        {
-            var addResult = target.EnchantmentManager.Add(spell, this, null);
-
-            if (target is Player targetPlayer)
-            {
-                targetPlayer.Session.Network.EnqueueSend(new GameEventMagicUpdateEnchantment(targetPlayer.Session, new Enchantment(targetPlayer, addResult.Enchantment)));
-
-                targetPlayer.HandleSpellHooks(spell);
-            }
         }
 
         // TODO: switch this over to SpellProgressionTables

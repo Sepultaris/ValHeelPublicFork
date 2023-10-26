@@ -363,7 +363,7 @@ namespace ACE.Server.Managers
                 var isInActiveOrDisabled = playerHouse.House.HouseStatus <= HouseStatus.InActive;
                 var isPaid = IsRentPaid(playerHouse);
                 var hasRequirements = HasRequirements(playerHouse);
-                log.Debug($"[HOUSE] {playerHouse.PlayerName}.ProcessRent(): isPaid = {isPaid} | HasRequirements = {hasRequirements} | MaintenanceFree = {house.HouseStatus == HouseStatus.InActive}");
+                //log.Info($"{playerHouse.PlayerName}.ProcessRent(): isPaid = {isPaid}");
 
                 if (isInActiveOrDisabled || (isPaid && hasRequirements))
                     HandleRentPaid(playerHouse);
@@ -480,8 +480,6 @@ namespace ACE.Server.Managers
             slumlord.SetAndBroadcastName();
 
             slumlord.SaveBiotaToDatabase();
-
-            HouseList.AddToAvailable(slumlord, house);
 
             // if evicting a multihouse owner's previous house,
             // no update for player properties
@@ -871,9 +869,6 @@ namespace ACE.Server.Managers
 
                     house.SlumLord.MergeAllStackables();
 
-                    foreach (var item in house.SlumLord.Inventory.Values)
-                        item.SaveBiotaToDatabase();
-
                     house.SlumLord.SaveBiotaToDatabase();
 
                     var onlinePlayer = PlayerManager.GetOnlinePlayer(playerHouse.PlayerGuid);
@@ -884,8 +879,6 @@ namespace ACE.Server.Managers
                         actionChain.AddAction(onlinePlayer, onlinePlayer.HandleActionQueryHouse);
                         actionChain.EnqueueChain();
                     }
-
-                    log.Debug($"[HOUSE] HouseManager.PayRent({house.Guid}): fully paid rent into SlumLord.");
                 }
             });
         }

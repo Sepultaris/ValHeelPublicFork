@@ -153,7 +153,8 @@ namespace ACE.Server.Factories
 
         public static readonly int[][] SummoningEssencesMatrix =
         {
-            new int[] { 48942, 48944, 48945, 48946, 48947, 48948, 48956 },
+            new int[] { 48942, 48944, 48945, 48946, 48947, 48948, 48956, 801334, 801336, 801338 },
+            new int[] { 802428, 802432, 802433, 802436, 802439, 802440, 802444, 802445, 802446 },
             new int[] { 49213, 49214, 49215, 49216, 49217, 49218, 49219 },
             new int[] { 49220, 49221, 49222, 49223, 49224, 49225, 49226 },
             new int[] { 49227, 49228, 49229, 49230, 49231, 49232, 49212 },
@@ -343,7 +344,7 @@ namespace ACE.Server.Factories
 
         public static readonly float[][] MissileDamageMod =
         {
-            new float[] { 2.1f, 2.1f, 2.2f, 2.3f, 2.4f, 2.4f, 2.4f, 2.4f, 2.4f }, // Bow
+            new float[] { 2.1f, 2.1f, 2.2f, 2.3f, 2.4f, 2.4f, 2.4f, 2.4f, 2.4f, 3.1f }, // Bow
             new float[] { 2.4f, 2.4f, 2.5f, 2.55f, 2.65f, 2.65f, 2.65f, 2.65f, 2.65f }, // Crossbow
             new float[] { 2.3f, 2.3f, 2.4f, 2.5f, 2.6f, 2.6f, 2.6f, 2.6f, 2.6f }  // Thrown
         };
@@ -357,12 +358,12 @@ namespace ACE.Server.Factories
 
         public static readonly int[][] ElementalMissileWeaponsMatrix =
         {
-            new int[] { 29244, 29239, 29243, 29241, 29242, 29238, 29240 },
+            new int[] { 29244, 29239, 29243, 29241, 29242, 29238, 29240 }, 
             new int[] { 29251, 29246, 29250, 29248, 29249, 29245, 29247 },
             new int[] { 29258, 29253, 29257, 29255, 29256, 29252, 29254 },
             new int[] { 31812, 31814, 31818, 31816, 31817, 31813, 31815 },
             new int[] { 31798, 31800, 31804, 31802, 31803, 31799, 31801 },
-            new int[] { 31805, 31807, 31811, 31809, 31810, 31806, 31808 }
+            new int[] { 31805, 31807, 31811, 31809, 31810, 31806, 31808 },           
         };
 
         public static readonly List<int[][]> MissileWeaponsMatrices = new List<int[][]>()
@@ -372,6 +373,8 @@ namespace ACE.Server.Factories
         };
 
         public static readonly int[] DinnerwareLootMatrix = { 141, 142, 148, 149, 150, 154, 161, 163, 168, 243, 254, 7940 };
+
+        public static readonly int[] MirraMatrix = { 801966, 801967, 801968, 801969, 801970, 801971, 801972, 801973, 801974, 801975, 801976, 801977 };
 
         /*public static readonly int[][] GemCreatureSpellMatrix =
         {
@@ -1865,6 +1868,13 @@ namespace ACE.Server.Factories
             OlthoiKoujiaArmor,
             OlthoiAlduressaArmor,
             SocietyArmor
+        }
+
+        public enum MirraType
+        {
+            SteelMirra,
+            IronMirra,
+            BluntMirra
         }
 
         public static readonly int[] OverRobes =

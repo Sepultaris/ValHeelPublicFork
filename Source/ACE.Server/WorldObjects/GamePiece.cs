@@ -86,7 +86,7 @@ namespace ACE.Server.WorldObjects
 
                 case GamePieceState.WaitingForMoveToSquare:
                 case GamePieceState.WaitingForMoveToAttack:
-                    UpdatePosition();
+                    UpdatePosition(GetPhysicsObj());
                     break;
 
                 case GamePieceState.WaitingForMoveToSquareAnimComplete:

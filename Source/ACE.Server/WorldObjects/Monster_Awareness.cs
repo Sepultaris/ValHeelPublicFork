@@ -184,15 +184,25 @@ namespace ACE.Server.WorldObjects
                     case TargetingTactic.LastDamager:
 
                         var lastDamager = DamageHistory.LastDamager?.TryGetAttacker() as Creature;
-                        if (lastDamager != null)
+                        if (lastDamager != null && lastDamager is Player || lastDamager != null && lastDamager.IsCombatPet)
                             AttackTarget = lastDamager;
+                        else
+                        {
+                            var newTargetDistances = BuildTargetDistance(visibleTargets);
+                            AttackTarget = SelectWeightedDistance(newTargetDistances);
+                        }
                         break;
 
                     case TargetingTactic.TopDamager:
 
                         var topDamager = DamageHistory.TopDamager?.TryGetAttacker() as Creature;
-                        if (topDamager != null)
+                        if (topDamager != null && topDamager is Player || topDamager != null && topDamager.IsCombatPet)
                             AttackTarget = topDamager;
+                        else
+                        {
+                            var nearest = BuildTargetDistance(visibleTargets);
+                            AttackTarget = nearest[0].Target;
+                        }
                         break;
 
                     // these below don't seem to be used in PY16 yet...
@@ -214,8 +224,59 @@ namespace ACE.Server.WorldObjects
 
                     case TargetingTactic.Nearest:
 
-                        var nearest = BuildTargetDistance(visibleTargets);
-                        AttackTarget = nearest[0].Target;
+                        var nearest1 = BuildTargetDistance(visibleTargets);
+                        AttackTarget = nearest1[0].Target;
+                        break;
+
+                    case TargetingTactic.HasShield:
+
+                        var hasShieldIsTank = visibleTargets.Where(p => p.GetEquippedShield() != null && IsTank).ToList();
+                        var noShieldIsTank = visibleTargets.Where(p => p.GetEquippedShield() == null && IsTank).ToList();
+                        var hasShield = visibleTargets.Where(p => p.GetEquippedShield() != null).ToList();
+                        if (hasShieldIsTank.Count > 0)
+                        {
+                            var shieldDistances = BuildTargetDistance(hasShieldIsTank);
+                            AttackTarget = SelectWeightedDistance(shieldDistances);
+                        }
+                        else if (noShieldIsTank.Count > 0)
+                        {
+                            var noShieldDistances = BuildTargetDistance(noShieldIsTank);
+                            AttackTarget = SelectWeightedDistance(noShieldDistances);
+                        }
+                        else if (hasShield.Count > 0)
+                        {
+                            var shieldDistances = BuildTargetDistance(hasShield);
+                            AttackTarget = SelectWeightedDistance(shieldDistances);
+                        }
+                        else if (hasShieldIsTank.Count == 0 && hasShield.Count == 0 && noShieldIsTank.Count == 0)
+                        {
+                            var topDamager1 = DamageHistory.TopDamager?.TryGetAttacker() as Creature;
+                            if (topDamager1 != null && topDamager1 is Player || topDamager1 != null && topDamager1.IsCombatPet)
+                                AttackTarget = topDamager1;
+                            else
+                            {
+                                var nearest2 = BuildTargetDistance(visibleTargets);
+                                AttackTarget = nearest2[0].Target;
+                            }
+                        }
+                        break;
+
+                    case TargetingTactic.HighestThreat:
+
+                        var highestThreat = DamageHistory.HighestThreat?.TryGetAttacker() as Creature;
+                        var topThreatDamager = DamageHistory.TopDamager?.TryGetAttacker() as Creature;
+                        if (DamageHistory.HighestThreat != null && DamageHistory.TopDamager != null)
+                        {
+                            if (DamageHistory.HighestThreat.TotalThreat > DamageHistory.TopDamager.TotalDamage)
+                                AttackTarget = highestThreat;
+                            else
+                                AttackTarget = topThreatDamager;
+                        }
+                        else
+                        {
+                            var nearestThreat = BuildTargetDistance(visibleTargets);
+                            AttackTarget = nearestThreat[0].Target;
+                        }
                         break;
                 }
 
@@ -405,25 +466,14 @@ namespace ACE.Server.WorldObjects
 
                     _visualAwarenessRangeSq = visualAwarenessRange * visualAwarenessRange;
                 }
-
-                return _visualAwarenessRangeSq.Value;
-            }
-        }
-
-        private float? _auralAwarenessRangeSq;
-
-        public float AuralAwarenessRangeSq
-        {
-            get
-            {
-                if (_auralAwarenessRangeSq == null)
+                if (_visualAwarenessRangeSq == null && IsCombatPet)
                 {
-                    var auralAwarenessRange = (float)((AuralAwarenessRange ?? VisualAwarenessRange ?? VisualAwarenessRange_Default) * PropertyManager.GetDouble("mob_awareness_range").Item);
+                    var visualAwarenessRange = (float)((VisualAwarenessRange ?? VisualAwarenessRange_Default) * PropertyManager.GetDouble("mob_awareness_range").Item);
 
-                    _auralAwarenessRangeSq = auralAwarenessRange * auralAwarenessRange;
+                    _visualAwarenessRangeSq = (visualAwarenessRange * visualAwarenessRange) / 3;
                 }
 
-                return _auralAwarenessRangeSq.Value;
+                return _visualAwarenessRangeSq.Value;
             }
         }
 
@@ -457,15 +507,12 @@ namespace ACE.Server.WorldObjects
                 if (nearbyCreature == null || nearbyCreature.IsAwake || !nearbyCreature.Attackable && nearbyCreature.TargetingTactic == TargetingTactic.None)
                     continue;
 
-                if ((nearbyCreature.Tolerance & AlertExclude) != 0)
-                    continue;
-
                 if (CreatureType != null && CreatureType == nearbyCreature.CreatureType ||
                       FriendType != null && FriendType == nearbyCreature.CreatureType)
                 {
                     //var distSq = Location.SquaredDistanceTo(nearbyCreature.Location);
                     var distSq = PhysicsObj.get_distance_sq_to_object(nearbyCreature.PhysicsObj, true);
-                    if (distSq > nearbyCreature.AuralAwarenessRangeSq)
+                    if (distSq > nearbyCreature.VisualAwarenessRangeSq)
                         continue;
 
                     // scenario: spawn a faction mob, and then spawn a non-faction mob next to it, of the same CreatureType

@@ -74,12 +74,12 @@ namespace ACE.Server.Network.Structure
                 return;
             }
 
-            var accountPlayers = PlayerManager.GetAccountPlayers(owner.Account.AccountId);
+            var accountPlayers = Player.GetAccountPlayers(owner.Account.AccountId);
 
             foreach (var accountPlayer in accountPlayers)
             {
-                if (owner.Guid.Full != accountPlayer.Key)
-                    Roommates.Add(accountPlayer.Value.Guid);
+                if (owner.Guid != accountPlayer.Guid)
+                    Roommates.Add(accountPlayer.Guid);
             }
         }
     }

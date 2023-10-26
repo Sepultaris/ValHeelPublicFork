@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace ACE.Entity.Enum.Properties
 {
@@ -159,15 +160,12 @@ namespace ACE.Entity.Enum.Properties
         EquipmentSetAddLevel             = 121,
         BarberActive                     = 122,
         TopLayerPriority                 = 123,
-        [SendOnLogin]
         NoHeldItemShown                  = 124,
-        [SendOnLogin]
         LoginAtLifestone                 = 125,
         OlthoiPk                         = 126,
         [SendOnLogin]
         Account15Days                    = 127,
         HadNoVitae                       = 128,
-        [SendOnLogin]
         NoOlthoiTalk                     = 129,
         AutowieldLeft                    = 130,
 
@@ -191,7 +189,68 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         SkillTemplesTimerReset           = 9009,
         [ServerOnly]
-        FreeMasteryResetRenewed          = 9010,
+        Empowered                        = 9010,
+        [ServerOnly]
+        Proto                            = 9011,
+        [ServerOnly]
+        Ascended                         = 9012,
+        [ServerOnly]
+        Arramoran                        = 9013,
+        [ServerOnly]
+        GunBlade                         = 9014,
+        [ServerOnly]
+        PlayerLootMultiplier             = 9015,
+        [ServerOnly]
+        SpeedRunning                     = 9016,
+        [ServerOnly]
+        MultiPet                         = 9017,
+        [ServerOnly]
+        Hardcore                         = 9018,
+        [ServerOnly]
+        HasBounty                        = 9019,
+        [ServerOnly]
+        IsHoTTicking                     = 9020,
+        [ServerOnly]
+        IsWarChanneling                  = 9021,
+        [ServerOnly]
+        Hot1                             = 9022,
+        Hot2                             = 9023,
+        Hot3                             = 9024,
+        Hot4                             = 9025,
+        Hot5                             = 9026,
+        Hot6                             = 9027,
+        Hot7                             = 9028,
+        Hot8                             = 9029,
+        [ServerOnly]
+        Sot1                             = 9030,
+        Sot2                             = 9031,
+        Sot3                             = 9032,
+        Sot4                             = 9033,
+        Sot5                             = 9034,
+        Sot6                             = 9035,
+        Sot7                             = 9036,
+        Sot8                             = 9037,
+        [ServerOnly]
+        IsDps                            = 9038,
+        IsTank                           = 9039,
+        IsHealer                         = 9040,
+        IsTankBuffed                     = 9041,
+        TankBuffedTimer                  = 9042,
+        IsMonk                           = 9043,
+        IsDamageBuffed                   = 9044,
+        DamageBuffedTimer                = 9045,
+        IsAbilityItem                    = 9046,
+        Brutalize                        = 9047,
+        DoBrutalizeAttack                = 9048,
+        LifeWell                         = 9049,
+        Stealth                          = 9050,
+        IsSneaking                       = 9051,
+        IsTaunting                       = 9052,
+        TauntTimerActive                 = 9052,
+        IsHoTCasting                     = 9053,
+        IsSoTCasting                     = 9054,
+        MissileAoE                       = 9055,
+        DoMissileAoE                     = 9056,
     }
 
     public static class PropertyBoolExtensions

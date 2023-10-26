@@ -9,9 +9,9 @@ namespace ACE.Server.Factories.Tables
     {
         private static readonly List<WeenieClassName> aetheriaColors = new List<WeenieClassName>()
         {
-            WeenieClassName.ace42635_coalescedaetheria,  // blue
-            WeenieClassName.ace42637_coalescedaetheria,  // yellow
-            WeenieClassName.ace42636_coalescedaetheria,  // red
+            WeenieClassName.ace42635_aetheria,  // blue
+            WeenieClassName.ace42637_aetheria,  // yellow
+            WeenieClassName.ace42636_aetheria,  // red
         };
 
         public static WeenieClassName Roll(int tier)
@@ -30,6 +30,8 @@ namespace ACE.Server.Factories.Tables
                 // even chance between blue / yellow / red
                 case 7:
                 case 8:
+                case 9:
+                case 10:
                     rng = ThreadSafeRandom.Next(0, 2);
                     return aetheriaColors[rng];
             }

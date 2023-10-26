@@ -1,11 +1,15 @@
+using System.Collections.Generic;
 using ACE.Common;
 using ACE.Database.Models.World;
+using ACE.DatLoader.Entity.AnimationHooks;
 using ACE.Entity.Enum;
-using ACE.Server.Entity.Mutations;
+using ACE.Entity.Enum.Properties;
+using ACE.Server.Entity;
 using ACE.Server.Factories.Entity;
 using ACE.Server.Factories.Enum;
 using ACE.Server.Factories.Tables;
 using ACE.Server.WorldObjects;
+using Google.Protobuf.WellKnownTypes;
 
 namespace ACE.Server.Factories
 {
@@ -48,6 +52,8 @@ namespace ACE.Server.Factories
 
             return wo;
         }
+
+        
 
         private static void MutateCaster(WorldObject wo, TreasureDeath profile, bool isMagical, int? wieldDifficulty = null, TreasureRoll roll = null)
         {
@@ -187,6 +193,110 @@ namespace ACE.Server.Factories
 
             // long description
             wo.LongDesc = GetLongDesc(wo);
+
+            // Empwoered caster weapons T9 only.
+
+            var empowered = ThreadSafeRandom.Next(0.0f, 1.0f);
+            var hasdamagemod = wo.GetProperty(PropertyFloat.ElementalDamageMod);
+
+            if (profile.Tier == 9 && empowered <= 0.5f && isMagical && hasdamagemod > 0 && profile.TreasureType == 3111 || profile.Tier == 9 && isMagical && hasdamagemod > 0 && profile.TreasureType == 3112)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 10;
+                var basexp = 10000000000;                
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Empowered {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
+                float damagebonus = 0.1f;
+                float newweapondamage = (float)(weapondamage + damagebonus);
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.3f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.2f);
+                wo.SetProperty(PropertyBool.Empowered, true);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 387);
+            }
+            if (profile.Tier == 9 && isMagical && hasdamagemod > 0 && profile.TreasureType == 4111)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 20;
+                var basexp = 10000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Proto {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
+                float damagebonus = 0.3f;
+                float newweapondamage = (float)(weapondamage + damagebonus);
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.35f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.25f);
+                wo.SetProperty(PropertyBool.Proto, true);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 439);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+            }
+            if (profile.Tier == 10 && isMagical && hasdamagemod > 0)
+            {
+                TryRollEquipmentSet(wo, profile, roll);
+                var maxlevel = 50;
+                var basexp = 10000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Arramoran {oldname}";
+                var weapondamage = wo.GetProperty(PropertyFloat.ElementalDamageMod);
+                float damagebonus = 0.6f;
+                float newweapondamage = (float)(weapondamage + damagebonus);
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.Sockets = 1;
+                wo.SetProperty(PropertyString.Name, name);
+                // increase damage
+                wo.SetProperty(PropertyFloat.ElementalDamageMod, (float)newweapondamage);
+                wo.SetProperty(PropertyFloat.CriticalFrequency, 0.4f);
+                wo.SetProperty(PropertyFloat.CriticalMultiplier, 1.3f);
+                wo.Arramoran = true;
+                wo.SetProperty(PropertyInt.WieldDifficulty, 539);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+            }
         }
 
         private static void MutateCaster_SpellDID(WorldObject wo, TreasureDeath profile)
@@ -329,6 +439,21 @@ namespace ACE.Server.Factories
                     else
                         magicMod = 5;
                     break;
+                case 8:
+                    chance = ThreadSafeRandom.Next(1, 1000);
+                    if (chance > 900)
+                        magicMod = 10;
+                    else if (chance > 800)
+                        magicMod = 9;
+                    else if (chance > 700)
+                        magicMod = 8;
+                    else if (chance > 600)
+                        magicMod = 7;
+                    else if (chance > 500)
+                        magicMod = 6;
+                    else
+                        magicMod = 5;
+                    break;
                 default:
                     chance = ThreadSafeRandom.Next(1, 1000);
                     if (chance > 900)
@@ -343,6 +468,36 @@ namespace ACE.Server.Factories
                         magicMod = 6;
                     else
                         magicMod = 5;
+                    break;
+                case 9:
+                    chance = ThreadSafeRandom.Next(1, 1000);
+                    if (chance > 900)
+                        magicMod = 17;
+                    else if (chance > 800)
+                        magicMod = 16;
+                    else if (chance > 700)
+                        magicMod = 15;
+                    else if (chance > 600)
+                        magicMod = 14;
+                    else if (chance > 500)
+                        magicMod = 13;
+                    else
+                        magicMod = 12;
+                    break;
+                case 10:
+                    chance = ThreadSafeRandom.Next(1, 1000);
+                    if (chance > 900)
+                        magicMod = 21;
+                    else if (chance > 800)
+                        magicMod = 20;
+                    else if (chance > 700)
+                        magicMod = 19;
+                    else if (chance > 600)
+                        magicMod = 18;
+                    else if (chance > 500)
+                        magicMod = 17;
+                    else
+                        magicMod = 16;
                     break;
             }
 
@@ -413,6 +568,21 @@ namespace ACE.Server.Factories
                         elementBonus = 0.12;
                     else
                         elementBonus = 0.11;
+                    break;
+
+                case 520:
+                    if (chance > 95)
+                        elementBonus = 0.22;
+                    else if (chance > 85)
+                        elementBonus = 0.21;
+                    else if (chance > 60)
+                        elementBonus = 0.20;
+                    else if (chance > 30)
+                        elementBonus = 0.19;
+                    else if (chance > 10)
+                        elementBonus = 0.18;
+                    else
+                        elementBonus = 0.17;
                     break;
 
                 default:

@@ -38,11 +38,6 @@
     // Note that for servers running on Windows, a path like c:\ace\ MUST be entered as c:\\ace\\, replacing the single backslashes (\) with double backslashes (\\)
     "DatFilesDirectory": "/ace/Dats",
 
-	// The folder that contains Harmony mods
-    // Note that for servers running on Linux, the ~ home folder must be fully expanded, ie. /home/user/ace/, instead of ~/ace/
-    // Note that for servers running on Windows, a path like c:\ace\ MUST be entered as c:\\ace\\, replacing the single backslashes (\) with double backslashes (\\)
-	"ModsDirectory": "/ace/Mods",
-
     // ShutdownInterval, default: 60
     // Default time it will take for a server to wait before shutting down after shutdown is called from console or in game admin.
     "ShutdownInterval": "60",
@@ -190,15 +185,6 @@
     // These may have been items that were never deleted properly, items that were given to the town crier before delete was implemented, etc...
     // This can be time consuming so it's not something you would have set to true for every server startup. You might run this once every few months
     "PurgeOrphanedBiotas": false,
-
-    // This will prune deleted characters from all friend lists in the database
-    "PruneDeletedCharactersFromFriendLists": true,
-
-    // This will prune shortcuts to objects that no longer exist in the database
-    "PruneDeletedObjectsFromShortcutBars": false,
-
-    // This will prune deleted characters from all squlech lists in the database, excluding those used to squlech accounts
-    "PruneDeletedCharactersFromSquelchLists": false,
 
     // Automatically apply new updates to databases upon startup if they haven't yet been applied
     "AutoApplyDatabaseUpdates": true,

@@ -214,7 +214,7 @@ namespace ACE.Server.WorldObjects
 
         private void AddItemToEquippedItemsRatingCache(WorldObject wo)
         {
-            if ((wo.GearDamage ?? 0) == 0 && (wo.GearDamageResist ?? 0) == 0 && (wo.GearCrit ?? 0) == 0 && (wo.GearCritResist ?? 0) == 0 && (wo.GearCritDamage ?? 0) == 0 && (wo.GearCritDamageResist ?? 0) == 0 && (wo.GearHealingBoost ?? 0) == 0 && (wo.GearMaxHealth ?? 0) == 0 && (wo.GearPKDamageRating ?? 0) == 0 && (wo.GearPKDamageResistRating ?? 0) == 0)
+            if ((wo.GearDamage ?? 0) == 0 && (wo.GearDamageResist ?? 0) == 0 && (wo.GearCritDamage ?? 0) == 0 && (wo.GearCritDamageResist ?? 0) == 0 && (wo.GearHealingBoost ?? 0) == 0 && (wo.GearMaxHealth ?? 0) == 0)
                 return;
 
             if (equippedItemsRatingCache == null)
@@ -223,27 +223,19 @@ namespace ACE.Server.WorldObjects
                 {
                     { PropertyInt.GearDamage, 0 },
                     { PropertyInt.GearDamageResist, 0 },
-                    { PropertyInt.GearCrit, 0 },
-                    { PropertyInt.GearCritResist, 0 },
                     { PropertyInt.GearCritDamage, 0 },
                     { PropertyInt.GearCritDamageResist, 0 },
                     { PropertyInt.GearHealingBoost, 0 },
                     { PropertyInt.GearMaxHealth, 0 },
-                    { PropertyInt.GearPKDamageRating, 0 },
-                    { PropertyInt.GearPKDamageResistRating, 0 },
                 };
             }
 
             equippedItemsRatingCache[PropertyInt.GearDamage] += (wo.GearDamage ?? 0);
             equippedItemsRatingCache[PropertyInt.GearDamageResist] += (wo.GearDamageResist ?? 0);
-            equippedItemsRatingCache[PropertyInt.GearCrit] += (wo.GearCrit ?? 0);
-            equippedItemsRatingCache[PropertyInt.GearCritResist] += (wo.GearCritResist ?? 0);
             equippedItemsRatingCache[PropertyInt.GearCritDamage] += (wo.GearCritDamage ?? 0);
             equippedItemsRatingCache[PropertyInt.GearCritDamageResist] += (wo.GearCritDamageResist ?? 0);
             equippedItemsRatingCache[PropertyInt.GearHealingBoost] += (wo.GearHealingBoost ?? 0);
             equippedItemsRatingCache[PropertyInt.GearMaxHealth] += (wo.GearMaxHealth ?? 0);
-            equippedItemsRatingCache[PropertyInt.GearPKDamageRating] += (wo.GearPKDamageRating ?? 0);
-            equippedItemsRatingCache[PropertyInt.GearPKDamageResistRating] += (wo.GearPKDamageResistRating ?? 0);
         }
 
         private void RemoveItemFromEquippedItemsRatingCache(WorldObject wo)
@@ -253,14 +245,10 @@ namespace ACE.Server.WorldObjects
 
             equippedItemsRatingCache[PropertyInt.GearDamage] -= (wo.GearDamage ?? 0);
             equippedItemsRatingCache[PropertyInt.GearDamageResist] -= (wo.GearDamageResist ?? 0);
-            equippedItemsRatingCache[PropertyInt.GearCrit] -= (wo.GearCrit ?? 0);
-            equippedItemsRatingCache[PropertyInt.GearCritResist] -= (wo.GearCritResist ?? 0);
             equippedItemsRatingCache[PropertyInt.GearCritDamage] -= (wo.GearCritDamage ?? 0);
             equippedItemsRatingCache[PropertyInt.GearCritDamageResist] -= (wo.GearCritDamageResist ?? 0);
             equippedItemsRatingCache[PropertyInt.GearHealingBoost] -= (wo.GearHealingBoost ?? 0);
             equippedItemsRatingCache[PropertyInt.GearMaxHealth] -= (wo.GearMaxHealth ?? 0);
-            equippedItemsRatingCache[PropertyInt.GearPKDamageRating] -= (wo.GearPKDamageRating ?? 0);
-            equippedItemsRatingCache[PropertyInt.GearPKDamageResistRating] -= (wo.GearPKDamageResistRating ?? 0);
         }
 
         public int GetEquippedItemsRatingSum(PropertyInt rating)
@@ -624,10 +612,7 @@ namespace ACE.Server.WorldObjects
                 if (wo == null) continue;
 
                 //if (wo.ValidLocations == null || (ItemCapacity ?? 0) > 0)
-                {
-                    if (!TryAddToInventory(wo))
-                        wo.Destroy();
-                }
+                    TryAddToInventory(wo);
                 //else
                     //TryWieldObject(wo, (EquipMask)wo.ValidLocations);
             }
@@ -747,62 +732,16 @@ namespace ACE.Server.WorldObjects
         {
             if (WieldedTreasure == null) return;
 
-            //var table = new TreasureWieldedTable(WieldedTreasure);
+            var table = new TreasureWieldedTable(WieldedTreasure);
 
-            var wieldedTreasure = GenerateWieldedTreasureSets(WieldedTreasure);
-
-            if (wieldedTreasure == null)
-                return;
+            var wieldedTreasure = GenerateWieldedTreasureSets(table);
 
             foreach (var item in wieldedTreasure)
             {
                 //if (item.ValidLocations == null || (ItemCapacity ?? 0) > 0)
-                {
-                    if (!TryAddToInventory(item))
-                        item.Destroy();
-                }
+                    TryAddToInventory(item);
                 //else
                     //TryWieldObject(item, (EquipMask)item.ValidLocations);
-            }
-        }
-
-        public uint? InventoryTreasureType
-        {
-            get => GetProperty(PropertyDataId.InventoryTreasureType);
-            set { if (!value.HasValue) RemoveProperty(PropertyDataId.InventoryTreasureType); else SetProperty(PropertyDataId.InventoryTreasureType, value.Value); }
-        }
-
-        public void GenerateInventoryTreasure()
-        {
-            if (InventoryTreasureType == null || InventoryTreasureType.Value <= 0) return;
-
-            // based on property name found in older data, this property was only found 5 weenies (entirely contained in Focusing Stone quest)
-            // guessing that the value might have possibly allowed for either Death or Wielded treasure, but technically it might have only been the former.
-            // so for now, coded for checking both types.
-            // Although the property's name seemingly was removed, either it's value was still used in code OR its value was moved into DeathTreasureType/CreateList
-            // because pcaps for these 5 objects do show similar, if not exact, results on corpses.
-
-            var treasureDeath = DatabaseManager.World.GetCachedDeathTreasure(InventoryTreasureType.Value);
-            var treasureWielded = DatabaseManager.World.GetCachedWieldedTreasure(InventoryTreasureType.Value);
-
-            var treasure = new List<WorldObject>();
-            if (treasureDeath != null)
-            {
-                treasure = LootGenerationFactory.CreateRandomLootObjects(treasureDeath);
-            }
-            else if (treasureWielded != null)
-            {
-                treasure = GenerateWieldedTreasureSets(treasureWielded);
-            }
-
-            foreach (var item in treasure)
-            {
-                item.DestinationType = DestinationType.Treasure;
-                // add this flag so item can move over to corpse upon death
-                // (ACE logic: it is likely all inventory of a creature was moved over without reservation (bonded rules enforced), but ACE is slightly different in how it handles it for net same result)
-
-                if (!TryAddToInventory(item))
-                    item.Destroy();
             }
         }
     }

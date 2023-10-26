@@ -87,14 +87,11 @@ namespace ACE.Server.WorldObjects
 
             if (!confirmed)
             {
-                if (!patron.ConfirmationManager.EnqueueSend(new Confirmation_SwearAllegiance(patron.Guid, Guid), Name))
-                {
-                    Session.Network.EnqueueSend(new GameMessageSystemChat($"{patron.Name} is busy.", ChatMessageType.Broadcast));
-                }
+                patron.ConfirmationManager.EnqueueSend(new Confirmation_SwearAllegiance(patron.Guid, Guid), Name);
                 return;
             }
 
-            log.Debug($"[ALLEGIANCE] {Name} ({Level}) swearing allegiance to {patron.Name} ({patron.Level})");
+            log.Debug($"[ALLEGIANCE] {Name} swearing allegiance to {patron.Name}");
 
             PatronId = targetGuid;
 
@@ -298,21 +295,6 @@ namespace ACE.Server.WorldObjects
             // the client doesn't seem to display most of these werrors,
             // so we also send similar messages as text
 
-            // An Olthoi player cannot swear allegiance to another player
-            if (IsOlthoiPlayer)
-            {
-                //Session.Network.EnqueueSend(new GameMessageSystemChat($"The Olthoi only have an allegiance to the Olthoi Queen!", ChatMessageType.Broadcast));
-                Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.OlthoiCannotJoinAllegiance));
-                return false;
-            }
-
-            if (target.IsOlthoiPlayer)
-            {
-                Session.Network.EnqueueSend(new GameMessageSystemChat($"The Olthoi have loyalty only to their Olthoi Queen!", ChatMessageType.Broadcast));
-                SendWeenieError(WeenieError.None);
-                return false;
-            }
-
             // check ignore allegiance requests
             if (target.GetCharacterOption(CharacterOption.IgnoreAllegianceRequests))
             {
@@ -335,6 +317,19 @@ namespace ACE.Server.WorldObjects
             {
                 //Console.WriteLine(Name + " tried to swear to themselves");
                 Session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot swear allegiance to yourself.", ChatMessageType.Broadcast));
+                return false;
+            }
+
+            // player can't swear to Hardcore players
+            if (!Hardcore && target.Hardcore)
+            {
+                Session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot swear to a hardcore character.", ChatMessageType.Broadcast));
+                return false;
+            }
+
+            if (Hardcore && !target.Hardcore)
+            {
+                Session.Network.EnqueueSend(new GameMessageSystemChat($"You cannot swear to a normal character.", ChatMessageType.Broadcast));
                 return false;
             }
 

@@ -731,6 +731,17 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyFloat.PhysicsScriptIntensity); else SetProperty(PropertyFloat.PhysicsScriptIntensity, value.Value); }
         }
 
+        public float? MirraResistanceBonus
+        {
+            get => (float?)GetProperty(PropertyFloat.MirraResistanceBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.MirraResistanceBonus); else SetProperty(PropertyFloat.MirraResistanceBonus, value.Value); }
+        }
+
+        public float? MirraDamageModBonus
+        {
+            get => (float?)GetProperty(PropertyFloat.MirraDamageModBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.MirraDamageModBonus); else SetProperty(PropertyFloat.MirraDamageModBonus, value.Value); }
+        }
 
         public bool GetPhysicsState(PhysicsState state)
         {
@@ -1261,7 +1272,7 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public void setVisualClothingPriority()
         {
-            if (ClothingBase.HasValue && (CurrentWieldedLocation & (EquipMask.Armor | EquipMask.Extremity)) != 0)
+            if (ClothingBase.HasValue && (CurrentWieldedLocation & (EquipMask.Armor | EquipMask.HandWear)) != 0)
             {
                 ClothingTable item = DatManager.PortalDat.ReadFromDat<ClothingTable>((uint)ClothingBase);
                 VisualClothingPriority = item.GetVisualPriority();
@@ -1426,12 +1437,6 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyDataId.IconOverlay);
             set { if (!value.HasValue) RemoveProperty(PropertyDataId.IconOverlay); else SetProperty(PropertyDataId.IconOverlay, value.Value); }
-        }
-
-        public uint? IconOverlaySecondary
-        {
-            get => GetProperty(PropertyDataId.IconOverlaySecondary);
-            set { if (!value.HasValue) RemoveProperty(PropertyDataId.IconOverlaySecondary); else SetProperty(PropertyDataId.IconOverlaySecondary, value.Value); }
         }
 
         public MaterialType? MaterialType
@@ -2067,6 +2072,42 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyInt.ChessTotalGames);
             set { if (!value.HasValue) RemoveProperty(PropertyInt.ChessTotalGames); else SetProperty(PropertyInt.ChessTotalGames, value.Value); }
+        }
+
+        public int? MerchandiseItemTypes
+        {
+            get => GetProperty(PropertyInt.MerchandiseItemTypes);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MerchandiseItemTypes); else SetProperty(PropertyInt.MerchandiseItemTypes, value.Value); }
+        }
+
+        public int? MerchandiseMinValue
+        {
+            get => GetProperty(PropertyInt.MerchandiseMinValue);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MerchandiseMinValue); else SetProperty(PropertyInt.MerchandiseMinValue, value.Value); }
+        }
+
+        public int? MerchandiseMaxValue
+        {
+            get => GetProperty(PropertyInt.MerchandiseMaxValue);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MerchandiseMaxValue); else SetProperty(PropertyInt.MerchandiseMaxValue, value.Value); }
+        }
+
+        public double? BuyPrice
+        {
+            get => GetProperty(PropertyFloat.BuyPrice);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.BuyPrice); else SetProperty(PropertyFloat.BuyPrice, value.Value); }
+        }
+
+        public double? SellPrice
+        {
+            get => GetProperty(PropertyFloat.SellPrice);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.SellPrice); else SetProperty(PropertyFloat.SellPrice, value.Value); }
+        }
+
+        public bool? DealMagicalItems
+        {
+            get => GetProperty(PropertyBool.DealMagicalItems);
+            set { if (!value.HasValue) RemoveProperty(PropertyBool.DealMagicalItems); else SetProperty(PropertyBool.DealMagicalItems, value.Value); }
         }
 
         public double? HeartbeatInterval
@@ -2716,7 +2757,7 @@ namespace ACE.Server.WorldObjects
 
         /* Ratings */
 
-        public int? DamageRating
+        public int? GearDamageRating
         {
             get => GetProperty(PropertyInt.DamageRating);
             set { if (!value.HasValue) RemoveProperty(PropertyInt.DamageRating); else SetProperty(PropertyInt.DamageRating, value.Value); }
@@ -2829,11 +2870,11 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyString.TinkerLog);
             set { if (value == null) RemoveProperty(PropertyString.TinkerLog); else SetProperty(PropertyString.TinkerLog, value); }
         }
-        
-        public int? CreatureKills
+
+        public long CreatureKills
         {
-            get => GetProperty(PropertyInt.CreatureKills);
-            set { if (!value.HasValue) RemoveProperty(PropertyInt.CreatureKills); else SetProperty(PropertyInt.CreatureKills, value.Value); }
+            get => GetProperty(PropertyInt64.CreatureKills) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt64.CreatureKills); else SetProperty(PropertyInt64.CreatureKills, value); }
         }
 
         public int? PlayerKillsPk
@@ -2987,18 +3028,6 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt.GearMaxHealth); else SetProperty(PropertyInt.GearMaxHealth, value.Value); }
         }
 
-        public int? GearPKDamageRating
-        {
-            get => GetProperty(PropertyInt.GearPKDamageRating);
-            set { if (!value.HasValue) RemoveProperty(PropertyInt.GearPKDamageRating); else SetProperty(PropertyInt.GearPKDamageRating, value.Value); }
-        }
-
-        public int? GearPKDamageResistRating
-        {
-            get => GetProperty(PropertyInt.GearPKDamageResistRating);
-            set { if (!value.HasValue) RemoveProperty(PropertyInt.GearPKDamageResistRating); else SetProperty(PropertyInt.GearPKDamageResistRating, value.Value); }
-        }
-
         public int? ResistItemAppraisal
         {
             get => GetProperty(PropertyInt.ResistItemAppraisal);
@@ -3035,16 +3064,10 @@ namespace ACE.Server.WorldObjects
             set { if (!value.HasValue) RemoveProperty(PropertyInt.ItemAttribute2ndLevelLimit); else SetProperty(PropertyInt.ItemAttribute2ndLevelLimit, value.Value); }
         }
 
-        public double? SoldTimestamp
+        public bool Empowered
         {
-            get => GetProperty(PropertyFloat.SoldTimestamp);
-            set { if (!value.HasValue) RemoveProperty(PropertyFloat.SoldTimestamp); else SetProperty(PropertyFloat.SoldTimestamp, value.Value); }
-        }
-
-        public bool AllowGive
-        {
-            get => GetProperty(PropertyBool.AllowGive) ?? false;
-            set { if (!value) RemoveProperty(PropertyBool.AllowGive); else SetProperty(PropertyBool.AllowGive, value); }
+            get => GetProperty(PropertyBool.Empowered) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Empowered); else SetProperty(PropertyBool.Empowered, value); }
         }
 
         public bool AiAcceptEverything
@@ -3053,34 +3076,125 @@ namespace ACE.Server.WorldObjects
             set { if (!value) RemoveProperty(PropertyBool.AiAcceptEverything); else SetProperty(PropertyBool.AiAcceptEverything, value); }
         }
 
-        public ImbuedEffectType ImbuedEffect
+        public bool Proto
         {
-            get => (ImbuedEffectType)(GetProperty(PropertyInt.ImbuedEffect) ?? 0);
-            set { if (value == 0) RemoveProperty(PropertyInt.ImbuedEffect); else SetProperty(PropertyInt.ImbuedEffect, (int)value); }
+            get => GetProperty(PropertyBool.Proto) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Proto); else SetProperty(PropertyBool.Proto, value); }
         }
 
-        public bool DontTurnOrMoveWhenGiving
+        public bool GunBlade
         {
-            get => GetProperty(PropertyBool.DontTurnOrMoveWhenGiving) ?? false;
-            set { if (!value) RemoveProperty(PropertyBool.DontTurnOrMoveWhenGiving); else SetProperty(PropertyBool.DontTurnOrMoveWhenGiving, value); }
+            get => GetProperty(PropertyBool.GunBlade) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Proto); else SetProperty(PropertyBool.GunBlade, value); }
         }
 
-        /// <summary>
-        /// Determines the rotation speed for projectiles in global X
-        /// </summary>
-        public double? RotationSpeed
+        public bool Arramoran
         {
-            get => GetProperty(PropertyFloat.RotationSpeed);
-            set { if (!value.HasValue) RemoveProperty(PropertyFloat.RotationSpeed); else SetProperty(PropertyFloat.RotationSpeed, value.Value); }
+            get => GetProperty(PropertyBool.Arramoran) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Arramoran); else SetProperty(PropertyBool.Arramoran, value); }
         }
 
-        public bool HasMissileFlightPlacement => CSetup.HasMissileFlightPlacement;
+        public int? MirraArmorBonus
+        {
+            get => GetProperty(PropertyInt.MirraArmorBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MirraArmorBonus); else SetProperty(PropertyInt.MirraArmorBonus, value.Value); }
+        }
 
-        /// <summary>
-        /// For items sold by vendors, StackSize of shop item profile from Vendor's CreateList.
-        /// This value is only set by Vendor.LoadInventoryItem, and is almost always -1 which means the item has no supply limits per transaction.
-        /// If not unlimited, client will only allow you to buy or add to buy list up this number of items for a single transaction.
-        /// </summary>
-        public int? VendorShopCreateListStackSize;
+        public int? MirraWeaponBonus
+        {
+            get => GetProperty(PropertyInt.MirraWeaponBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MirraWeaponBonus); else SetProperty(PropertyInt.MirraWeaponBonus, value.Value); }
+        }
+
+        public int? MirraRatingBonus
+        {
+            get => GetProperty(PropertyInt.MirraWeaponBonus);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.MirraWeaponBonus); else SetProperty(PropertyInt.MirraWeaponBonus, value.Value); }
+        }
+
+        public int? Sockets
+        {
+            get => GetProperty(PropertyInt.Sockets);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.Sockets); else SetProperty(PropertyInt.Sockets, value.Value); }
+        }
+
+        //Speedrunning
+        public int? LastTime
+        {
+            get => GetProperty(PropertyInt.LastTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.LastTime); else SetProperty(PropertyInt.LastTime, value.Value); }
+        }
+
+        /*public int? BestTime
+        {
+            get => GetProperty(PropertyInt.BestTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.BestTime); else SetProperty(PropertyInt.BestTime, value.Value); }
+        }*/
+
+        public string SpeedRunTime
+        {
+            get => GetProperty(PropertyString.SpeedRunTime);
+            set { if (value == null) RemoveProperty(PropertyString.SpeedRunTime); else SetProperty(PropertyString.SpeedRunTime, value); }
+        }
+
+        public bool SpeedRunning
+        {
+            get => GetProperty(PropertyBool.SpeedRunning) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.SpeedRunning); else SetProperty(PropertyBool.SpeedRunning, value); }
+        }
+
+        public double? SpeedrunStartTime
+        {
+            get => GetProperty(PropertyFloat.SpeedrunStartTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.SpeedrunStartTime); else SetProperty(PropertyFloat.SpeedrunStartTime, value.Value); }
+        }
+
+        public double? SpeedrunEndTime
+        {
+            get => GetProperty(PropertyFloat.SpeedrunEndTime);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.SpeedrunEndTime); else SetProperty(PropertyFloat.SpeedrunEndTime, value.Value); }
+        }
+
+        public double CTInCirculation
+        {
+            get => GetProperty(PropertyFloat.CTInCirculation) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyFloat.CTInCirculation); else SetProperty(PropertyFloat.CTInCirculation, (double)value); }
+        }
+
+        public double ACInCirculation
+        {
+            get => GetProperty(PropertyFloat.ACInCirculation) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyFloat.ACInCirculation); else SetProperty(PropertyFloat.ACInCirculation, (double)value); }
+        }
+
+        public double PyrealValue
+        {
+            get => GetProperty(PropertyFloat.PyrealValue) ?? 1;
+            set { if (value == 0) RemoveProperty(PropertyFloat.PyrealValue); else SetProperty(PropertyFloat.PyrealValue, (double)value); }
+        }
+
+        public double MMDValue
+        {
+            get => GetProperty(PropertyFloat.MMDValue) ?? 250000;
+            set { if (value == 0) RemoveProperty(PropertyFloat.MMDValue); else SetProperty(PropertyFloat.MMDValue, (double)value); }
+        }
+
+        public double ACValue
+        {
+            get => GetProperty(PropertyFloat.ACValue) ?? 1;
+            set { if (value == 0) RemoveProperty(PropertyFloat.ACValue); else SetProperty(PropertyFloat.ACValue, (double)value); }
+        }
+
+        public int DoTOwnerGuid
+        {
+            get => GetProperty(PropertyInt.DoTOwnerGuid) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.DoTOwnerGuid); else SetProperty(PropertyInt.DoTOwnerGuid, value); }
+        }
+
+        public bool IsAbilityItem
+        {
+            get => GetProperty(PropertyBool.IsAbilityItem) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsAbilityItem); else SetProperty(PropertyBool.IsAbilityItem, value); }
+        }
     }
 }

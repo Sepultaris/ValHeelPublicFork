@@ -13,6 +13,8 @@ namespace ACE.Server.WorldObjects
 
         public bool IsPassivePet { get; set; }
 
+        public bool IsCombatPet { get; set; }
+
         public bool IsFactionMob { get; set; }
 
         public bool HasFoeType { get; set; }
@@ -41,6 +43,7 @@ namespace ACE.Server.WorldObjects
             if (this is Player) return;
 
             IsPassivePet = WeenieType == WeenieType.Pet;
+            IsCombatPet = WeenieType == WeenieType.CombatPet;
             IsChessPiece = WeenieType == WeenieType.GamePiece;
 
             // includes CombatPets

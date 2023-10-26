@@ -77,8 +77,7 @@ namespace ACE.Server.WorldObjects
             {
                 var msg = $"Are you sure you want to use {Name}?";
                 var confirm = new Confirmation_Custom(player.Guid, () => ActOnUse(activator, true));
-                if (!player.ConfirmationManager.EnqueueSend(confirm, msg))
-                    player.SendWeenieError(WeenieError.ConfirmationInProgress);
+                player.ConfirmationManager.EnqueueSend(confirm, msg);
                 return;
             }
 
@@ -117,14 +116,6 @@ namespace ACE.Server.WorldObjects
         {
             if (player.IsDead) return;
 
-            // verify item is still valid
-            if (player.FindObject(Guid.Full, Player.SearchLocations.MyInventory) == null)
-            {
-                //player.SendWeenieError(WeenieError.ObjectGone);   // results in 'Unable to move object!' transient error
-                player.SendTransientError($"Cannot find the {Name}");   // custom message
-                return;
-            }
-
             // trying to use a dispel potion while pk timer is active
             // send error message and cancel - do not consume item
             if (SpellDID != null)
@@ -156,8 +147,6 @@ namespace ACE.Server.WorldObjects
                 // TODO: figure this out better
                 if (spell.MetaSpellType == SpellType.PortalSummon)
                     TryCastSpell(spell, player, this, tryResist: false);
-                else if (spell.IsImpenBaneType || spell.IsItemRedirectableType)
-                    player.TryCastItemEnchantment_WithRedirects(spell, player, this);
                 else
                     player.TryCastSpell(spell, player, this, tryResist: false);
             }
@@ -186,48 +175,76 @@ namespace ACE.Server.WorldObjects
 
         public bool HandleUseCreateItem(Player player)
         {
+            var playerFreeInventorySlots = player.GetFreeInventorySlots();
+            var playerFreeContainerSlots = player.GetFreeContainerSlots();
+            var playerAvailableBurden = player.GetAvailableBurden();
+
+            var playerOutOfInventorySlots = false;
+            var playerOutOfContainerSlots = false;
+            var playerExceedsAvailableBurden = false;
+
             var amount = UseCreateQuantity ?? 1;
 
-            var itemsToReceive = new ItemsToReceive(player);
+            var itemStacks = player.PreCheckItem(UseCreateItem.Value, amount, playerFreeContainerSlots, playerFreeInventorySlots, playerAvailableBurden, out var itemEncumberance, out bool itemRequiresBackpackSlot);
 
-            itemsToReceive.Add(UseCreateItem.Value, amount);
-
-            if (itemsToReceive.PlayerExceedsLimits)
+            if (itemRequiresBackpackSlot)
             {
-                if (itemsToReceive.PlayerExceedsAvailableBurden)
+                playerFreeContainerSlots -= itemStacks;
+                playerAvailableBurden -= itemEncumberance;
+
+                playerOutOfContainerSlots = playerFreeContainerSlots < 0;
+            }
+            else
+            {
+                playerFreeInventorySlots -= itemStacks;
+                playerAvailableBurden -= itemEncumberance;
+
+                playerOutOfInventorySlots = playerFreeInventorySlots < 0;
+            }
+
+            playerExceedsAvailableBurden = playerAvailableBurden < 0;
+
+            if (playerOutOfInventorySlots || playerOutOfContainerSlots || playerExceedsAvailableBurden)
+            {
+                if (playerExceedsAvailableBurden)
                     player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, "You are too encumbered to use that!"));
-                else if (itemsToReceive.PlayerOutOfInventorySlots)
+                else if (playerOutOfInventorySlots)
                     player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, "You do not have enough pack space to use that!"));
-                else if (itemsToReceive.PlayerOutOfContainerSlots)
+                else //if (playerOutOfContainerSlots)
                     player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, "You do not have enough container slots to use that!"));
 
                 return false;
             }
 
-            if (itemsToReceive.RequiredSlots > 0)
+            if (itemStacks > 0)
             {
-                var remaining = amount;
-
-                while (remaining > 0)
+                while (amount > 0)
                 {
                     var item = WorldObjectFactory.CreateNewWorldObject(UseCreateItem.Value);
 
                     if (item is Stackable)
                     {
-                        var stackSize = Math.Min(remaining, item.MaxStackSize ?? 1);
-
-                        item.SetStackSize(stackSize);
-                        remaining -= stackSize;
+                        // amount contains a max stack
+                        if (item.MaxStackSize <= amount)
+                        {
+                            item.SetStackSize(item.MaxStackSize);
+                            amount -= item.MaxStackSize.Value;
+                        }
+                        else // not a full stack
+                        {
+                            item.SetStackSize(amount);
+                            amount -= amount;
+                        }
                     }
                     else
-                        remaining--;
+                        amount -= 1;
 
                     player.TryCreateInInventoryWithNetworking(item);
                 }
             }
             else
             {
-                player.SendTransientError($"Unable to use {Name} at this time!");
+                player.Session.Network.EnqueueSend(new GameEventCommunicationTransientString(player.Session, $"Unable to use {Name} at this time!"));
                 return false;
             }
             return true;

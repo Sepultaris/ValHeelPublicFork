@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 using ACE.Common;
-using ACE.DatLoader;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
@@ -47,9 +46,9 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
-        /// Returns TRUE if monster has known spells
+        /// Returns TRUE if monster is a spell caster
         /// </summary>
-        private bool HasKnownSpells => Biota.HasKnownSpell(BiotaDatabaseLock);
+        private bool IsCaster => Biota.HasKnownSpell(BiotaDatabaseLock);
 
         /// <summary>
         /// The next spell the monster will attempt to cast
@@ -148,14 +147,6 @@ namespace ACE.Server.WorldObjects
 
             // turn to?
             if (AiUsesMana && !UseMana()) return;
-
-            // spell words
-            if (AiUseHumanMagicAnimations)
-            {
-                var spellWords = spell._spellBase.GetSpellWords(DatManager.PortalDat.SpellComponentsTable);
-                if (!string.IsNullOrWhiteSpace(spellWords))
-                    EnqueueBroadcast(new GameMessageHearSpeech(spellWords, Name, Guid.Full, ChatMessageType.Spellcasting), LocalBroadcastRange, ChatMessageType.Spellcasting);
-            }
 
             var preCastTime = PreCastMotion(AttackTarget);
 
@@ -300,12 +291,14 @@ namespace ACE.Server.WorldObjects
 
             var targetCreature = target as Creature;
 
-            // TODO: see if this can be coalesced
             switch (spell.School)
             {
                 case MagicSchool.CreatureEnchantment:
 
-                    HandleCastSpell(spell, target);
+                    CreatureMagic(target, spell);
+
+                    if (target != null)
+                        EnqueueBroadcast(new GameMessageScript(target.Guid, spell.TargetEffect, spell.Formula.Scale));
 
                     if (spell.IsHarmful)
                     {
@@ -322,11 +315,14 @@ namespace ACE.Server.WorldObjects
 
                 case MagicSchool.LifeMagic:
 
-                    HandleCastSpell(spell, target, null, caster);
+                    var targetDeath = LifeMagic(spell, out uint damage, out var msg, target, null, caster);
 
                     if (spell.MetaSpellType != SpellType.LifeProjectile)
                     {
                         TryHandleFactionMob(target);
+
+                        if (target != null)
+                            EnqueueBroadcast(new GameMessageScript(target.Guid, spell.TargetEffect, spell.Formula.Scale));
 
                         if (spell.IsHarmful)
                         {
@@ -335,12 +331,25 @@ namespace ACE.Server.WorldObjects
                                 TryProcEquippedItems(this, targetCreature, false, caster);
                         }
                     }
+                    if (targetDeath && targetCreature != null)
+                    {
+                        targetCreature.OnDeath(new DamageHistoryInfo(this), DamageType.Health, false);
+                        targetCreature.Die();
+                    }
+                    break;
+
+                case MagicSchool.VoidMagic:
+
+                    VoidMagic(target, spell, caster);
+
+                    if (spell.NumProjectiles == 0 && target != null)
+                        EnqueueBroadcast(new GameMessageScript(target.Guid, spell.TargetEffect, spell.Formula.Scale));
+
                     break;
 
                 case MagicSchool.WarMagic:
-                case MagicSchool.VoidMagic:
 
-                    HandleCastSpell(spell, target, caster);
+                    WarMagic(target, spell, caster);
                     break;
             }
         }
@@ -411,17 +420,6 @@ namespace ACE.Server.WorldObjects
                 return;
 
             MonsterOnAttackMonster(creatureTarget);
-        }
-        /// <summary>
-        /// Checks for AiUseHumanMagicAnimations and if true, sets CurrentSpell and sets combat mode to Magic
-        /// </summary>
-        public void CheckForHumanPreCast(Spell spell)
-        {
-            if (AiUseHumanMagicAnimations)
-            {
-                CurrentSpell = new Spell(spell.Id);
-                SetCombatMode(CombatMode.Magic);
-            }
         }
     }
 }

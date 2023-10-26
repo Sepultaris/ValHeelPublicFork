@@ -130,6 +130,10 @@ namespace ACE.Entity.Enum
         InqContractsFull              = 121,
 
         // Unknown Id Emotes & Custom Emotes
-        Enlightenment                 = 9001
+        Enlightenment = 9001,
+        Pop = 9002,
+        ForceLogOff = 9003,
+        ServerBountyQuery = 9004,
+        PayOffBounty = 9005,
     }
 }

@@ -72,8 +72,6 @@ namespace ACE.Server.WorldObjects
             if (IsGenerator)
             {
                 NextGeneratorUpdateTime = currentUnixTime; // Generators start right away
-                //NextGeneratorUpdateTime = Time.GetFutureUnixTime(CachedHeartbeatInterval);
-                //NextGeneratorRegenerationTime = Time.GetFutureUnixTime(CachedHeartbeatInterval);
                 if (cachedRegenerationInterval == 0)
                     NextGeneratorRegenerationTime = double.MaxValue;
             }
@@ -99,7 +97,18 @@ namespace ACE.Server.WorldObjects
         {
             if (EnchantmentManager.HasEnchantments)
                 EnchantmentManager.HeartBeat(CachedHeartbeatInterval);
+            if (IsLifespanSpent && this is Pet pet && pet.IsCombatPet)
+            {
+                pet.P_PetOwner.NumberOfPets--;
+                
+                DeleteObject(pet);
 
+                if (pet.P_PetOwner.NumberOfPets < 0)
+                {
+                    pet.P_PetOwner.NumberOfPets = 0;
+                }
+            }
+                
             if (IsLifespanSpent)
                 DeleteObject();
 
@@ -126,7 +135,7 @@ namespace ACE.Server.WorldObjects
         {
             //Console.WriteLine($"{Name}.GeneratorRegeneration({currentUnixTime})");
 
-            Generator_Generate();
+            Generator_Regeneration();
 
             SetProperty(PropertyFloat.RegenerationTimestamp, currentUnixTime);
 
@@ -318,12 +327,7 @@ namespace ACE.Server.WorldObjects
                     if (curCell.ID != cellBefore)
                         Location.LandblockId = new LandblockId(curCell.ID);
 
-                    // skip ObjCellID check when updating from physics
-                    // TODO: update to newer version of ACE.Entity.Position
-                    Location.PositionX = newPos.X;
-                    Location.PositionY = newPos.Y;
-                    Location.PositionZ = newPos.Z;
-
+                    Location.Pos = newPos;
                     Location.Rotation = PhysicsObj.Position.Frame.Orientation;
 
                     //if (landblockUpdate)

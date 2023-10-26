@@ -80,6 +80,7 @@ namespace ACE.Server.Factories.Tables
             { MaterialType.Oak,             0.5f },
             { MaterialType.Pine,            0.0f },
             { MaterialType.Teak,            1.5f },
+            { MaterialType.Liner,           0.1f },
         };
 
         public static float GetValueMod(MaterialType? materialType)

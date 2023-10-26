@@ -41,9 +41,6 @@ namespace ACE.Server.WorldObjects
         {
             ObjectDescriptionFlags |= ObjectDescriptionFlag.Book;
 
-            // Ensure a book can always be "read"
-            ActivationResponse |= ActivationResponse.Use;
-
             SetProperty(PropertyInt.AppraisalPages, Biota.PropertiesBookPageData.Count);
 
             SetProperty(PropertyInt.AppraisalMaxPages, Biota.PropertiesBook.MaxNumPages);

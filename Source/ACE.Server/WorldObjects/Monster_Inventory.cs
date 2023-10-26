@@ -188,9 +188,8 @@ namespace ACE.Server.WorldObjects
 
                     default:
 
-                        // 6873 - Ulgrim the Unpleasant wields => 161 - Mug
                         // 70995 - Ulgrim the Unquiet wields => 27808 - Great Elariwood Idol
-                        if (IsNPC && (item.ValidLocations & EquipMask.Selectable) != 0)
+                        if (IsNPC && item.ValidLocations == EquipMask.Held)
                             allWeapons.Add(item);
 
                         break;

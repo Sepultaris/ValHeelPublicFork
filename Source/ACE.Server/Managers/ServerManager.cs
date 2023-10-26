@@ -9,7 +9,6 @@ using ACE.Entity.Enum;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Network.Managers;
-using ACE.Server.Mods;
 
 namespace ACE.Server.Managers
 {
@@ -108,12 +107,12 @@ namespace ACE.Server.Managers
                 if (!ShutdownInitiated)
                 {
                     // reset shutdown details
-                    string shutdownText = $"The server shut down has been cancelled @ {DateTime.Now} ({DateTime.UtcNow} UTC)";
+                    string shutdownText = $"The server has canceled the shutdown procedure @ {DateTime.UtcNow} UTC";
                     log.Info(shutdownText);
 
                     // special text
                     foreach (var player in PlayerManager.GetAllOnline())
-                        player.Session.WorldBroadcast($"Broadcast from System> ATTENTION - This Asheron's Call Server shut down has been cancelled.");
+                        player.Session.WorldBroadcast(shutdownText);
 
                     // break function
                     return;
@@ -138,25 +137,19 @@ namespace ACE.Server.Managers
                     player.Session.LogOffPlayer(true);
             }));
 
+            WorldManager.EnqueueAction(new ActionEventDelegate(() =>
+            {
+                log.Debug("Saving Global Market Data...");
+                ValheelMods.ValHeelCurrencyMarket.SaveCurrencyValues();
+            }));
+
             // Wait for all players to log out
             var logUpdateTS = DateTime.MinValue;
             int playerCount;
-            var playerLogoffStart = DateTime.UtcNow;
             while ((playerCount = PlayerManager.GetOnlineCount()) > 0)
             {
                 logUpdateTS = LogStatusUpdate(logUpdateTS, $"Waiting for {playerCount} player{(playerCount > 1 ? "s" : "")} to log off...");
                 Thread.Sleep(10);
-                if (playerCount > 0 && DateTime.UtcNow - playerLogoffStart > TimeSpan.FromMinutes(5))
-                {
-                    playerLogoffStart = DateTime.UtcNow;
-                    log.Warn($"5 minute log off failsafe reached and there are {playerCount} player{(playerCount > 1 ? "s" : "")} still online.");
-                    foreach (var player in PlayerManager.GetAllOnline())
-                    {
-                        log.Warn($"Player {player.Name} (0x{player.Guid}) appears to be stuck in world and unable to log off normally. Requesting Forced Logoff...");
-                        player.ForcedLogOffRequested = true;
-                        player.ForceLogoff();
-                    }    
-                }
             }
 
             WorldManager.EnqueueAction(new ActionEventDelegate(() =>
@@ -195,9 +188,6 @@ namespace ACE.Server.Managers
 
             // Disabled thread update loop
             WorldManager.StopWorld();
-
-            // Halt mods
-            ModManager.Shutdown();
 
             // Wait for world to end
             logUpdateTS = DateTime.MinValue;

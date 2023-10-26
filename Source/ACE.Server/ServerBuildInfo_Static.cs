@@ -2,6 +2,7 @@ using ACE.Database;
 
 using System;
 
+
 namespace ACE.Server
 {
     public static partial class ServerBuildInfo
@@ -30,11 +31,5 @@ namespace ACE.Server
                 msg += "Server is running inside a Container\n";
             return msg;
         }
-
-        public static Version GetServerVersion()
-        {
-            return new Version(Version + "." + Build);
-        }
-
     }
 }

@@ -20,7 +20,10 @@ namespace ACE.Server.Factories.Tables
             0.9f,
             1.0f,
             1.0f,
-            1.0f
+            1.0f,
+            1.0f,
+            1.0f,
+            1.0f,
         };
 
         private static readonly List<float> T1_QualityChances = new List<float>()
@@ -151,6 +154,38 @@ namespace ACE.Server.Factories.Tables
             1.00f,
         };
 
+        private static readonly List<float> T9_QualityChances = new List<float>()
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.10f,
+            0.25f,
+            0.50f,
+            0.75f,
+            0.90f,
+            1.00f,
+        };
+
+        private static readonly List<float> T10_QualityChances = new List<float>()
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.10f,
+            0.25f,
+            0.50f,
+            0.75f,
+            0.90f,
+            1.00f,
+        };
+
         /// <summary>
         /// Returns the quality chance tables for a tier
         /// </summary>
@@ -175,6 +210,10 @@ namespace ACE.Server.Factories.Tables
                     return T7_QualityChances;
                 case 8:
                     return T8_QualityChances;
+                case 9:
+                    return T9_QualityChances;
+                case 10:
+                    return T10_QualityChances;
             }
         }
 
@@ -214,7 +253,7 @@ namespace ACE.Server.Factories.Tables
                 if (rng < curChance && curChance >= treasureDeath.LootQualityMod)
                     return i + 1;
             }
-            log.Error($"QualityTables.Roll({treasureDeath.Tier}, {treasureDeath.LootQualityMod}) - this shouldn't happen");
+            
             return 0;
         }
 
@@ -251,7 +290,7 @@ namespace ACE.Server.Factories.Tables
                     return (float)(dy * (interval + i));
                 }
             }
-            log.Error($"QualityTables.RollInterval({treasureDeath.Tier}, {treasureDeath.LootQualityMod}) - this shouldn't happen");
+            
             return 0.0f;
         }
     }

@@ -57,14 +57,14 @@ namespace ACE.Server.Network.Structure
                 return;
             }
 
-            var accountPlayers = PlayerManager.GetAccountPlayers(owner.Account.AccountId);
+            var accountPlayers = Player.GetAccountPlayers(owner.Account.AccountId);
 
             foreach (var accountPlayer in accountPlayers)
             {
-                if (accountPlayer.Key == HouseOwner)
+                if (accountPlayer.Guid.Full == HouseOwner)
                     continue;
 
-                Table.TryAdd(accountPlayer.Value.Guid, 1);
+                Table.TryAdd(accountPlayer.Guid, 1);
             }
         }
     }

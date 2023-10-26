@@ -39,8 +39,6 @@ namespace ACE.Server.WorldObjects
         {
             ObjectDescriptionFlags |= ObjectDescriptionFlag.Portal;
 
-            ActivationResponse |= ActivationResponse.Use;
-
             UpdatePortalDestination(Destination);
         }
 
@@ -102,6 +100,30 @@ namespace ACE.Server.WorldObjects
 
         public virtual void OnCollideObject(Player player)
         {
+            // kill pets
+            ActionChain killPets = new ActionChain();
+
+            killPets.AddAction(this, () =>
+            {
+                foreach (var monster in player.PhysicsObj.ObjMaint.GetVisibleObjectsValuesOfTypeCreature())
+                {
+                    if (monster.IsCombatPet)
+                    {
+                        if (monster.PetOwner == player.Guid.Full)
+                        {
+                            monster.Destroy();
+                            player.NumberOfPets--;
+                            if (player.NumberOfPets < 0)
+                            {
+                                player.NumberOfPets = 0;
+                            }
+                        }
+                    }
+                }
+            });
+
+            killPets.EnqueueChain();
+
             OnActivate(player);
         }
 
@@ -117,7 +139,7 @@ namespace ACE.Server.WorldObjects
         /// If a player tries to use 2 portals in under this amount of time,
         /// they receive an error message
         /// </summary>
-        private static readonly float minTimeSinceLastPortal = 3.5f;
+        private static readonly float minTimeSinceLastPortal = 5.0f;
 
         public override ActivationResult CheckUseRequirements(WorldObject activator)
         {
@@ -206,13 +228,13 @@ namespace ACE.Server.WorldObjects
                     return new ActivationResult(new GameEventWeenieError(player.Session, WeenieError.NonPKsMayNotUsePortal));
                 }
 
-                if (PortalRestrictions.HasFlag(PortalBitmask.OnlyOlthoiPCs) && !player.IsOlthoiPlayer)
+                if (PortalRestrictions.HasFlag(PortalBitmask.OnlyOlthoiPCs) && !player.IsOlthoiPlayer())
                 {
                     // Only Olthoi may pass through this portal!
                     return new ActivationResult(new GameEventWeenieError(player.Session, WeenieError.OnlyOlthoiMayUsePortal));
                 }
 
-                if ((PortalRestrictions.HasFlag(PortalBitmask.NoOlthoiPCs) || IsGateway) && player.IsOlthoiPlayer)
+                if (PortalRestrictions.HasFlag(PortalBitmask.NoOlthoiPCs) && player.IsOlthoiPlayer())
                 {
                     // Olthoi may not pass through this portal!
                     return new ActivationResult(new GameEventWeenieError(player.Session, WeenieError.OlthoiMayNotUsePortal));

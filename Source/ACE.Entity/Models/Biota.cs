@@ -53,5 +53,7 @@ namespace ACE.Entity.Models
         public IDictionary<uint /* Character ID */, PropertiesAllegiance> PropertiesAllegiance { get; set; }
         public ICollection<PropertiesEnchantmentRegistry> PropertiesEnchantmentRegistry { get; set; }
         public IDictionary<uint /* Player GUID */, bool /* Storage */> HousePermissions { get; set; }
+
+
     }
 }

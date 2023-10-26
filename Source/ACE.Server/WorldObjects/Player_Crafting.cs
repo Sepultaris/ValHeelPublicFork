@@ -142,7 +142,7 @@ namespace ACE.Server.WorldObjects
                     continue;
                 }
 
-                if (IsTrading && item.IsBeingTradedOrContainsItemBeingTraded(ItemsInTradeWindow))
+                if (IsTrading && ItemsInTradeWindow.Contains(item.Guid))
                 {
                     SendWeenieError(WeenieError.YouCannotSalvageItemsInTrading);
                     continue;
@@ -201,7 +201,7 @@ namespace ACE.Server.WorldObjects
 
                 var addedValue = (int)Math.Round((item.Value ?? 0) * valueFactor);
 
-                salvageBag.Value = Math.Min((salvageBag.Value ?? 0) + addedValue, 75000);
+                salvageBag.Value = Math.Min((salvageBag.Value ?? 0) + addedValue, 125000);
 
                 // a bit different here, since ACE handles overages
                 if (message != null)

@@ -34,7 +34,7 @@ namespace ACE.Server.WorldObjects
 
             DamageEvent damageEvent = null;
 
-            if (targetCreature != null && targetCreature.IsAlive)
+            if (targetCreature != null)
             {
                 if (sourcePlayer != null)
                 {
@@ -43,6 +43,12 @@ namespace ACE.Server.WorldObjects
 
                     if (damageEvent != null && damageEvent.HasDamage)
                         worldObject.EnqueueBroadcast(new GameMessageSound(worldObject.Guid, Sound.Collision, 1.0f));
+
+                    if (worldObject.ProcSpell.HasValue)
+                    {
+                        var spell = new Spell(worldObject.ProcSpell.Value);
+                        worldObject.TryCastSpell(spell, targetCreature);
+                    }
                 }
                 else if (sourceCreature != null && sourceCreature.AttackTarget != null)
                 {

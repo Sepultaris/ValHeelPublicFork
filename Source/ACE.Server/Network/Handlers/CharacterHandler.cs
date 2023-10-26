@@ -69,7 +69,9 @@ namespace ACE.Server.Network.Handlers
                 }
             });
 
-            if ((characterCreateInfo.Heritage == HeritageGroup.Olthoi || characterCreateInfo.Heritage == HeritageGroup.OlthoiAcid) && PropertyManager.GetBool("olthoi_play_disabled").Item)
+            // Disable OlthoiPlay characters for now. They're not implemented yet.
+            // FIXME: Restore OlthoiPlay characters when properly handled.
+            if (characterCreateInfo.Heritage == (int)HeritageGroup.Olthoi || characterCreateInfo.Heritage == (int)HeritageGroup.OlthoiAcid)
             {
                 SendCharacterCreateResponse(session, CharacterGenerationVerificationResponse.Pending);
                 return;
@@ -85,19 +87,19 @@ namespace ACE.Server.Network.Handlers
                 else
                     weenie = DatabaseManager.World.GetCachedWeenie("human");
 
-                if (characterCreateInfo.Heritage == HeritageGroup.Olthoi && weenie.WeenieType == WeenieType.Admin)
+                if (characterCreateInfo.Heritage == (int)HeritageGroup.Olthoi && weenie.WeenieType == WeenieType.Admin)
                     weenie = DatabaseManager.World.GetCachedWeenie("olthoiadmin");
 
-                if (characterCreateInfo.Heritage == HeritageGroup.OlthoiAcid && weenie.WeenieType == WeenieType.Admin)
+                if (characterCreateInfo.Heritage == (int)HeritageGroup.OlthoiAcid && weenie.WeenieType == WeenieType.Admin)
                     weenie = DatabaseManager.World.GetCachedWeenie("olthoiacidadmin");
             }
             else
                 weenie = DatabaseManager.World.GetCachedWeenie("human");
 
-            if (characterCreateInfo.Heritage == HeritageGroup.Olthoi && weenie.WeenieType == WeenieType.Creature)
+            if (characterCreateInfo.Heritage == (int)HeritageGroup.Olthoi && weenie.WeenieType == WeenieType.Creature)
                 weenie = DatabaseManager.World.GetCachedWeenie("olthoiplayer");
 
-            if (characterCreateInfo.Heritage == HeritageGroup.OlthoiAcid && weenie.WeenieType == WeenieType.Creature)
+            if (characterCreateInfo.Heritage == (int)HeritageGroup.OlthoiAcid && weenie.WeenieType == WeenieType.Creature)
                 weenie = DatabaseManager.World.GetCachedWeenie("olthoiacidplayer");
 
             if (characterCreateInfo.IsSentinel && session.AccessLevel >= AccessLevel.Sentinel)
@@ -115,6 +117,10 @@ namespace ACE.Server.Network.Handlers
                 log.Error("Database does not contain the weenie for human (1). Characters cannot be created until the missing weenie is restored.");
                 return;
             }
+
+            // Removes the generic knife and buckler, hidden Javelin, 30 stack of arrows, and 5 stack of coins that are given to all characters
+            // Starter Gear from the JSON file are added to the character later in the CharacterCreateEx() process
+            weenie.PropertiesCreateList = null;
 
             var guid = GuidManager.NewPlayerGuid();
 
@@ -136,7 +142,7 @@ namespace ACE.Server.Network.Handlers
             {
                 if (result == PlayerFactory.CreateResult.ClientServerSkillsMismatch)
                 {
-                    session.Terminate(SessionTerminationReason.ClientVersionIncorrect, new GameMessageBootAccount(" because your client is not the correct version for this server. Please visit http://play.emu.ac/ to update to latest client"));
+                    session.Terminate(SessionTerminationReason.ClientOutOfDate, new GameMessageBootAccount(" because your client is not the correct version for this server. Please visit http://play.emu.ac/ to update to latest client"));
                     return;
                 }
 
@@ -226,7 +232,7 @@ namespace ACE.Server.Network.Handlers
                 session.SendCharacterError(CharacterError.EnterGameCharacterNotOwned);
                 return;
             }
-
+            
             if (PlayerManager.GetOnlinePlayer(guid) != null)
             {
                 // If this happens, it could be that the previous session for this Player terminated in a way that didn't transfer the player to offline via PlayerManager properly.
@@ -246,12 +252,6 @@ namespace ACE.Server.Network.Handlers
             if (offlinePlayer.IsDeleted || offlinePlayer.IsPendingDeletion)
             {
                 session.SendCharacterError(CharacterError.EnterGameCharacterNotOwned);
-                return;
-            }
-
-            if ((offlinePlayer.Heritage == (int)HeritageGroup.Olthoi || offlinePlayer.Heritage == (int)HeritageGroup.OlthoiAcid) && PropertyManager.GetBool("olthoi_play_disabled").Item)
-            {
-                session.SendCharacterError(CharacterError.EnterGameCouldntPlaceCharacter);
                 return;
             }
 

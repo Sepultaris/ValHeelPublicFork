@@ -7,9 +7,7 @@ using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
-using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
-using ACE.Server.Network.Structure;
 using ACE.Server.Physics.Animation;
 
 namespace ACE.Server.WorldObjects
@@ -57,7 +55,7 @@ namespace ACE.Server.WorldObjects
         /// <summary>
         /// Switches a player or creature to a new combat stance
         /// </summary>
-        public float SetCombatMode(CombatMode combatMode, out float queueTime, bool forceHandCombat = false, bool animOnly = false)
+        public float SetCombatMode(CombatMode combatMode, out float queueTime, bool forceHandCombat = false)
         {
             // check if combat stance actually needs switching
             var combatStance = forceHandCombat ? MotionStance.HandCombat : GetCombatStance();
@@ -73,12 +71,11 @@ namespace ACE.Server.WorldObjects
             if (CombatMode == CombatMode.Missile)
                 HideAmmo();
 
-            if (!animOnly)
-                CombatMode = combatMode;
+            CombatMode = combatMode;
 
             var animLength = 0.0f;
 
-            switch (combatMode)
+            switch (CombatMode)
             {
                 case CombatMode.NonCombat:
                     animLength = HandleSwitchToPeaceMode();
@@ -908,11 +905,7 @@ namespace ACE.Server.WorldObjects
             var spell = new Spell(spellID);
             if (spell.NotFound) return;  // TODO: friendly message to install DF patch
 
-            var addResult = target.EnchantmentManager.Add(spell, this, weapon);
-
-            if (target is Player playerTarget)
-                playerTarget.Session.Network.EnqueueSend(new GameEventMagicUpdateEnchantment(playerTarget.Session, new Enchantment(playerTarget, addResult.Enchantment)));
-
+            target.EnchantmentManager.Add(spell, this, weapon);
             target.EnqueueBroadcast(new GameMessageScript(target.Guid, PlayScript.DirtyFightingDefenseDebuff));
 
             FightDirty_SendMessage(target, spell);
@@ -931,10 +924,7 @@ namespace ACE.Server.WorldObjects
             var spell = new Spell(spellID);
             if (spell.NotFound) return;  // TODO: friendly message to install DF patch
 
-            var addResult = target.EnchantmentManager.Add(spell, this, weapon);
-
-            if (target is Player playerTarget)
-                playerTarget.Session.Network.EnqueueSend(new GameEventMagicUpdateEnchantment(playerTarget.Session, new Enchantment(playerTarget, addResult.Enchantment)));
+            target.EnchantmentManager.Add(spell, this, weapon);
 
             // only send if not already applied?
             target.EnqueueBroadcast(new GameMessageScript(target.Guid, PlayScript.DirtyFightingDamageOverTime));
@@ -955,13 +945,7 @@ namespace ACE.Server.WorldObjects
             var spell = new Spell(spellID);
             if (spell.NotFound) return;  // TODO: friendly message to install DF patch
 
-            var addResult = target.EnchantmentManager.Add(spell, this, weapon);
-
-            var playerTarget = target as Player;
-
-            if (playerTarget != null)
-                playerTarget.Session.Network.EnqueueSend(new GameEventMagicUpdateEnchantment(playerTarget.Session, new Enchantment(playerTarget, addResult.Enchantment)));
-
+            target.EnchantmentManager.Add(spell, this, weapon);
             target.EnqueueBroadcast(new GameMessageScript(target.Guid, PlayScript.DirtyFightingAttackDebuff));
 
             FightDirty_SendMessage(target, spell);
@@ -973,11 +957,7 @@ namespace ACE.Server.WorldObjects
             spell = new Spell(spellID);
             if (spell.NotFound) return;  // TODO: friendly message to install DF patch
 
-            addResult = target.EnchantmentManager.Add(spell, this, weapon);
-
-            if (playerTarget != null)
-                playerTarget.Session.Network.EnqueueSend(new GameEventMagicUpdateEnchantment(playerTarget.Session, new Enchantment(playerTarget, addResult.Enchantment)));
-
+            target.EnchantmentManager.Add(spell, this, weapon);
             target.EnqueueBroadcast(new GameMessageScript(target.Guid, PlayScript.DirtyFightingHealDebuff));
 
             FightDirty_SendMessage(target, spell);
@@ -1059,8 +1039,6 @@ namespace ACE.Server.WorldObjects
                 {
                     if (sourcePet && targetPet)     // combat pets can't damage other pets
                         return false;
-                    else if (sourcePet && target.PlayerKillerStatus == PlayerKillerStatus.PK || targetPet && PlayerKillerStatus == PlayerKillerStatus.PK)   // combat pets can't damage pk-only creatures (ie. faction banners)
-                        return false;
                     else
                         return true;
                 }
@@ -1109,11 +1087,6 @@ namespace ACE.Server.WorldObjects
         /// If one of these fields is set, potential aggro from Player or CombatPet attacks terminates immediately
         /// </summary>
         protected static readonly Tolerance PlayerCombatPet_RetaliateExclude = Tolerance.NoAttack | Tolerance.Monster;
-
-        /// <summary>
-        /// If one of these fields is set, potential aggro from monster alerts terminates immediately
-        /// </summary>
-        protected static readonly Tolerance AlertExclude = Tolerance.NoAttack | Tolerance.Provoke;
 
         /// <summary>
         /// Wakes up a monster if it can be alerted
@@ -1179,7 +1152,7 @@ namespace ACE.Server.WorldObjects
             var motion = CurrentMotionState.MotionState.ForwardCommand.ToString();
             foreach (DamageType damageType in Enum.GetValues(typeof(DamageType)))
             {
-                if ((damageTypes & damageType) != 0 && !damageType.IsMultiDamage())
+                if ((damageTypes & damageType) != 0)
                 {
                     // handle multiple damage types
                     if (damageType == DamageType.Slash && motion.Contains("Thrust"))
@@ -1290,7 +1263,7 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public int GetDefenseImbues(ImbuedEffectType imbuedEffectType)
         {
-            return EquippedObjects.Values.Count(i => i.ImbuedEffect.HasFlag(imbuedEffectType));
+            return EquippedObjects.Values.Count(i => i.GetImbuedEffects().HasFlag(imbuedEffectType));
         }
 
         /// <summary>

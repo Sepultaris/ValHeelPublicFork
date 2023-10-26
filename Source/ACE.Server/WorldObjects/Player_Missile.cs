@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
-
+using ACE.Common;
 using ACE.Entity.Enum;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Network.GameEvent.Events;
@@ -243,7 +244,51 @@ namespace ACE.Server.WorldObjects
 
                 var projectile = LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
                 UpdateAmmoAfterLaunch(ammo);
-            });
+
+                if (weapon != null && weapon.IsCleaving)
+                {
+                    var cleave = GetMissileCleaveTarget(creature, weapon);
+
+                    foreach (var cleaveHit in cleave)
+                    {
+                        // target procs don't happen for cleaving
+                        /*DamageTarget(cleaveHit, weapon);*/
+                        /*LaunchCleaveMissile(cleaveHit, attackSequence, stance, subsequent = false);*/
+                        var projectileSpeed = GetProjectileSpeed();
+                        var aimVelocity = GetAimVelocity(cleaveHit, projectileSpeed);
+                        var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+                        var velocity = CalculateProjectileVelocity(localOrigin, cleaveHit, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+                        LaunchProjectile(launcher, ammo, cleaveHit, origin, orientation, velocity);
+                        UpdateAmmoAfterLaunch(ammo);
+                    }
+                }
+
+                if (DoMissileAoE)
+                {
+                    LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
+
+                    // AoE Missile Attack
+                    var aoeRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                    var aoeTarget = target as Creature;
+
+                    if (aoeRoll <= MissileAoEChance && aoeTarget != null)
+                    {
+                        foreach (var m in GetMissileAoETarget(aoeTarget, weapon))
+                        {
+                            var projectileSpeed = GetProjectileSpeed();
+                            var aimVelocity = GetAimVelocity(m, projectileSpeed);
+                            var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+                            var velocity = CalculateProjectileVelocity(localOrigin, m, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+                            LaunchProjectile(launcher, ammo, m, origin, orientation, velocity);
+                        }
+                    }
+
+                    DoMissileAoE = false;
+                }  
+            });       
 
             // ammo remaining?
             if (!ammo.UnlimitedUse && (ammo.StackSize == null || ammo.StackSize <= 1))
@@ -298,9 +343,138 @@ namespace ACE.Server.WorldObjects
                     // perform next attack
                     nextAttack.AddAction(this, () => { LaunchMissile(target, attackSequence, stance, true); });
                     nextAttack.EnqueueChain();
+
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
                 }
                 else
+                {
+                    if (DoBrutalizeAttack)
+                    {
+                        var currentUnixTime = Time.GetUnixTime();
+                        DoBrutalizeAttack = false;
+                        LastBrutalizeTimestamp = currentUnixTime;
+                        PlayParticleEffect(PlayScript.EnchantDownRed, Guid);
+                    }
+
                     OnAttackDone();
+                }
+            });
+
+            actionChain.EnqueueChain();
+
+            if (UnderLifestoneProtection)
+                LifestoneProtectionDispel();
+        }
+
+        public void LaunchCleaveMissile(WorldObject target, int attackSequence, MotionStance stance, bool subsequent = false)
+        {
+            // cleaving skips original target
+            if (AttackSequence != attackSequence)
+                return;
+
+            var weapon = GetEquippedMissileWeapon();
+            if (weapon == null || CombatMode == CombatMode.NonCombat)
+            {
+                OnAttackDone();
+                return;
+            }
+
+            var ammo = weapon.IsAmmoLauncher ? GetEquippedAmmo() : weapon;
+            if (ammo == null)
+            {
+                OnAttackDone();
+                return;
+            }
+
+            var launcher = GetEquippedMissileLauncher();
+
+            var creature = target as Creature;
+            if (!IsAlive || IsBusy || MissileTarget == null || creature == null || !creature.IsAlive || suicideInProgress)
+            {
+                OnAttackDone();
+                return;
+            }
+
+            if (!TargetInRange(target))
+            {
+                // this must also be sent to actually display the transient message
+                SendWeenieError(WeenieError.MissileOutOfRange);
+
+                // this prevents the accuracy bar from refilling when 'repeat attacks' is enabled
+                OnAttackDone();
+
+                return;
+            }
+
+            var actionChain = new ActionChain();
+
+            if (subsequent && !IsFacing(target))
+            {
+                var rotateTime = Rotate(target);
+                actionChain.AddDelaySeconds(rotateTime);
+            }
+
+            // launch animation
+            // point of no return beyond this point -- cannot be cancelled
+            actionChain.AddAction(this, () => Attacking = true);
+
+            if (subsequent)
+            {
+                // client shows hourglass, until attack done is received
+                // retail only did this for subsequent attacks w/ repeat attacks on
+                Session.Network.EnqueueSend(new GameEventCombatCommenceAttack(Session));
+            }
+
+            var projectileSpeed = GetProjectileSpeed();
+
+            // get z-angle for aim motion
+            var aimVelocity = GetAimVelocity(target, projectileSpeed);
+
+            var aimLevel = GetAimLevel(aimVelocity);
+
+            // calculate projectile spawn pos and velocity
+            var localOrigin = GetProjectileSpawnOrigin(ammo.WeenieClassId, aimLevel);
+
+            var velocity = CalculateProjectileVelocity(localOrigin, target, projectileSpeed, out Vector3 origin, out Quaternion orientation);
+
+            //Console.WriteLine($"Velocity: {velocity}");
+
+            if (velocity == Vector3.Zero)
+            {
+                // pre-check succeeded, but actual velocity calculation failed
+                SendWeenieError(WeenieError.MissileOutOfRange);
+
+                // this prevents the accuracy bar from refilling when 'repeat attacks' is enabled
+                Attacking = false;
+                OnAttackDone();
+                return;
+            }
+
+            var launchTime = EnqueueMotionPersist(actionChain, aimLevel);
+
+            // launch projectile
+            actionChain.AddAction(this, () =>
+            {
+                // handle self-procs
+                TryProcEquippedItems(this, this, true, weapon);
+
+                var sound = GetLaunchMissileSound(weapon);
+                EnqueueBroadcast(new GameMessageSound(Guid, sound, 1.0f));
+
+                // stamina usage
+                // TODO: ensure enough stamina for attack
+                // TODO: verify formulas - double/triple cost for bow/xbow?
+                var staminaCost = GetAttackStamina(GetAccuracyRange());
+                UpdateVitalDelta(Stamina, -staminaCost);
+
+                var projectile = LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
+                UpdateAmmoAfterLaunch(ammo);
             });
 
             actionChain.EnqueueChain();
@@ -351,6 +525,99 @@ namespace ACE.Server.WorldObjects
             var maxRange = GetMaxMissileRange();
 
             return dist <= maxRange;
+        }
+        public List<Creature> GetMissileCleaveTarget(Creature target, WorldObject weapon)
+        {
+            var player = this as Player;
+
+            if (!weapon.IsCleaving) return null;
+
+            // sort visible objects by ascending distance
+            var visible = PhysicsObj.ObjMaint.GetVisibleObjectsValuesWhere(o => o.WeenieObj.WorldObject != null);
+            visible.Sort(DistanceComparator);
+
+            var cleaveTargets = new List<Creature>();
+            var totalCleaves = weapon.CleaveTargets;
+
+            foreach (var obj in visible)
+            {
+                // cleaving skips original target
+                if (obj.ID == target.PhysicsObj.ID || target == null)
+                    continue;
+
+                // only cleave creatures
+                var creature = obj.WeenieObj.WorldObject as Creature;
+                if (creature == null || creature.Teleporting || creature.IsDead) continue;
+
+                if (player != null && player.CheckPKStatusVsTarget(creature, null) != null)
+                    continue;
+
+                if (!creature.Attackable && creature.TargetingTactic == TargetingTactic.None || creature.Teleporting)
+                    continue;
+
+                if (creature is CombatPet && (player != null || this is CombatPet))
+                    continue;
+
+                // no objects in cleave range
+                var cylDist = GetCylinderDistance(creature);
+                if (cylDist > MissileCleaveCylRange)
+                    return cleaveTargets;
+
+                // only cleave in front of attacker
+                var angle = GetAngle(creature);
+                if (Math.Abs(angle) > MissileCleaveAngle / 2.0f)
+                    continue;
+
+                // found cleavable object
+                cleaveTargets.Add(creature);
+                if (cleaveTargets.Count == totalCleaves)
+                    break;
+            }
+            return cleaveTargets;
+        }
+
+        public List<Creature> GetMissileAoETarget(Creature target, WorldObject weapon)
+        {
+            var player = this as Player;
+
+            // sort visible objects by ascending distance
+            var visible = PhysicsObj.ObjMaint.GetVisibleObjectsValuesWhere(o => o.WeenieObj.WorldObject != null);
+            visible.Sort(DistanceComparator);
+
+            var cleaveTargets = new List<Creature>();
+            var totalCleaves = weapon.CleaveTargets;
+
+            foreach (var obj in visible)
+            {
+                // only cleave creatures
+                var creature = obj.WeenieObj.WorldObject as Creature;
+                if (creature == null || creature.Teleporting || creature.IsDead) continue;
+
+                if (player != null && player.CheckPKStatusVsTarget(creature, null) != null)
+                    continue;
+
+                if (!creature.Attackable && creature.TargetingTactic == TargetingTactic.None || creature.Teleporting)
+                    continue;
+
+                if (creature is CombatPet && (player != null || this is CombatPet))
+                    continue;
+
+                // no objects in cleave range
+                var cylDist = GetCylinderDistance(creature);
+                if (cylDist > MissileAoECylRange)
+                    return cleaveTargets;
+
+                // only cleave in front of attacker
+                var angle = GetAngle(creature);
+                if (Math.Abs(angle) > MissileAoEAngle)
+                    continue;
+
+                // found cleavable object
+                cleaveTargets.Add(creature);
+                if (cleaveTargets.Count == totalCleaves)
+                    break;
+            }
+            return cleaveTargets;
         }
     }
 }

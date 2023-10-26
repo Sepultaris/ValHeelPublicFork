@@ -117,12 +117,12 @@ namespace ACE.Server.WorldObjects
                 }
             }
 
-            // Projectiles with RotationSpeed get omega values and "align path" turned off which
+            // Whirling Blade spells get omega values and "align path" turned off which
             // creates the nice swirling animation
-            if ((RotationSpeed ?? 0) != 0)
+            if (WeenieClassId == 1636 || WeenieClassId == 7268 || WeenieClassId == 20979)
             {
                 AlignPath = false;
-                PhysicsObj.Omega = new Vector3((float)(Math.PI * 2 * RotationSpeed), 0, 0);
+                PhysicsObj.Omega = new Vector3(12.56637f, 0, 0);
             }
         }
 
@@ -281,7 +281,7 @@ namespace ACE.Server.WorldObjects
 
             if (player != null)
                 player.LastHitSpellProjectile = Spell;
-            
+
             // ensure caster can damage target
             var sourceCreature = ProjectileSource as Creature;
             if (sourceCreature != null && !sourceCreature.CanDamage(creatureTarget))
@@ -310,18 +310,23 @@ namespace ACE.Server.WorldObjects
 
             if (damage != null)
             {
-                if (Spell.MetaSpellType == ACE.Entity.Enum.SpellType.EnchantmentProjectile)
+                // handle void magic DoTs:
+                // instead of instant damage, add DoT to target's enchantment registry
+                if (Spell.School == MagicSchool.VoidMagic && Spell.Duration > 0)
                 {
-                    // handle EnchantmentProjectile successfully landing on target
-                    ProjectileSource.CreateEnchantment(creatureTarget, ProjectileSource, ProjectileLauncher, Spell, false, FromProc);
+                    var dot = ProjectileSource.CreateEnchantment(creatureTarget, ProjectileSource, ProjectileLauncher, Spell);
+
+                    if (dot.Message != null && player != null)
+                        player.Session.Network.EnqueueSend(dot.Message);
+
+                    // corruption / corrosion playscript?
+                    //target.EnqueueBroadcast(new GameMessageScript(target.Guid, PlayScript.HealthDownVoid));
+                    //target.EnqueueBroadcast(new GameMessageScript(target.Guid, PlayScript.DirtyFightingDefenseDebuff));
                 }
                 else
                 {
                     DamageTarget(creatureTarget, damage.Value, critical, critDefended, overpower);
                 }
-
-                // if this SpellProjectile has a TargetEffect, play it on successful hit
-                DoSpellEffects(Spell, ProjectileSource, creatureTarget, true);
 
                 if (player != null)
                     Proficiency.OnSuccessUse(player, player.GetCreatureSkill(Spell.School), Spell.PowerMod);
@@ -382,6 +387,9 @@ namespace ACE.Server.WorldObjects
 
             if (source == null || !target.IsAlive || targetPlayer != null && targetPlayer.Invincible)
                 return null;
+
+            if (source.CombatUse == ACE.Entity.Enum.CombatUse.Ammo && source.ProjectileLauncher != null)
+                sourcePlayer = (Player)source.ProjectileLauncher.Wielder;
 
             // check lifestone protection
             if (targetPlayer != null && targetPlayer.UnderLifestoneProtection)
@@ -525,11 +533,16 @@ namespace ACE.Server.WorldObjects
                  */
                 if (sourcePlayer != null)
                 {
+                    // per retail stats, level 8 difficulty is capped to 350 instead of 400
+                    // without this, level 7s have the potential to deal more damage than level 8s
+                    var difficulty = Math.Min(Spell.Power, 350);    // was skillMod possibility capped to 1.3x for level 7 spells in retail, instead of level 8 difficulty cap?
                     var magicSkill = sourcePlayer.GetCreatureSkill(Spell.School).Current;
 
-                    if (magicSkill > Spell.Power)
+                    if (magicSkill > difficulty)
                     {
-                        var percentageBonus = (magicSkill - Spell.Power) / 1000.0f;
+                        // Bonus clamped to a maximum of 50%
+                        //var percentageBonus = Math.Clamp((magicSkill - Spell.Power) / 100.0f, 0.0f, 0.5f);
+                        var percentageBonus = (magicSkill - difficulty) / 1000.0f;
 
                         skillBonus = Spell.MinDamage * percentageBonus;
                     }
@@ -566,6 +579,35 @@ namespace ACE.Server.WorldObjects
             {
                 ShowInfo(target, Spell, attackSkill, criticalChance, criticalHit, critDefended, overpower, weaponCritDamageMod, skillBonus, baseDamage, critDamageBonus, elementalDamageMod, slayerMod, weaponResistanceMod, resistanceMod, absorbMod, LifeProjectileDamage, lifeMagicDamage, finalDamage);
             }
+            // OP damage
+            if (sourceCreature == null)
+            {
+                finalDamage = (baseDamage * 10) + critDamageBonus + skillBonus;
+
+                finalDamage *= elementalDamageMod * slayerMod * resistanceMod * absorbMod;
+                return finalDamage;
+            }
+            // Brutalize Mod
+            if (sourcePlayer != null && sourcePlayer.DoBrutalizeAttack)
+            {
+                var burtalizeDamage = finalDamage * 5.0f;
+                var currentUnixTime = Time.GetUnixTime();
+
+                sourcePlayer.DoBrutalizeAttack = false;
+                sourcePlayer.LastBrutalizeTimestamp = currentUnixTime;
+                sourcePlayer.PlayParticleEffect(PlayScript.EnchantDownRed, sourcePlayer.Guid);
+
+                finalDamage = burtalizeDamage;
+            }
+
+            /*if (sourceCreature.Overpower != null)
+            {
+                finalDamage = finalDamage * ((int)(sourceCreature.Overpower * 0.16f + 1) + ((int)(sourceCreature.Level * 0.005f) * 20.1f));
+            }
+            if (target.Overpower != null)
+            {
+                finalDamage = finalDamage / ((int)(target.OverpowerResist * 0.16f + 1) + ((int)(target.Level * 0.005f) * 20.1f));
+            }*/
             return finalDamage;
         }
 
@@ -577,7 +619,7 @@ namespace ACE.Server.WorldObjects
 
                     // does target have shield equipped?
                     var shield = target.GetEquippedShield();
-                    if (shield != null && shield.GetAbsorbMagicDamage() != null)
+                    if (shield != null && shield.AbsorbMagicDamage != null)
                         return GetShieldMod(target, shield);
 
                     break;
@@ -585,7 +627,7 @@ namespace ACE.Server.WorldObjects
                 case CombatMode.Missile:
 
                     var missileLauncherOrShield = target.GetEquippedMissileLauncher() ?? target.GetEquippedShield();
-                    if (missileLauncherOrShield != null && missileLauncherOrShield.GetAbsorbMagicDamage() != null)
+                    if (missileLauncherOrShield != null && missileLauncherOrShield.AbsorbMagicDamage != null)
                         return AbsorbMagic(target, missileLauncherOrShield);
 
                     break;
@@ -593,7 +635,7 @@ namespace ACE.Server.WorldObjects
                 case CombatMode.Magic:
 
                     var caster = target.GetEquippedWand();
-                    if (caster != null && caster.GetAbsorbMagicDamage() != null)
+                    if (caster != null && caster.AbsorbMagicDamage != null)
                         return AbsorbMagic(target, caster);
 
                     break;
@@ -627,7 +669,7 @@ namespace ACE.Server.WorldObjects
 
             var baseSkill = Math.Min(shieldSkill.Base, 433);
             var specMod = shieldSkill.AdvancementClass == SkillAdvancementClass.Specialized ? 1.0f : 0.8f;
-            var cap = (float)(shield.GetAbsorbMagicDamage() ?? 0.0f);
+            var cap = (float)(shield.GetProperty(PropertyFloat.AbsorbMagicDamage) ?? 0.0f);
 
             // speced, 100 skill = 0%
             // trained, 100 skill = 0%
@@ -665,12 +707,10 @@ namespace ACE.Server.WorldObjects
             // using an equivalent formula that produces the correct results for 10% and 25%,
             // and also produces the correct results for any %
 
-            var absorbMagicDamage = item.GetAbsorbMagicDamage();
-
-            if (absorbMagicDamage == null)
+            if (item.AbsorbMagicDamage == null)
                 return 1.0f;
 
-            var maxPercent = absorbMagicDamage.Value;
+            var maxPercent = item.AbsorbMagicDamage.Value;
 
             var baseCap = 319;
             var magicDefBase = target.GetCreatureSkill(Skill.MagicDefense).Base;
@@ -694,8 +734,6 @@ namespace ACE.Server.WorldObjects
             var sourceCreature = ProjectileSource as Creature;
             var sourcePlayer = ProjectileSource as Player;
 
-            var pkBattle = sourcePlayer != null && targetPlayer != null;
-
             var amount = 0u;
             var percent = 0.0f;
 
@@ -703,11 +741,9 @@ namespace ACE.Server.WorldObjects
             var heritageMod = 1.0f;
             var sneakAttackMod = 1.0f;
             var critDamageRatingMod = 1.0f;
-            var pkDamageRatingMod = 1.0f;
 
             var damageResistRatingMod = 1.0f;
             var critDamageResistRatingMod = 1.0f;
-            var pkDamageResistRatingMod = 1.0f;
 
             WorldObject equippedCloak = null;
 
@@ -749,15 +785,6 @@ namespace ACE.Server.WorldObjects
                     damageResistRatingMod = Creature.AdditiveCombine(damageResistRatingMod, critDamageResistRatingMod);
                 }
 
-                if (pkBattle)
-                {
-                    pkDamageRatingMod = Creature.GetPositiveRatingMod(sourceCreature?.GetPKDamageRating() ?? 0);
-                    pkDamageResistRatingMod = Creature.GetNegativeRatingMod(target.GetPKDamageResistRating());
-
-                    damageRatingMod = Creature.AdditiveCombine(damageRatingMod, pkDamageRatingMod);
-                    damageResistRatingMod = Creature.AdditiveCombine(damageResistRatingMod, pkDamageResistRatingMod);
-                }
-
                 damage *= damageRatingMod * damageResistRatingMod;
 
                 percent = damage / target.Health.MaxValue;
@@ -780,7 +807,7 @@ namespace ACE.Server.WorldObjects
                 target.DamageHistory.Add(ProjectileSource, Spell.DamageType, amount);
 
                 //if (targetPlayer != null && targetPlayer.Fellowship != null)
-                    //targetPlayer.Fellowship.OnVitalUpdate(targetPlayer);
+                //targetPlayer.Fellowship.OnVitalUpdate(targetPlayer);
             }
 
             amount = (uint)Math.Round(damage);    // full amount for debugging
@@ -788,11 +815,11 @@ namespace ACE.Server.WorldObjects
             // show debug info
             if (sourceCreature != null && sourceCreature.DebugDamage.HasFlag(Creature.DebugDamageType.Attacker))
             {
-                ShowInfo(sourceCreature, heritageMod, sneakAttackMod, damageRatingMod, damageResistRatingMod, critDamageRatingMod, critDamageResistRatingMod, pkDamageRatingMod, pkDamageResistRatingMod, damage);
+                ShowInfo(sourceCreature, heritageMod, sneakAttackMod, damageRatingMod, damageResistRatingMod, critDamageRatingMod, critDamageResistRatingMod, damage);
             }
             if (target.DebugDamage.HasFlag(Creature.DebugDamageType.Defender))
             {
-                ShowInfo(target, heritageMod, sneakAttackMod, damageRatingMod, damageResistRatingMod, critDamageRatingMod, critDamageResistRatingMod, pkDamageRatingMod, pkDamageResistRatingMod, damage);
+                ShowInfo(target, heritageMod, sneakAttackMod, damageRatingMod, damageResistRatingMod, critDamageRatingMod, critDamageResistRatingMod, damage);
             }
 
             if (target.IsAlive)
@@ -912,7 +939,7 @@ namespace ACE.Server.WorldObjects
                 info += $"CriticalDefended: {critDefended}\n";
 
             info += $"Overpower: {overpower}\n";
-        
+
             if (spell.MetaSpellType == ACE.Entity.Enum.SpellType.LifeProjectile)
             {
                 // life magic projectile
@@ -960,7 +987,7 @@ namespace ACE.Server.WorldObjects
         }
 
         public static void ShowInfo(Creature observed, float heritageMod, float sneakAttackMod, float damageRatingMod, float damageResistRatingMod,
-            float critDamageRatingMod, float critDamageResistRatingMod, float pkDamageRatingMod, float pkDamageResistRatingMod, float damage)
+            float critDamageRatingMod, float critDamageResistRatingMod, float damage)
         {
             var observer = PlayerManager.GetOnlinePlayer(observed.DebugDamageTarget);
             if (observer == null)
@@ -979,17 +1006,11 @@ namespace ACE.Server.WorldObjects
             if (critDamageRatingMod != 1.0f)
                 info += $"CritDamageRatingMod: {critDamageRatingMod}\n";
 
-            if (pkDamageRatingMod != 1.0f)
-                info += $"PkDamageRatingMod: {pkDamageRatingMod}\n";
-
             if (damageRatingMod != 1.0f)
                 info += $"DamageRatingMod: {damageRatingMod}\n";
 
             if (critDamageResistRatingMod != 1.0f)
-                 info += $"CritDamageResistRatingMod: {critDamageResistRatingMod}\n";
-
-            if (pkDamageResistRatingMod != 1.0f)
-                info += $"PkDamageResistRatingMod: {pkDamageResistRatingMod}\n";
+                info += $"CritDamageResistRatingMod: {critDamageResistRatingMod}\n";
 
             if (damageResistRatingMod != 1.0f)
                 info += $"DamageResistRatingMod: {damageResistRatingMod}\n";

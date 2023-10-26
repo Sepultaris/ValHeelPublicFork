@@ -239,7 +239,7 @@ namespace ACE.Server.WorldObjects
         public void Movement()
         {
             //if (!IsRanged)
-                UpdatePosition();
+                UpdatePosition(GetPhysicsObj());
 
             if (MonsterState == State.Awake && GetDistanceToTarget() >= MaxChaseRange)
             {
@@ -252,7 +252,12 @@ namespace ACE.Server.WorldObjects
                 CancelMoveTo();
         }
 
-        public void UpdatePosition(bool netsend = true)
+        public Physics.PhysicsObj GetPhysicsObj()
+        {
+            return PhysicsObj;
+        }
+
+        public void UpdatePosition(Physics.PhysicsObj physicsObj, bool netsend = true)
         {
             stopwatch.Restart();
             PhysicsObj.update_object();
@@ -281,7 +286,6 @@ namespace ACE.Server.WorldObjects
             // was the position successfully moved to?
             // use the physics position as the source-of-truth?
             var newPos = PhysicsObj.Position;
-
             if (Location.LandblockId.Raw != newPos.ObjCellID)
             {
                 var prevBlockCell = Location.LandblockId.Raw;
@@ -305,12 +309,7 @@ namespace ACE.Server.WorldObjects
                     //Console.WriteLine("Moving " + Name + " to " + Location.LandblockId.Raw.ToString("X8"));
             }
 
-            // skip ObjCellID check when updating from physics
-            // TODO: update to newer version of ACE.Entity.Position
-            Location.PositionX = newPos.Frame.Origin.X;
-            Location.PositionY = newPos.Frame.Origin.Y;
-            Location.PositionZ = newPos.Frame.Origin.Z;
-
+            Location.Pos = newPos.Frame.Origin;
             Location.Rotation = newPos.Frame.Orientation;
 
             if (DebugMove)
@@ -384,7 +383,7 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public bool IsFacing(WorldObject target)
         {
-            if (target?.Location == null) return false;
+            if (target == null) return false;
 
             var angle = GetAngle(target);
             var dist = Math.Max(0, GetDistanceToTarget());
@@ -451,12 +450,10 @@ namespace ACE.Server.WorldObjects
                 return;
 
             var homePosition = GetPosition(PositionType.Home);
-            //var matchIndoors = Location.Indoors == homePosition.Indoors;
+            var matchIndoors = Location.Indoors == homePosition.Indoors;
 
-            //var globalPos = matchIndoors ? Location.ToGlobal() : Location.Pos;
-            //var globalHomePos = matchIndoors ? homePosition.ToGlobal() : homePosition.Pos;
-            var globalPos = Location.ToGlobal();
-            var globalHomePos = homePosition.ToGlobal();
+            var globalPos = matchIndoors ? Location.ToGlobal() : Location.Pos;
+            var globalHomePos = matchIndoors ? homePosition.ToGlobal() : homePosition.Pos;
 
             var homeDistSq = Vector3.DistanceSquared(globalHomePos, globalPos);
 

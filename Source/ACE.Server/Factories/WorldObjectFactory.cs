@@ -33,7 +33,6 @@ namespace ACE.Server.Factories
             switch (objWeenieType)
             {
                 case WeenieType.Undef:
-                    log.Warn($"CreateWorldObject: {weenie.GetName()} (0x{guid}:{weenie.WeenieClassId}) - WeenieType is Undef, Object cannot be created.");
                     return null;
                 case WeenieType.LifeStone:
                     return new Lifestone(weenie, guid);
@@ -281,10 +280,7 @@ namespace ACE.Server.Factories
                 var weenie = DatabaseManager.World.GetCachedWeenie(instance.WeenieClassId);
 
                 if (weenie == null)
-                {
-                    log.Warn($"CreateNewWorldObjects: Database does not contain weenie {instance.WeenieClassId} for instance 0x{instance.Guid:X8} at {new Position(instance.ObjCellId, instance.OriginX, instance.OriginY, instance.OriginZ, instance.AnglesX, instance.AnglesY, instance.AnglesZ, instance.AnglesW).ToLOCString()}");
                     continue;
-                }
 
                 if (restrict_wcid != null && restrict_wcid.Value != instance.WeenieClassId)
                     continue;
@@ -351,12 +347,7 @@ namespace ACE.Server.Factories
         /// </summary>
         public static WorldObject CreateNewWorldObject(Weenie weenie)
         {
-            var guid = GuidManager.NewDynamicGuid();
-
-            var worldObject = CreateWorldObject(weenie, guid);
-
-            if (worldObject == null)
-                GuidManager.RecycleDynamicGuid(guid);
+            var worldObject = CreateWorldObject(weenie, GuidManager.NewDynamicGuid());
 
             return worldObject;
         }

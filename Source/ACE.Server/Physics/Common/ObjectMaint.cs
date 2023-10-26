@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-using ACE.Entity.Enum;
 using ACE.Server.Physics.Managers;
 using ACE.Server.WorldObjects;
 
@@ -405,13 +404,13 @@ namespace ACE.Server.Physics.Common
             else if (type == VisibleObjectType.AttackTargets)
             {
                 if (PhysicsObj.WeenieObj.IsCombatPet)
-                    results = objs.Where(i => i.WeenieObj.IsMonster && i.WeenieObj.PlayerKillerStatus != PlayerKillerStatus.PK);    // combat pets cannot attack pk-only creatures (ie. faction banners)
+                    results = objs.Where(i => i.WeenieObj.IsMonster);
                 else if (PhysicsObj.WeenieObj.IsFactionMob)
                     results = objs.Where(i => i.IsPlayer || i.WeenieObj.IsCombatPet || i.WeenieObj.IsMonster && !i.WeenieObj.SameFaction(PhysicsObj));
                 else
                 {
                     // adding faction mobs here, even though they are retaliate-only, for inverse visible targets
-                    results = objs.Where(i => i.IsPlayer || i.WeenieObj.IsCombatPet && PhysicsObj.WeenieObj.PlayerKillerStatus != PlayerKillerStatus.PK || i.WeenieObj.IsFactionMob || i.WeenieObj.PotentialFoe(PhysicsObj));
+                    results = objs.Where(i => i.IsPlayer || i.WeenieObj.IsCombatPet || i.WeenieObj.IsFactionMob || i.WeenieObj.PotentialFoe(PhysicsObj));
                 }
             }
             return results;
@@ -904,7 +903,7 @@ namespace ACE.Server.Physics.Common
             {
                 rwLock.ExitReadLock();
             }
-        }
+        }       
 
         /// <summary>
         /// For monster and CombatPet FindNextTarget

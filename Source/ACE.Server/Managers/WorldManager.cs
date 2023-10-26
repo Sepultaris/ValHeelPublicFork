@@ -10,7 +10,6 @@ using ACE.Common.Performance;
 using ACE.Database;
 using ACE.Database.Entity;
 using ACE.Entity.Enum;
-using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
@@ -162,7 +161,7 @@ namespace ACE.Server.Managers
             {
                 player.CloakStatus = CloakStatus.Undef;
                 player.Attackable = true;
-                player.SetProperty(PropertyBool.DamagedByCollisions, true);
+                player.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.DamagedByCollisions, true);
                 player.AdvocateLevel = null;
                 player.ChannelsActive = null;
                 player.ChannelsAllowed = null;
@@ -191,10 +190,10 @@ namespace ACE.Server.Managers
                 {
                     player.CloakStatus = CloakStatus.Off;
                     player.Attackable = weenie.Attackable;
-                    player.SetProperty(PropertyBool.DamagedByCollisions, false);
-                    player.AdvocateLevel = weenie.GetProperty(PropertyInt.AdvocateLevel);
-                    player.ChannelsActive = (Channel?)weenie.GetProperty(PropertyInt.ChannelsActive);
-                    player.ChannelsAllowed = (Channel?)weenie.GetProperty(PropertyInt.ChannelsAllowed);
+                    player.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.DamagedByCollisions, false);
+                    player.AdvocateLevel = weenie.GetProperty(ACE.Entity.Enum.Properties.PropertyInt.AdvocateLevel);
+                    player.ChannelsActive = (Channel?)weenie.GetProperty(ACE.Entity.Enum.Properties.PropertyInt.ChannelsActive);
+                    player.ChannelsAllowed = (Channel?)weenie.GetProperty(ACE.Entity.Enum.Properties.PropertyInt.ChannelsAllowed);
                     player.Invincible = false;
                     player.Cloaked = false;
 
@@ -212,10 +211,6 @@ namespace ACE.Server.Managers
                 else
                     session.Player.Location = new Position(0xA9B40019, 84, 7.1f, 94, 0, 0, -0.0784591f, 0.996917f);  // ultimate fallback
             }
-
-            var olthoiPlayerReturnedToLifestone = session.Player.IsOlthoiPlayer && character.TotalLogins >= 1 && session.Player.LoginAtLifestone;
-            if (olthoiPlayerReturnedToLifestone)
-                session.Player.Location = new Position(session.Player.Sanctuary);
 
             session.Player.PlayerEnterWorld();
 
@@ -243,21 +238,18 @@ namespace ACE.Server.Managers
             // These warnings are set by DDD_InterrogationResponse
             if ((session.DatWarnCell || session.DatWarnLanguage || session.DatWarnPortal) && PropertyManager.GetBool("show_dat_warning").Item)
             {
-                var msg = PropertyManager.GetString("dat_older_warning_msg").Item;
+                var msg = PropertyManager.GetString("dat_warning_msg").Item;
                 var chatMsg = new GameMessageSystemChat(msg, ChatMessageType.System);
                 session.Network.EnqueueSend(chatMsg);
             }
 
             var popup_header = PropertyManager.GetString("popup_header").Item;
             var popup_motd = PropertyManager.GetString("popup_motd").Item;
-            var popup_welcome = player.IsOlthoiPlayer ? PropertyManager.GetString("popup_welcome_olthoi").Item : PropertyManager.GetString("popup_welcome").Item;
+            var popup_welcome = PropertyManager.GetString("popup_welcome").Item;
 
             if (character.TotalLogins <= 1)
             {
-                if (player.IsOlthoiPlayer)
-                    session.Network.EnqueueSend(new GameEventPopupString(session, AppendLines(popup_welcome, popup_motd)));
-                else
-                    session.Network.EnqueueSend(new GameEventPopupString(session, AppendLines(popup_header, popup_motd, popup_welcome)));
+                session.Network.EnqueueSend(new GameEventPopupString(session, AppendLines(popup_header, popup_motd, popup_welcome)));
             }
             else if (!string.IsNullOrEmpty(popup_motd))
             {
@@ -271,10 +263,8 @@ namespace ACE.Server.Managers
             if (!string.IsNullOrEmpty(server_motd))
                 session.Network.EnqueueSend(new GameMessageSystemChat($"{server_motd}\n", ChatMessageType.Broadcast));
 
-            if (olthoiPlayerReturnedToLifestone)
-                session.Network.EnqueueSend(new GameMessageSystemChat("You have returned to the Olthoi Queen to serve the hive.", ChatMessageType.Broadcast));
-            else if (playerLoggedInOnNoLogLandblock) // see http://acpedia.org/wiki/Mount_Elyrii_Hive
-                session.Network.EnqueueSend(new GameMessageSystemChat("The currents of portal space cannot return you from whence you came. Your previous location forbids login.", ChatMessageType.Broadcast));            
+            if (playerLoggedInOnNoLogLandblock) // see http://acpedia.org/wiki/Mount_Elyrii_Hive
+                session.Network.EnqueueSend(new GameMessageSystemChat("The currents of portal space cannot return you from whence you came. Your previous location forbids login.", ChatMessageType.Broadcast));
         }
 
         private static string AppendLines(params string[] lines)

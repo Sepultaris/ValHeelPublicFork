@@ -14,7 +14,9 @@ using ACE.Server.Network;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
-
+using ACE.Entity.Enum.Properties;
+using ACE.Database.Models.Shard;
+using System.Xml;
 
 namespace ACE.Server.Command.Handlers
 {
@@ -23,13 +25,11 @@ namespace ACE.Server.Command.Handlers
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         // pop
-        [CommandHandler("pop", AccessLevel.Player, CommandHandlerFlag.None, 0,
-            "Show current world population",
-            "")]
+        [CommandHandler("pop", AccessLevel.Player, CommandHandlerFlag.None, 0,"Show current world population","")]
         public static void HandlePop(Session session, params string[] parameters)
         {
             CommandHandlerHelper.WriteOutputInfo(session, $"Current world population: {PlayerManager.GetOnlineCount():N0}", ChatMessageType.Broadcast);
-        }
+        }        
 
         // quest info (uses GDLe formatting to match plugin expectations)
         [CommandHandler("myquests", AccessLevel.Player, CommandHandlerFlag.RequiresWorld, "Shows your quest log")]
@@ -110,8 +110,7 @@ namespace ACE.Server.Command.Handlers
                 var loc = HouseManager.GetCoords(keepHouse.SlumLord.Location);
 
                 var msg = $"Are you sure you want to keep the {houseType} at\n{loc}?";
-                if (!session.Player.ConfirmationManager.EnqueueSend(new Confirmation_Custom(session.Player.Guid, () => HandleHouseSelect(session, true, parameters)), msg))
-                    session.Player.SendWeenieError(WeenieError.ConfirmationInProgress);
+                session.Player.ConfirmationManager.EnqueueSend(new Confirmation_Custom(session.Player.Guid, () => HandleHouseSelect(session, true, parameters)), msg);
                 return;
             }
 
@@ -351,15 +350,10 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            var creaturesOnly = parameters.Length > 0 && parameters[0].Contains("creature", StringComparison.OrdinalIgnoreCase);
-
             var knownObjs = session.Player.GetKnownObjects();
 
             foreach (var knownObj in knownObjs)
             {
-                if (creaturesOnly && !(knownObj is Creature))
-                    continue;
-
                 session.Player.RemoveTrackedObject(knownObj, false);
                 session.Player.TrackObject(knownObj);
             }
@@ -454,7 +448,7 @@ namespace ACE.Server.Command.Handlers
             var w = "";
             var g = "";
 
-            if (cg == "creature" || cg == "npc"|| cg == "item" || cg == "item")
+            if (cg == "creature" || cg == "npc" || cg == "item" || cg == "item")
             {
                 var objectId = new ObjectGuid();
                 if (session.Player.HealthQueryTarget.HasValue || session.Player.ManaQueryTarget.HasValue || session.Player.CurrentAppraisalTarget.HasValue)

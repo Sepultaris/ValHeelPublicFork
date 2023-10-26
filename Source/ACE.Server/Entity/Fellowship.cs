@@ -23,7 +23,7 @@ namespace ACE.Server.Entity
         /// <summary>
         /// The maximum # of fellowship members
         /// </summary>
-        public static int MaxFellows = 9;
+        public static int MaxFellows = 15;
 
         public string FellowshipName;
         public uint FellowshipLeaderGuid;
@@ -78,6 +78,18 @@ namespace ACE.Server.Entity
             if (inviter == null || newMember == null)
                 return;
 
+            if (inviter.Hardcore && !newMember.Hardcore)
+            {
+                inviter.Session.Network.EnqueueSend(new GameMessageSystemChat($"{newMember.Name} is not Hardcore. You can only invite other Hardcore players to your fellowship.", ChatMessageType.Help));
+                return;
+            }
+
+            if (!inviter.Hardcore && newMember.Hardcore)
+            {
+                inviter.Session.Network.EnqueueSend(new GameMessageSystemChat($"{newMember.Name} is Hardcore. You cannot invite them to a fellowship.", ChatMessageType.Help));
+                return;
+            }
+
             if (IsLocked)
             {
 
@@ -107,7 +119,9 @@ namespace ACE.Server.Entity
 
             if (newMember.Fellowship != null || FellowshipMembers.ContainsKey(newMember.Guid.Full))
             {
-                inviter.Session.Network.EnqueueSend(new GameMessageSystemChat($"{newMember.Name} is already a member of a Fellowship.", ChatMessageType.Broadcast));
+                // todo: can't seem to find pcap of this scenario... seems odd..
+                inviter.Session.Network.EnqueueSend(new GameMessageSystemChat($"{newMember.Name} is already in a fellowship", ChatMessageType.Fellowship));
+                //inviter.Session.Network.EnqueueSend(new GameEventWeenieError(inviter.Session, WeenieError.FellowshipMember)); 
             }
             else
             {
@@ -122,12 +136,7 @@ namespace ACE.Server.Entity
                     AddConfirmedMember(inviter, newMember, true);
                 }
                 else
-                {
-                    if (!newMember.ConfirmationManager.EnqueueSend(new Confirmation_Fellowship(inviter.Guid, newMember.Guid), inviter.Name))
-                    {
-                        inviter.Session.Network.EnqueueSend(new GameMessageSystemChat($"{newMember.Name} is busy.", ChatMessageType.Broadcast));
-                    }
-                }
+                    newMember.ConfirmationManager.EnqueueSend(new Confirmation_Fellowship(inviter.Guid, newMember.Guid), inviter.Name);
             }
         }
 
@@ -177,9 +186,6 @@ namespace ACE.Server.Entity
             }
 
             UpdateAllMembers();
-
-            if (inviter.CurrentMotionState.Stance == MotionStance.NonCombat) // only do this motion if inviter is at peace, other times motion is skipped. 
-                inviter.SendMotionAsCommands(MotionCommand.BowDeep, MotionStance.NonCombat);
         }
 
         public void RemoveFellowshipMember(Player player, Player leader)
@@ -476,12 +482,12 @@ namespace ACE.Server.Entity
 
             var maxLevelDiff = fellows.Values.Max(f => Math.Abs((leader.Level ?? 1) - (f.Level ?? 1)));
 
-            if (maxLevelDiff <= 5)
+            if (maxLevelDiff <= 50)
             {
                 ShareXP = DesiredShareXP;
                 EvenShare = true;
             }
-            else if (maxLevelDiff <= 10)
+            else if (maxLevelDiff <= 100)
             {
                 ShareXP = DesiredShareXP;
                 EvenShare = false;
@@ -577,10 +583,7 @@ namespace ACE.Server.Entity
             else
             {
                 // pre-filter: evenly divide between luminance-eligible fellows
-                // updated: retail supposedly did not do this
-                //var shareableMembers = GetFellowshipMembers().Values.Where(f => f.MaximumLuminance != null).ToList();
-
-                var shareableMembers = GetFellowshipMembers().Values.ToList();
+                var shareableMembers = GetFellowshipMembers().Values.Where(f => f.MaximumLuminance != null).ToList();
 
                 if (shareableMembers.Count == 0)
                     return;
@@ -588,15 +591,15 @@ namespace ACE.Server.Entity
                 var perAmount = (long)Math.Round((double)(amount / (ulong)shareableMembers.Count));
 
                 // further filter to fellows in radar range
-                var inRange = shareableMembers.Intersect(WithinRange(player, true)).ToList();
+                var totalAmount = (ulong)Math.Round(amount * GetMemberSharePercent());
 
-                foreach (var member in inRange)
+                foreach (var member in shareableMembers)
                 {
-                    if (member.MaximumLuminance == null) continue;
+                    var shareAmount = (ulong)Math.Round(totalAmount * GetDistanceScalar(player, member, xpType));
 
                     var fellowXpType = player == member ? xpType : XpType.Fellowship;
 
-                    member.GrantLuminance(perAmount, fellowXpType, shareType);
+                    member.GrantLuminance((long)shareAmount, fellowXpType, shareType);
                 }
             }
         }

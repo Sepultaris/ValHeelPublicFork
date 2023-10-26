@@ -41,6 +41,17 @@ namespace ACE.Server.Factories
 
             var petDevice = WorldObjectFactory.CreateNewWorldObject(id) as PetDevice;
 
+            if (tier < 9 && petDevice.WeenieClassId == 801334 || tier < 9 && petDevice.WeenieClassId == 801336 || tier < 9 && petDevice.WeenieClassId == 801338 || tier < 9 && petDevice.WeenieClassId == 802428 || tier < 9 && petDevice.WeenieClassId == 802432
+                || tier < 9 && petDevice.WeenieClassId == 802433 || tier < 9 && petDevice.WeenieClassId == 802436 || tier < 9 && petDevice.WeenieClassId == 802439 || tier < 9 && petDevice.WeenieClassId == 802440 || tier < 9 && petDevice.WeenieClassId == 802444 || tier < 9 && petDevice.WeenieClassId == 802445 || tier < 9 && petDevice.WeenieClassId == 802446)
+            {
+                CreateSummoningEssence(tier, mutate);
+            }
+            if (tier < 10 && petDevice.WeenieClassId == 802428 || tier < 10 && petDevice.WeenieClassId == 802432 || tier < 10 && petDevice.WeenieClassId == 802433 || tier < 10 && petDevice.WeenieClassId == 802436 || tier < 10 && petDevice.WeenieClassId == 802439
+                || tier < 10 && petDevice.WeenieClassId == 802440 || tier < 10 && petDevice.WeenieClassId == 802444 || tier < 10 && petDevice.WeenieClassId == 802445 || tier < 10 && petDevice.WeenieClassId == 802446)
+            {
+                CreateSummoningEssence(tier, mutate);
+            }
+
             if (petDevice != null && mutate)
                 MutatePetDevice(petDevice, tier);
 
@@ -50,36 +61,90 @@ namespace ACE.Server.Factories
         private static void MutatePetDevice(WorldObject petDevice, int tier)
         {
             if (!(petDevice is PetDevice)) return;
+            if (tier <= 8)
+            {
+                var ratingChance = 0.5f;
 
-            var ratingChance = 0.5f;
+                // add rng ratings to pet device
+                // linear or biased?
+                if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
+                    petDevice.GearDamage = GeneratePetDeviceRating(tier);
+                if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
+                    petDevice.GearDamageResist = GeneratePetDeviceRating(tier);
+                if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
+                    petDevice.GearCritDamage = GeneratePetDeviceRating(tier);
+                if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
+                    petDevice.GearCritDamageResist = GeneratePetDeviceRating(tier);
+                if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
+                    petDevice.GearCrit = GeneratePetDeviceRating(tier);
+                if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
+                    petDevice.GearCritResist = GeneratePetDeviceRating(tier);
 
-            // add rng ratings to pet device
-            // linear or biased?
-            if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
-                petDevice.GearDamage = GeneratePetDeviceRating(tier);
-            if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
-                petDevice.GearDamageResist = GeneratePetDeviceRating(tier);
-            if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
-                petDevice.GearCritDamage = GeneratePetDeviceRating(tier);
-            if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
-                petDevice.GearCritDamageResist = GeneratePetDeviceRating(tier);
-            if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
-                petDevice.GearCrit = GeneratePetDeviceRating(tier);
-            if (ratingChance > ThreadSafeRandom.Next(0.0f, 1.0f))
-                petDevice.GearCritResist = GeneratePetDeviceRating(tier);
+                petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
+                petDevice.CooldownDuration = 30;
+            }
+            if (tier == 9)
+            {
+                var ratingChance = 1.0f;
 
-            petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
+                // add rng ratings to pet device
+                // linear or biased?
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearDamage = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearDamageResist = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritDamage = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritDamageResist = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCrit = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritResist = GeneratePetDeviceRating(tier);
+
+                petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
+                petDevice.CooldownDuration = 30;
+            }
+            if (tier == 10)
+            {
+                var ratingChance = 1.0f;
+
+                // add rng ratings to pet device
+                // linear or biased?
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearDamage = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearDamageResist = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritDamage = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritDamageResist = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCrit = GeneratePetDeviceRating(tier);
+                if (ratingChance <= ThreadSafeRandom.Next(1.0f, 1.0f))
+                    petDevice.GearCritResist = GeneratePetDeviceRating(tier);
+
+                petDevice.ItemWorkmanship = WorkmanshipChance.Roll(tier);
+                petDevice.CooldownDuration = 30;
+            }
         }
 
         public static int GeneratePetDeviceRating(int tier)
         {
             // thanks to morosity for this formula!
             var baseRating = ThreadSafeRandom.Next(1, 10);
+            var t10BaseRating = ThreadSafeRandom.Next(280, 315);
 
             var chance = 0.4f + tier * 0.02f;
             var rng = ThreadSafeRandom.Next(0.0f, 1.0f);
-            if (rng < chance)
-                baseRating += ThreadSafeRandom.Next(1, 10);
+            if (rng < chance && tier < 10)
+                baseRating += ThreadSafeRandom.Next(10, 20);
+            if (tier == 10)
+            {
+                t10BaseRating += ThreadSafeRandom.Next(100, 200);
+                return t10BaseRating;
+            }
+                
 
             return baseRating;
         }

@@ -17,7 +17,7 @@ namespace ACE.DatLoader
 
         public string FilePath { get; }
 
-        public int Iteration { get { return GetTotalIterations(); } }
+        public int Iteration { get { return GetIteration(); } }
 
         private FileStream stream { get; }
 
@@ -102,9 +102,7 @@ namespace ACE.DatLoader
             }
 
             if ((fileId & 0xFFFF) == 0xFFFE) // These are LandBlockInfo objects. Not every landblock has extra info (buildings, etc..)
-            {
-                //log.DebugFormat("Unable to find object_id {0:X8} in {1}", fileId, Enum.GetName(typeof(DatDatabaseType), Header.DataSet));
-            }
+                log.DebugFormat("Unable to find object_id {0:X8} in {1}", fileId, Enum.GetName(typeof(DatDatabaseType), Header.DataSet));
             else
                 log.InfoFormat("Unable to find object_id {0:X8} in {1}", fileId, Enum.GetName(typeof(DatDatabaseType), Header.DataSet));
 
@@ -150,15 +148,11 @@ namespace ACE.DatLoader
         /// Language: 994
         /// </summary>
         /// <returns>The iteration from the dat file, or 0 if there was an error</returns>
-        private int GetTotalIterations()
+        private int GetIteration()
         {
             var iteration = ReadFromDat<Iteration>(FileTypes.Iteration.FILE_ID);
-            if (iteration.TotalIterations > 0)
-            {
-                if (iteration.Ints.Count > 1)
-                    log.Error($"{FilePath} contains an incomplete dat file!");
-                return iteration.TotalIterations;
-            }
+            if (iteration.Ints.Count > 0)
+                return iteration.Ints[0];
             else
             {
                 log.Error($"Unable to read iteration from {FilePath}");

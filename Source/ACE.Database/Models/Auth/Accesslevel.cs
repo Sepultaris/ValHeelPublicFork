@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable disable
-
 namespace ACE.Database.Models.Auth
 {
     public partial class Accesslevel

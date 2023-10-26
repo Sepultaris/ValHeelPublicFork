@@ -9,10 +9,6 @@ namespace ACE.Entity.Enum
         CopyFromSourceToResult  = 4,
         Unknown1                = 5,
         Unknown2                = 6,
-        AddSpell                = 7,
-
-        // assumed to have been added to handle some bitfield int properties?
-        SetBitsOn               = 8,
-        SetBitsOff              = 9
+        AddSpell                = 7
     };
 }

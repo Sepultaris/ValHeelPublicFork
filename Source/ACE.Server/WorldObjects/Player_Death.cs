@@ -15,6 +15,7 @@ using ACE.Server.Managers;
 using ACE.Server.Network.Structure;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.ValheelMods;
 
 namespace ACE.Server.WorldObjects
 {
@@ -36,6 +37,11 @@ namespace ACE.Server.WorldObjects
             var topDamager = DamageHistory.GetTopDamager(false);
 
             HandlePKDeathBroadcast(lastDamager, topDamager);
+
+            if (Hardcore)
+            {
+                PlayerManager.BroadcastToAll(new GameMessageSystemChat($"The Hardcore player {Name}, has died at level {Level}, with a score of {HcScore}.", ChatMessageType.Broadcast));
+            }
 
             var deathMessage = base.OnDeath(lastDamager, damageType, criticalHit);
 
@@ -113,6 +119,13 @@ namespace ACE.Server.WorldObjects
 
                 globalPKDe += "\n[PKDe]";
 
+                if (HasBounty)
+                {
+                    globalPKDe += $" {Name} had a bounty of {PriceOnHead} pyreals.";
+                    pkPlayer.BankedAshcoin += PriceOnHead;
+                    PriceOnHead = 0;
+                }
+
                 PlayerManager.BroadcastToAll(new GameMessageSystemChat(globalPKDe, ChatMessageType.Broadcast));
             }
             else if (IsPKLiteDeath(topDamager))
@@ -124,11 +137,13 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public void InflictVitaePenalty(int amount = 5)
         {
+
             DeathLevel = Level; // for calculating vitae XP
+
             VitaeCpPool = 0;    // reset vitae XP earned
 
             var msgDeathLevel = new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.DeathLevel, DeathLevel ?? 0);
-            var msgVitaeCpPool = new GameMessagePrivateUpdatePropertyInt(this, PropertyInt.VitaeCpPool, VitaeCpPool.Value);
+            var msgVitaeCpPool = new GameMessagePrivateUpdatePropertyInt64(this, PropertyInt64.VitaeCpPool, VitaeCpPool.Value);
 
             Session.Network.EnqueueSend(msgDeathLevel, msgVitaeCpPool);
 
@@ -141,7 +156,7 @@ namespace ACE.Server.WorldObjects
         }
 
 
-        public bool IsInDeathProcess;
+        private bool isInDeathProcess;
 
         /// <summary>
         /// Broadcasts the player death animation, updates vitae, and sends network messages for player death
@@ -149,7 +164,7 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         protected override void Die(DamageHistoryInfo lastDamager, DamageHistoryInfo topDamager)
         {
-            IsInDeathProcess = true;
+            isInDeathProcess = true;
 
             if (topDamager?.Guid == Guid && IsPKType)
             {
@@ -162,12 +177,6 @@ namespace ACE.Server.WorldObjects
             UpdateVital(Health, 0);
             NumDeaths++;
             suicideInProgress = false;
-
-            // todo: since we are going to be using 'time since Player last died to an OlthoiPlayer'
-            // as a factor in slag generation, this will eventually be moved to after the slag generation
-
-            //if (topDamager != null && topDamager.IsOlthoiPlayer)
-                //OlthoiLootTimestamp = (int)Time.GetUnixTime();
 
             if (CombatMode == CombatMode.Magic && MagicState.IsCasting)
                 FailCast(false);
@@ -201,8 +210,6 @@ namespace ACE.Server.WorldObjects
                 Session.Network.EnqueueSend(msgSelfInflictedDeath);
             }
 
-            var hadVitae = HasVitae;
-
             // update vitae
             // players who died in a PKLite fight do not accrue vitae
             if (!IsPKLiteDeath(topDamager))
@@ -217,14 +224,42 @@ namespace ACE.Server.WorldObjects
             else
                 Session.Network.EnqueueSend(new GameMessageSystemChat("Your augmentation prevents the tides of death from ripping away your current enchantments!", ChatMessageType.Broadcast));
 
+            if (IsPKDeath(topDamager))
+            {
+                if (HasBounty)
+                {
+                    var bounty = PriceOnHead;
+
+                    if (bounty != null)
+                        return;
+
+                    foreach (var p in PlayerManager.GetAllOnline())
+                    {
+                        if (p != null)
+                        {
+                            if (p.Guid == topDamager.Guid)
+                            {
+                                p.BankedAshcoin = p.BankedAshcoin + bounty;
+                                ValHeelCurrencyMarket.AddACToCirculation((long)bounty);
+                                PriceOnHead = 0;
+                                HasBounty = false;
+                                p.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have claimed the bounty of {Name} for {bounty} AshCoin!", ChatMessageType.Broadcast));
+                                PlayerManager.BroadcastToAll(new GameMessageSystemChat($"{topDamager.Name} has claimed the bounty of {Name} for {bounty} AshCoin!", ChatMessageType.Broadcast));
+                            }
+                        }
+                    }
+                }
+            }
+
             // wait for the death animation to finish
             var dieChain = new ActionChain();
             var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(MotionTableId).GetAnimationLength(MotionCommand.Dead);
             dieChain.AddDelaySeconds(animLength + 1.0f);
 
-            dieChain.AddAction(this, () =>
+            // Ensure this is done in a thread-safe manner, by WorldManager
+            dieChain.AddAction(WorldManager.ActionQueue, () =>
             {
-                CreateCorpse(topDamager, hadVitae);
+                CreateCorpse(topDamager);
 
                 ThreadSafeTeleportOnDeath(); // enter portal space
 
@@ -235,6 +270,37 @@ namespace ACE.Server.WorldObjects
             });
 
             dieChain.EnqueueChain();
+
+            if (Hardcore == true)
+            {
+                if (IsPKDeath(topDamager))
+                {
+                    Character.DeleteTime = (ulong)Time.GetUnixTime();
+                    Character.IsDeleted = true;
+                    CharacterChangesDetected = true;
+                    Session.LogOffPlayer(true);
+                    PlayerManager.HandlePlayerDelete(Character.Id);
+
+                    var success = PlayerManager.ProcessDeletedPlayer(Character.Id);
+                }
+                else if (GetNumInventoryItemsOfWCID(802812) >= 1)
+                {
+                    if (TryConsumeFromInventoryWithNetworking(802812, 1))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    Character.DeleteTime = (ulong)Time.GetUnixTime();
+                    Character.IsDeleted = true;
+                    CharacterChangesDetected = true;
+                    Session.LogOffPlayer(true);
+                    PlayerManager.HandlePlayerDelete(Character.Id);
+
+                    var success = PlayerManager.ProcessDeletedPlayer(Character.Id);
+                }
+            }
         }
 
         /// <summary>
@@ -277,7 +343,7 @@ namespace ACE.Server.WorldObjects
 
                     OnHealthUpdate();
 
-                    IsInDeathProcess = false;
+                    isInDeathProcess = false;
 
                     if (IsLoggingOut)
                         LogOut_Final(true);
@@ -327,7 +393,7 @@ namespace ACE.Server.WorldObjects
 
             if (step < SuicideMessages.Count)
             {
-                EnqueueBroadcast(new GameMessageHearSpeech(SuicideMessages[step], GetNameWithSuffix(), Guid.Full, ChatMessageType.Speech), LocalBroadcastRange);
+                EnqueueBroadcast(new GameMessageHearSpeech(SuicideMessages[step], Name, Guid.Full, ChatMessageType.Speech), LocalBroadcastRange);
 
                 var suicideChain = new ActionChain();
                 suicideChain.AddDelaySeconds(3.0f);
@@ -486,7 +552,7 @@ namespace ACE.Server.WorldObjects
             var inventory = GetAllPossessions();
 
             // exclude pyreals from randomized death item calculation
-            inventory = inventory.Where(i => i.WeenieClassId != coinStackWcid).ToList();
+            inventory = inventory.Where(i => !i.Name.Equals("Pyreal")).ToList();
 
             // exclude wielded items if < level 35
             if (!canDropWielded)
@@ -506,7 +572,7 @@ namespace ACE.Server.WorldObjects
             if (numCoinsDropped > 0)
             {
                 // add pyreals to dropped items
-                var pyreals = SpendCurrency(coinStackWcid, (uint)numCoinsDropped);
+                var pyreals = SpendCurrency(Vendor.CoinStackWCID, (uint)numCoinsDropped);
                 dropItems.AddRange(pyreals);
                 //Console.WriteLine($"Dropping {numCoinsDropped} pyreals");
             }
@@ -944,9 +1010,6 @@ namespace ACE.Server.WorldObjects
 
         public void SetMinimumTimeSincePK()
         {
-            if (IsOlthoiPlayer)
-                return;
-
             if (PlayerKillerStatus == PlayerKillerStatus.NPK && MinimumTimeSincePk == null)
                 return;
 
@@ -1031,71 +1094,6 @@ namespace ACE.Server.WorldObjects
                 destroyedItems.Add(destroyItem);
             }
             return destroyedItems;
-        }
-
-        private static Database.Models.World.TreasureDeath OlthoiDeathTreasureType => Database.DatabaseManager.World.GetCachedDeathTreasure(2222) ?? new()
-        {
-            TreasureType = 2222,
-            Tier = 8,
-            LootQualityMod = 0,
-            UnknownChances = 19,
-            ItemChance = 100,
-            ItemMinAmount = 1,
-            ItemMaxAmount = 2,
-            ItemTreasureTypeSelectionChances = 8,
-            MagicItemChance = 100,
-            MagicItemMinAmount = 2,
-            MagicItemMaxAmount = 3,
-            MagicItemTreasureTypeSelectionChances = 8,
-            MundaneItemChance = 100,
-            MundaneItemMinAmount = 0,
-            MundaneItemMaxAmount = 1,
-            MundaneItemTypeSelectionChances = 7
-        };
-
-        /// <summary>
-        /// Determines the amount of slag to drop on a Player corpse when killed by an OlthoiPlayer or the loot to drop when an OlthoiPlayer is killed by a Player Killer
-        /// </summary>
-        public List<WorldObject> CalculateDeathItems_Olthoi(Corpse corpse, bool hadVitae, bool killerIsOlthoiPlayer, bool killerIsPkPlayer)
-        {
-            if (killerIsOlthoiPlayer)
-            {
-                var slag = LootGenerationFactory.RollSlag(this, hadVitae);
-
-                if (slag == null)
-                    return new();
-
-                if (!corpse.TryAddToInventory(slag))
-                    log.Warn($"CalculateDeathItems_Olthoi: couldn't add item to {Name}'s corpse: {slag.Name}");
-
-                return new() { slag };
-            }
-            else if (killerIsPkPlayer)
-            {
-                if (hadVitae)
-                    return new();
-
-                var items = LootGenerationFactory.CreateRandomLootObjects(OlthoiDeathTreasureType);
-
-                var gland = LootGenerationFactory.RollGland(this, hadVitae);
-
-                if (gland != null)
-                {
-                    items.Add(gland);
-                }
-
-                foreach (WorldObject wo in items)
-                {
-                    if (!corpse.TryAddToInventory(wo))
-                        log.Warn($"CalculateDeathItems_Olthoi: couldn't add item to {Name}'s corpse: {wo.Name}");
-                }
-
-                return items;
-            }
-            else
-            {
-                return new();
-            }
         }
     }
 }

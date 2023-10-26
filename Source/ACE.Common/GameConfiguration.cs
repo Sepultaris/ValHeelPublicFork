@@ -13,8 +13,6 @@ namespace ACE.Common
 
         public string DatFilesDirectory { get; set; }
 
-        public string ModsDirectory { get; set; }
-
         /// <summary>
         /// The amount of seconds to wait before turning off the server. Default value is 60 (for 1 minute).
         /// </summary>

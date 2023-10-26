@@ -105,12 +105,11 @@ namespace ACE.Server.WorldObjects
                     return;
                 }
 
-                if (player.TryConsumeFromInventoryWithNetworking(this))
-                {
-                    player.LearnSpellWithNetworking(Spell.Id);
+                player.LearnSpellWithNetworking(Spell.Id);
 
-                    player.Session.Network.EnqueueSend(new GameMessageSystemChat("The scroll is destroyed.", ChatMessageType.Broadcast));
-                }
+                player.TryConsumeFromInventoryWithNetworking(this);
+
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat("The scroll is destroyed.", ChatMessageType.Broadcast));
             });
 
 

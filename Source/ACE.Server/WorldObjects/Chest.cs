@@ -9,7 +9,6 @@ using ACE.Entity.Models;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Managers;
-using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 
 namespace ACE.Server.WorldObjects
@@ -104,9 +103,6 @@ namespace ACE.Server.WorldObjects
 
             if (IsLocked)
             {
-                if (PropertyManager.GetBool("fix_chest_missing_inventory_window").Item)
-                    player.SendTransientError($"The {Name} is locked");
-
                 EnqueueBroadcast(new GameMessageSound(Guid, Sound.OpenFailDueToLock, 1.0f));
                 return new ActivationResult(false);
             }
@@ -222,7 +218,11 @@ namespace ACE.Server.WorldObjects
 
             if (ChestClearedWhenClosed && InitCreate > 0)
             {
-                if (CurrentCreate == 0)
+                var removeQueueTotal = 0;
+                foreach (var generator in GeneratorProfiles)
+                    removeQueueTotal += generator.RemoveQueue.Count;
+
+                if ((CurrentCreate - removeQueueTotal) == 0)
                     FadeOutAndDestroy(); // Chest's complete generated inventory count has been wiped out
                     //Destroy(); // Chest's complete generated inventory count has been wiped out
             }
@@ -247,23 +247,63 @@ namespace ACE.Server.WorldObjects
             if (DefaultLocked && !IsLocked)
             {
                 IsLocked = true;
-                if (!PropertyManager.GetBool("fix_chest_missing_inventory_window").Item)
-                    EnqueueBroadcast(new GameMessagePublicUpdatePropertyBool(this, PropertyBool.Locked, IsLocked));
+                EnqueueBroadcast(new GameMessagePublicUpdatePropertyBool(this, PropertyBool.Locked, IsLocked));
             }
-
-            ClearUnmanagedInventory();
 
             if (IsGenerator)
             {
                 ResetGenerator();
-                CurrentlyPoweringUp = true;
                 if (InitCreate > 0)
-                    Generator_Generate();
+                    Generator_Regeneration();
             }
 
             ResetTimestamp = Time.GetUnixTime();
             ResetMessagePending = false;
         }
+
+        public override void ResetGenerator()
+        {
+            foreach (var generator in GeneratorProfiles)
+            {
+                var profileReset = false;
+
+                foreach (var rNode in generator.Spawned.Values)
+                {
+                    var wo = rNode.TryGetWorldObject();
+
+                    if (wo != null)
+                    {
+                        if (TryRemoveFromInventory(wo.Guid)) // only affect contained items.
+                        {
+                            wo.Destroy();
+                        }
+
+                        if (!(wo is Creature))
+                            profileReset = true;
+                    }
+                }
+
+                if (profileReset)
+                {
+                    generator.Spawned.Clear();
+                    generator.SpawnQueue.Clear();
+                }
+            }
+
+            if (GeneratedTreasureItem)
+            {
+                var items = new List<WorldObject>();
+                foreach (var item in Inventory.Values)
+                    items.Add(item);
+                foreach (var item in items)
+                {
+                    if (TryRemoveFromInventory(item.Guid))
+                        item.Destroy();
+                }
+                GeneratedTreasureItem = false;
+            }
+        }
+
         protected override float DoOnOpenMotionChanges()
         {
             if (MotionTableId != 0)

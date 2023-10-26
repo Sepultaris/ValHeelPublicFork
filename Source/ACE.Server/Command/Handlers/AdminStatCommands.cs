@@ -132,38 +132,20 @@ namespace ACE.Server.Command.Handlers
         [CommandHandler("serverperformance", AccessLevel.Advocate, CommandHandlerFlag.None, 0, "Displays a summary of server performance statistics")]
         public static void HandleServerPerformance(Session session, params string[] parameters)
         {
-            if (parameters != null && (parameters.Length == 1 || parameters.Length == 2))
+            if (parameters != null && parameters.Length == 1)
             {
                 if (parameters[0].ToLower() == "start")
                 {
-                    if (parameters[1].ToLower() == "cumulative")
-                    {
-                        ServerPerformanceMonitor.StartCumulative();
-                        CommandHandlerHelper.WriteOutputInfo(session, "Cumulative Server Performance Monitor started");
-                        return;
-                    }
-                    else
-                    {
-                        ServerPerformanceMonitor.Start();
-                        CommandHandlerHelper.WriteOutputInfo(session, "Server Performance Monitor started");
-                        return;
-                    }
+                    ServerPerformanceMonitor.Start();
+                    CommandHandlerHelper.WriteOutputInfo(session, "Server Performance Monitor started");
+                    return;
                 }
 
                 if (parameters[0].ToLower() == "stop")
                 {
-                    if (parameters[1].ToLower() == "cumulative")
-                    {
-                        ServerPerformanceMonitor.StopCumulative();
-                        CommandHandlerHelper.WriteOutputInfo(session, "Cumulative Server Performance Monitor stopped");
-                        return;
-                    }
-                    else
-                    {
-                        ServerPerformanceMonitor.Stop();
-                        CommandHandlerHelper.WriteOutputInfo(session, "Server Performance Monitor stopped");
-                        return;
-                    }
+                    ServerPerformanceMonitor.Stop();
+                    CommandHandlerHelper.WriteOutputInfo(session, "Server Performance Monitor stopped");
+                    return;
                 }
 
                 if (parameters[0].ToLower() == "reset")

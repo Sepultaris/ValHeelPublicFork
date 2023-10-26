@@ -57,7 +57,7 @@ namespace ACE.Server.Factories.Tables
             ( TreasureItemType_Orig.Gem,                0.14f ),
             ( TreasureItemType_Orig.ArtObject,          0.125f ),
             ( TreasureItemType_Orig.Cloak,              0.01f  ),
-            ( TreasureItemType_Orig.EncapsulatedSpirit, 0.005f ),
+            ( TreasureItemType_Orig.EncapsulatedSpirit, 0.007f ),
         };
 
         /// <summary>

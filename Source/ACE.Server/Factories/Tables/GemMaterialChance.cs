@@ -74,7 +74,7 @@ namespace ACE.Server.Factories.Tables
             ( new GemResult(WeenieClassName.jewelemerald,     MaterialType.Emerald),       0.29f ),
             ( new GemResult(WeenieClassName.jewelruby,        MaterialType.Ruby),          0.29f ),
             ( new GemResult(WeenieClassName.jewelsapphire,    MaterialType.Sapphire),      0.29f ),
-        };
+        };      
 
         private static readonly List<ChanceTable<GemResult>> gemMaterialChances = new List<ChanceTable<GemResult>>()
         {
@@ -91,7 +91,7 @@ namespace ACE.Server.Factories.Tables
         /// </summary>
         public static GemResult Roll(int gemClass)
         {
-            gemClass = Math.Clamp(gemClass, 1, 6);
+            gemClass = Math.Clamp(gemClass, 1, 7);
 
             var gemMaterialChance = gemMaterialChances[gemClass - 1];
 

@@ -80,7 +80,6 @@ namespace ACE.Server.WorldObjects
         public bool IsAmmoLauncher { get => IsBow || IsAtlatl; }
         public bool IsThrownWeapon { get => DefaultCombatStyle != null && DefaultCombatStyle == CombatStyle.ThrownWeapon; }
         public bool IsRanged { get => IsAmmoLauncher || IsThrownWeapon; }
-        public bool IsCaster { get => DefaultCombatStyle != null && (DefaultCombatStyle == CombatStyle.Magic); }
 
         public EmoteManager EmoteManager;
         public EnchantmentManagerWithCaching EnchantmentManager;
@@ -90,7 +89,6 @@ namespace ACE.Server.WorldObjects
         public WorldObject ProjectileTarget { get; set; }
 
         public WorldObject ProjectileLauncher { get; set; }
-        public WorldObject ProjectileAmmo { get; set; }
 
         public bool HitMsg;     // FIXME: find a better way to do this for projectiles
 
@@ -227,13 +225,7 @@ namespace ACE.Server.WorldObjects
         public void SyncLocation()
         {
             Location.LandblockId = new LandblockId(PhysicsObj.Position.ObjCellID);
-
-            // skip ObjCellID check when updating from physics
-            // TODO: update to newer version of ACE.Entity.Position
-            Location.PositionX = PhysicsObj.Position.Frame.Origin.X;
-            Location.PositionY = PhysicsObj.Position.Frame.Origin.Y;
-            Location.PositionZ = PhysicsObj.Position.Frame.Origin.Z;
-
+            Location.Pos = PhysicsObj.Position.Frame.Origin;
             Location.Rotation = PhysicsObj.Position.Frame.Orientation;
         }
 
@@ -834,7 +826,7 @@ namespace ACE.Server.WorldObjects
         /// If this is a container or a creature, all of the inventory and/or equipped objects will also be destroyed.<para />
         /// An object should only be destroyed once.
         /// </summary>
-        public void Destroy(bool raiseNotifyOfDestructionEvent = true, bool fromLandblockUnload = false)
+        public virtual void Destroy(bool raiseNotifyOfDestructionEvent = true)
         {
             if (IsDestroyed)
             {
@@ -858,34 +850,14 @@ namespace ACE.Server.WorldObjects
                     item.Destroy();
             }
 
-            if (this is Pet pet)
-            {
-                if (pet.P_PetOwner?.CurrentActivePet == this)
-                    pet.P_PetOwner.CurrentActivePet = null;
-
-                if (pet.P_PetDevice?.Pet == Guid.Full)
-                    pet.P_PetDevice.Pet = null;
-            }
-
-            if (this is Vendor vendor)
-            {
-                foreach (var wo in vendor.DefaultItemsForSale.Values)
-                    wo.Destroy();
-
-                foreach (var wo in vendor.UniqueItemsForSale.Values)
-                    wo.Destroy();
-            }
+            /*if (this is Pet pet && pet.P_PetOwner?.CurrentActivePet == this)
+                pet.P_PetOwner.CurrentActivePet = null;*/
 
             if (raiseNotifyOfDestructionEvent)
                 NotifyOfEvent(RegenerationType.Destruction);
 
             if (IsGenerator)
-            {
-                if (fromLandblockUnload)
-                    ProcessGeneratorDestructionDirective(GeneratorDestruct.Destroy, fromLandblockUnload);
-                else
-                    OnGeneratorDestroy();
-            }
+                OnGeneratorDestroy();
 
             CurrentLandblock?.RemoveWorldObject(Guid);
 
@@ -1059,6 +1031,11 @@ namespace ACE.Server.WorldObjects
             // empty base
         }
 
+        public virtual void CombatPetOnMoveComplete(WeenieError status)
+        {
+            // empty base
+        }
+
         public bool IsTradeNote => ItemType == ItemType.PromissoryNote;
 
         public virtual bool IsAttunedOrContainsAttuned => Attuned >= AttunedStatus.Attuned;
@@ -1078,24 +1055,6 @@ namespace ACE.Server.WorldObjects
         public bool HasArmorLevel()
         {
             return ArmorLevel > 0;
-        }
-
-        public virtual bool IsBeingTradedOrContainsItemBeingTraded(HashSet<ObjectGuid> guidList) => guidList.Contains(Guid);
-
-        public bool IsSocietyArmor => WieldSkillType >= (int)PropertyInt.SocietyRankCelhan && WieldSkillType <= (int)PropertyInt.SocietyRankRadblo;
-
-        public int StructureUnitValue
-        {
-            get
-            {
-                var weenie = DatabaseManager.World.GetCachedWeenie(WeenieClassId);
-                var weenieValue = weenie?.GetValue() ?? 0;
-                var weenieMaxStructure = weenie?.GetMaxStructure() ?? 1;
-
-                var structureUnitValue = weenieValue / weenieMaxStructure;
-
-                return Math.Max(0, structureUnitValue);
-            }
         }
     }
 }

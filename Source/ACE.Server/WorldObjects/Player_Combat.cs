@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ACE.Common;
+using ACE.Database;
 using ACE.DatLoader.Entity;
 using ACE.Entity;
 using ACE.Entity.Enum;
@@ -13,6 +14,7 @@ using ACE.Server.Entity.Actions;
 using ACE.Server.Network.Enum;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
+using ACE.Server.Factories;
 
 namespace ACE.Server.WorldObjects
 {
@@ -123,6 +125,8 @@ namespace ACE.Server.WorldObjects
 
             // check PK status
             var pkError = CheckPKStatusVsTarget(target, null);
+                   
+
             if (pkError != null)
             {
                 Session.Network.EnqueueSend(new GameEventWeenieErrorWithString(Session, pkError[0], target.Name));
@@ -134,7 +138,7 @@ namespace ACE.Server.WorldObjects
             var damageEvent = DamageEvent.CalculateDamage(this, target, damageSource);
 
             if (damageEvent.HasDamage)
-            {
+            {                
                 OnDamageTarget(target, damageEvent.CombatType, damageEvent.IsCritical);
 
                 if (targetPlayer != null)
@@ -155,7 +159,7 @@ namespace ACE.Server.WorldObjects
             }
 
             if (damageEvent.HasDamage && target.IsAlive)
-            {
+            {                
                 // notify attacker
                 var intDamage = (uint)Math.Round(damageEvent.Damage);
 
@@ -363,8 +367,11 @@ namespace ACE.Server.WorldObjects
                     damageSource = FootArmor;
 
                 // no weapon, no hand or foot armor
-                if (damageSource?.Damage == null)
-                    return HeritageGroup == HeritageGroup.Olthoi ? new BaseDamageMod(new BaseDamage(130, 0.75f)) : new BaseDamageMod(new BaseDamage(2, 0.75f));
+                if (damageSource == null)
+                {
+                    var baseDamage = new BaseDamage(5, 0.2f);   // 1-5
+                    return new BaseDamageMod(baseDamage);
+                }
                 else
                     return damageSource.GetDamageMod(this, damageSource);
             }
@@ -570,6 +577,9 @@ namespace ACE.Server.WorldObjects
             if (source is Player attacker)
                 UpdatePKTimers(attacker, this);
 
+            if (Hardcore)
+                damageTaken = damageTaken + (uint)(damageTaken * 0.15);
+
             return (int)damageTaken;
         }
 
@@ -738,27 +748,6 @@ namespace ACE.Server.WorldObjects
         {
             //log.Info($"{Name}.HandleActionChangeCombatMode({newCombatMode})");
 
-            // Make sure the player doesn't have an invalid weapon setup (e.g. sword + wand)
-            if (!CheckWeaponCollision(null, null, newCombatMode))
-            {
-                Session.Network.EnqueueSend(new GameEventWeenieError(Session, WeenieError.ActionCancelled)); // "Action cancelled!"
-
-                // Go back to non-Combat mode
-                float animTime = 0.0f, queueTime = 0.0f;
-                animTime = SetCombatMode(newCombatMode, out queueTime, false, true);
-
-                var actionChain = new ActionChain();
-                actionChain.AddDelaySeconds(animTime);
-                actionChain.AddAction(this, () =>
-                {
-                    SetCombatMode(CombatMode.NonCombat);
-                });
-                actionChain.EnqueueChain();
-
-                NextUseTime = DateTime.UtcNow.AddSeconds(animTime);
-                return;
-            }
-
             LastCombatMode = newCombatMode;
             
             if (DateTime.UtcNow >= NextUseTime.AddSeconds(UseTimeEpsilon))
@@ -813,26 +802,14 @@ namespace ACE.Server.WorldObjects
 
                     // todo expand checks
                     if (!forceHandCombat && (missileWeapon != null || caster != null))
-                    {
-                        // client has already independently brought the melee bar up by this point, revert and sync everything back up
-                        SetCombatMode(CombatMode.NonCombat);
                         return;
-                    }
 
                     break;
 
                 case CombatMode.Missile:
                     {
                         if (missileWeapon == null)
-                        {
-                            // client has already independently switched to missile mode by this point,
-                            // so instead of simply returning here, we need to deny the request by reverting to either the current server combat state, or switching to NonCombat to maintain client sync
-                            // this is especially important for missile, because the client is unable to break out of this bugged state for this mode specifically
-                            // see: ClientCombatSystem::PlayerInReadyPosition
-
-                            SetCombatMode(CombatMode.NonCombat);
                             return;
-                        }
 
                         switch (currentCombatStance)
                         {
@@ -873,11 +850,7 @@ namespace ACE.Server.WorldObjects
 
                     // todo expand checks
                     if (caster == null)
-                    {
-                        // client has already independently brought the magic bar up by this point, revert and sync everything back up
-                        SetCombatMode(CombatMode.NonCombat);
                         return;
-                    }
 
                     break;
 
@@ -1027,6 +1000,8 @@ namespace ACE.Server.WorldObjects
         public bool IsPKL => PlayerKillerStatus == PlayerKillerStatus.PKLite;
 
         public bool IsNPK => PlayerKillerStatus == PlayerKillerStatus.NPK;
+
+        
 
         public bool CheckHouseRestrictions(Player player)
         {

@@ -21,7 +21,7 @@ namespace ACE.Server.Entity
         // It was not intended to be a quest that every player would undertake or be interested in.
 
         // Requirements:
-        // - Level 275
+        // - Level 1000
         // - Have all luminance auras (crafting aura included) except the 2 skill credit auras. (20 million total luminance)
         // - Have mastery rank in a society
         // - Have 25 unused pack spaces
@@ -62,27 +62,17 @@ namespace ACE.Server.Entity
 
         public static bool VerifyRequirements(Player player)
         {
-            if (player.Level < 275)
+            if (player.Level < 10000)
             {
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must be level 275 for enlightenment.", ChatMessageType.Broadcast));
-                return false;
-            }
-
-            if (!VerifyLumAugs(player))
-            {
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must have all luminance auras for enlightenment.", ChatMessageType.Broadcast));
-                return false;
-            }
-
-            if (!VerifySocietyMaster(player))
-            {
-                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must be a Master of one of the Societies of Dereth for enlightenment.", ChatMessageType.Broadcast));
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must be level 1000 for enlightenment.", ChatMessageType.Broadcast));
+                player.QuestManager.Erase("Trance1");
                 return false;
             }
 
             if (player.GetFreeInventorySlots() < 25)
             {
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must have at least 25 free inventory slots in your main pack for enlightenment.", ChatMessageType.Broadcast));
+                player.QuestManager.Erase("Trance1");
                 return false;
             }
 
@@ -91,6 +81,7 @@ namespace ACE.Server.Entity
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have already reached the maximum enlightenment level!", ChatMessageType.Broadcast));
                 return false;
             }
+
             return true;
         }
 
@@ -128,12 +119,11 @@ namespace ACE.Server.Entity
 
         public static void RemoveAbility(Player player)
         {
-            RemoveSociety(player);
-            RemoveLuminance(player);
             RemoveAetheria(player);
             RemoveAttributes(player);
             RemoveSkills(player);
-            RemoveLevel(player);
+            RemoveLuminance(player);
+            RemoveLevel(player);            
         }
 
         public static void RemoveSociety(Player player)
@@ -220,6 +210,28 @@ namespace ACE.Server.Entity
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateVital(player, player.Vitals[attribute]));
             }
 
+            // resets stats above max back to base.
+            player.Strength.StartingValue -= (uint)player.RaisedStr;
+            player.Endurance.StartingValue -= (uint)player.RaisedEnd;
+            player.Coordination.StartingValue -= (uint)player.RaisedCoord;
+            player.Quickness.StartingValue -= (uint)player.RaisedQuick;
+            player.Focus.StartingValue -= (uint)player.RaisedFocus;
+            player.Self.StartingValue -= (uint)player.RaisedSelf;
+
+            player.RaisedStr = 0;
+            player.RaisedEnd = 0;
+            player.RaisedCoord = 0;
+            player.RaisedQuick = 0;
+            player.RaisedFocus = 0;
+            player.RaisedSelf = 0;
+
+            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
+            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
+            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
+            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
+            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
+            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdateAttribute(player, player.Self));
+
             player.SendMessage("Your attribute training fades.", ChatMessageType.Broadcast);
         }
 
@@ -242,7 +254,7 @@ namespace ACE.Server.Entity
             availableSkillCredits += (int)heritageGroup.SkillCredits; // base skill credits allowed
 
             availableSkillCredits += player.QuestManager.GetCurrentSolves("ArantahKill1");       // additional quest skill credit
-            availableSkillCredits += player.QuestManager.GetCurrentSolves("OswaldManualCompleted");  // additional quest skill credit
+            availableSkillCredits += player.QuestManager.GetCurrentSolves("ChasingOswaldDone");  // additional quest skill credit
             availableSkillCredits += player.QuestManager.GetCurrentSolves("LumAugSkillQuest");   // additional quest skill credits
 
             player.AvailableSkillCredits = availableSkillCredits;
@@ -338,11 +350,16 @@ namespace ACE.Server.Entity
                     break;
             }
 
-            player.GiveFromEmote(npc, AttributeResetCertificate, 1);
+            if (player.Enlightenment > 5)
+                lvl = $"{player.Enlightenment}";
 
-            var msg = $"{player.Name} has achieved the {lvl} level of Enlightenment!";
+            var msg = $"{player.Name} has achieved level {lvl} Enlightenment!";
             PlayerManager.BroadcastToAll(new GameMessageSystemChat(msg, ChatMessageType.WorldBroadcast));
             PlayerManager.LogBroadcastChat(Channel.AllBroadcast, null, msg);
+
+            player.QuestManager.Erase("Trance1");            
+            player.LastLevel = 1;
+            player.TotalXpBeyond = null;
 
             // +2 vitality
             // handled automatically via PropertyInt.Enlightenment * 2

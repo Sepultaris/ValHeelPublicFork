@@ -276,13 +276,15 @@ namespace ACE.Server.Physics.Animation
 
         public void multiply_cyclic_animation_framerate(float rate)
         {
-            var currNode = FirstCyclic;
-
-            while (currNode != null)
+            if (FirstCyclic == null) return;
+            var cyclic = false;
+            foreach (var animFrame in AnimList)
             {
-                currNode.Value.multiply_framerate(rate);
+                if (animFrame.Equals(FirstCyclic))
+                    cyclic = true;
 
-                currNode = currNode.Next;
+                if (cyclic)
+                    animFrame.multiply_framerate(rate);
             }
         }
 

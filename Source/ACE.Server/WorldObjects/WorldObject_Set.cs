@@ -117,7 +117,11 @@ namespace ACE.Server.WorldObjects
 
             // return amount added
             return itemTotalXp - prevAmount;
+
+          
         }
+
+
 
         /// <summary>
         /// Returns all spells from all levels in the item set
