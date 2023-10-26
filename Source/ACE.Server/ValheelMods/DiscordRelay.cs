@@ -25,7 +25,7 @@ namespace ACE.Server.ValheelMods
         //Supply credentials
         private const ulong RELAY_CHANNEL_ID = ;
         private const long HC_RELAY_CHANNEL_ID = ;
-        private const string BOT_TOKEN = "MTEyNDUzODYyNjM0NTI3NTM5Mg.G0b4YI.wlqNrmxEa4QSLC1CBSssg30Ryn-ZxE2KMiSpxw";
+        private const string BOT_TOKEN = "";
 
         private static DiscordSocketClient discord;
        
