@@ -440,7 +440,7 @@ namespace ACE.Server.WorldObjects
                 int playerDefenseRating = player.LumAugDamageReductionRating;
                 int ratingDecreaseAmount = playerDefenseRating / 4;
                 int finalRatingDecreaseAmount = playerDefenseRating - ratingDecreaseAmount;
-
+                finalRatingDecreaseAmount = (int)(finalRatingDecreaseAmount * 0.75);
                 var returnValue = player.LumAugDamageReductionRating - finalRatingDecreaseAmount;
 
                 player.LumAugDamageReductionRating = returnValue;
