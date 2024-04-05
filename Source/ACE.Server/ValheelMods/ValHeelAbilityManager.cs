@@ -438,10 +438,10 @@ namespace ACE.Server.WorldObjects
             if (currentUnixTime - LastTankBuffTimestamp >= 10 && TankBuffedTimer == true)
             {
                 int playerDefenseRating = player.LumAugDamageReductionRating;
-                int ratingIncreaseAmount = playerDefenseRating / 4;
-                int ratingDecreaseAmount = playerDefenseRating - ratingIncreaseAmount;
+                int ratingDecreaseAmount = playerDefenseRating / 4;
+                int finalRatingDecreaseAmount = playerDefenseRating - ratingDecreaseAmount;
 
-                var returnValue = player.LumAugDamageReductionRating - ratingDecreaseAmount;
+                var returnValue = player.LumAugDamageReductionRating - finalRatingDecreaseAmount;
 
                 player.LumAugDamageReductionRating = returnValue;
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, returnValue));
