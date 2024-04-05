@@ -421,12 +421,13 @@ namespace ACE.Server.WorldObjects
         /// <param name="currentUnixTime"></param>
         public void DefenseRatingBuffHandler(Player player, double currentUnixTime)
         {
+            int playerDefenseRating = player.LumAugDamageReductionRating;
+            int ratingIncreaseAmount = playerDefenseRating * 4;
+            int finalRatingAmount = playerDefenseRating + ratingIncreaseAmount;
+            int ratingDecreaseAmount = playerDefenseRating - ratingIncreaseAmount;
+
             if (currentUnixTime - LastTankBuffTimestamp > 30 && IsTankBuffed && GetEquippedShield() != null)
             {
-                int playerDefenseRating = player.LumAugDamageReductionRating;
-                int ratingIncreaseAmount = playerDefenseRating * 4;
-                int finalRatingAmount = playerDefenseRating + ratingIncreaseAmount;
-
                 player.TankDefenseRatingIncrease = ratingIncreaseAmount;
                 player.LumAugDamageReductionRating = finalRatingAmount;
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, finalRatingAmount));
@@ -437,7 +438,7 @@ namespace ACE.Server.WorldObjects
             }
             if (currentUnixTime - LastTankBuffTimestamp >= 10 && TankBuffedTimer == true)
             {
-                var returnValue = player.LumAugDamageReductionRating - player.TankDefenseRatingIncrease;
+                var returnValue = player.LumAugDamageReductionRating - ratingDecreaseAmount;
 
                 player.LumAugDamageReductionRating = returnValue;
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, returnValue));
