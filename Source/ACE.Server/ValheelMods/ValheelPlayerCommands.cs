@@ -20,7 +20,7 @@ namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
-        [CommandHandler("va", AccessLevel.Player, CommandHandlerFlag.None, "This is the ValHeel ability command Handler.")]
+        [CommandHandler("va", AccessLevel.Admin, CommandHandlerFlag.None, "This is the ValHeel ability command Handler.")]
 
         public static void ValheelAbilityHandler(Session session, params string[] parameters)
         {
@@ -3110,6 +3110,9 @@ namespace ACE.Server.Command.Handlers
                 var lumAugDamageReductionRating = player.GetProperty(PropertyInt.LumAugDamageReductionRating);
                 var lumAugCritDamageRating = player.GetProperty(PropertyInt.LumAugCritDamageRating);
                 var lumAugCritReductionRating = player.GetProperty(PropertyInt.LumAugCritReductionRating);
+
+                if (prestige >= 10000)
+                    return;
 
                 if (prestige <= 9)
                 {
