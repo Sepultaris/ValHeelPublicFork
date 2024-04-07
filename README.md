@@ -9,7 +9,7 @@
 
 ## Fork
 
-*This fork of [ACEmulator](https://github.com/ACEmulator/ACE) with additions by [jkurs](https://github.com/jkurs/ACE/tree/Infinite-Progression), [Aquafir](https://github.com/aquafir/ACE) and [Elorin's Cursed Remains] will try out experimental content that may be integrated into [ValHeel](https://discord.gg/5QbZDfasdW) or any server that wishes to use it.  Many thanks for all the great work that the community put in!*
+*This fork of [ACEmulator](https://github.com/ACEmulator/ACE) with additions by [jkurs](https://github.com/jkurs/ACE/tree/Infinite-Progression), [Aquafir](https://github.com/aquafir/ACE) and, [Elorin's Cursed Remains](https://github.com/Sepultaris) will try out experimental content that may be integrated into [ValHeel](https://discord.gg/5QbZDfasdW) or any server that wishes to use it.  Many thanks for all the great work that the community put in!*
 
 When possible modifications and configuration will be added to [ACE.Server\ValHeelMods](https://github.com/Sepultaris/ValHeel).
 
