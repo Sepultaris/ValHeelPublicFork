@@ -21,6 +21,7 @@ namespace ACE.Server.ValheelMods
     {
         //TurbineChatHandler.cs and GameMessageTurbineChat.cs are what's relevant
         //Todo: Filtering relevant messages.  White/blacklisting.
+        //Todo: Implement a settings file for the bot token and channel IDs
 
         //Supply credentials
         private const ulong RELAY_CHANNEL_ID = ;
