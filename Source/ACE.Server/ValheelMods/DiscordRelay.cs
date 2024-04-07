@@ -14,6 +14,8 @@ using ACE.Server.WorldObjects;
 using System.Collections.Generic;
 using System.Linq;
 using ACE.Entity.Enum.Properties;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace ACE.Server.ValheelMods
 {
@@ -23,9 +25,9 @@ namespace ACE.Server.ValheelMods
         //Todo: Filtering relevant messages.  White/blacklisting.
 
         //Supply credentials
-        private const ulong RELAY_CHANNEL_ID = 979879386473984041;
-        private const long HC_RELAY_CHANNEL_ID = 1134867481287196722;
-        private const string BOT_TOKEN = "";
+        private static ulong RELAY_CHANNEL_ID = 0;
+        private static ulong HC_RELAY_CHANNEL_ID = 0;
+        private static string BOT_TOKEN = "";
 
         private static DiscordSocketClient discord;
        
@@ -41,13 +43,15 @@ namespace ACE.Server.ValheelMods
         private const int MAX_MESSAGE_LENGTH = 10000;
         private const double MESSAGE_INTERVAL = 10000;
         private const string PREFIX = "~";
-        private static bool IsInitialized = false;
+        public static bool IsInitialized = false;
 
         //Initialize in Program.cs or on first use?
         public async static void Initialize()
         {
             if (IsInitialized)
                 return;
+
+            LoadConfiguration();
 
             //Set up outgoing message queue
             outgoingMessages = new ConcurrentQueue<string>();
@@ -75,6 +79,38 @@ namespace ACE.Server.ValheelMods
             await discord.StartAsync();
             discord.Ready += OnReady;
             
+        }
+
+        private static void LoadConfiguration()
+        {
+            //Create config file if it doesn't exist
+            if (!File.Exists("DiscordConfig.json"))
+            {
+                dynamic config = new
+                {
+                    relay_channel_id = 0,
+                    hc_relay_channel_id = 0,
+                    bot_token = ""
+                };
+                string json = JsonConvert.SerializeObject(config, Formatting.Indented);
+                File.WriteAllText("DiscordConfig.json", json);
+                Console.WriteLine("DiscordConfig.json created. Please fill in the required fields and restart the server.");
+            }
+            try
+            {
+                using (StreamReader r = new StreamReader("DiscordConfig.json"))
+                {
+                    string json = r.ReadToEnd();
+                    dynamic config = JsonConvert.DeserializeObject(json);
+                    RELAY_CHANNEL_ID = config.relay_channel_id;
+                    HC_RELAY_CHANNEL_ID = config.hc_relay_channel_id;
+                    BOT_TOKEN = config.bot_token;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading Discord configuration: " + ex.Message);
+            }
         }
 
         //Finish initializing when logged in to Discord
