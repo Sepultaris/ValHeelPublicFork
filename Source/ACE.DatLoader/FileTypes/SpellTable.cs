@@ -24,6 +24,11 @@ namespace ACE.DatLoader.FileTypes
 
             Spells.UnpackPackedHashTable(reader);
             SpellSet.UnpackPackedHashTable(reader);
+
+            /*foreach (var spell in Spells)
+            {
+                SpellBase.DumpSpells(Spells);
+            }*/
         }
 
         /// <summary>

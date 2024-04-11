@@ -3196,5 +3196,19 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyBool.IsAbilityItem) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.IsAbilityItem); else SetProperty(PropertyBool.IsAbilityItem, value); }
         }
+
+        //claimed Landblock properties
+
+        public int ClaimedLandblockId
+        {
+            get => GetProperty(PropertyInt.ClaimedLandblockId) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.ClaimedLandblockId); else SetProperty(PropertyInt.ClaimedLandblockId, value); }
+        }
+
+        public bool HasClaimedLandblock
+        {
+            get => GetProperty(PropertyBool.HasClaimedLandblock) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.HasClaimedLandblock); else SetProperty(PropertyBool.HasClaimedLandblock, value); }
+        }
     }
 }

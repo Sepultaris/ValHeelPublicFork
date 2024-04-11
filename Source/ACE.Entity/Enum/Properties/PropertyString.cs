@@ -100,7 +100,9 @@ namespace ACE.Entity.Enum.Properties
         [ServerOnly]
         SpeedRunTime                    = 9008,
         [ServerOnly]
-        HcAge                             = 9009
+        HcAge                           = 9009,
+        [ServerOnly]
+        InviterName                     = 9010  
 
     }
 

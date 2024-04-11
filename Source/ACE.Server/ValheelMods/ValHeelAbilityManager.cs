@@ -14,6 +14,11 @@ namespace ACE.Server.WorldObjects
 {
     partial class Player
     {
+        /// <summary>
+        /// This calls each ability based on the ability item used.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="abilityItem"></param>
         public void DoAbility(Player player, WorldObject abilityItem)
         {
             if (abilityItem == null || player == null)
@@ -38,6 +43,10 @@ namespace ACE.Server.WorldObjects
                 player.LifeWell = true;
         }
 
+        /// <summary>
+        /// This is the main ability manager for Valheel's ability system.
+        /// </summary>
+        /// <param name="player"></param>
         public void ValHeelAbilityManager(Player player)
         {
             var currentUnixTime = Time.GetUnixTime();
@@ -55,6 +64,11 @@ namespace ACE.Server.WorldObjects
             player.MissileAoEHandler(player, currentUnixTime); // Missile AoE
         }
 
+        /// <summary>
+        /// This checks to see if the player has an active AoE timer.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="currentUnixTime"></param>
         public void MissileAoEHandler(Player player, double currentUnixTime)
         {
             if (MissileAoE == true && currentUnixTime - LastMissileAoETimestamp < 30)
@@ -76,6 +90,11 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        /// <summary>
+        /// This checks to see if the caster has an active HoT spell timer.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="currentUnixTime"></param>
         public void HoTCastHandler (Player player, double currentUnixTime)
         {
             if (player.IsHoTCasting == true && currentUnixTime - player.LastHoTCastTimestamp < 30)
@@ -95,6 +114,11 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        /// <summary>
+        /// This checks to see if the caster has an active SoT spell timer.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="currentUnixTime"></param>
         public void SoTCastHandler(Player player, double currentUnixTime)
         {
             if (player.IsSoTCasting == true && currentUnixTime - player.LastHoTCastTimestamp < 30)
@@ -114,6 +138,11 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        /// <summary>
+        /// This returns the HoT spell level based on the player's Life Magic skill.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
         public int GetHoTLevel(Player player)
         {
             int hotLevel = (int)player.GetCreatureSkill(Skill.LifeMagic).Base / 10;
@@ -126,6 +155,11 @@ namespace ACE.Server.WorldObjects
             return hotLevel;
         }
 
+        /// <summary>
+        /// This is the HoT spell
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="spell"></param>
         public void LifeMagicHot(Player caster, int spell)
         {
             // This sets the HoT flag on the target
@@ -199,6 +233,11 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        /// <summary>
+        /// This is the Life Magic Sot spell.
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="spell"></param>
         public void LifeMagicSot(Player caster, int spell)
         {
             // This sets the HoT flag on the target
@@ -272,6 +311,11 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        /// <summary>
+        /// This is the taunt ability.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="currentUnixtime"></param>
         public void Taunting(Player player, double currentUnixtime)
         {
             if (player.IsTaunting && TauntTimerActive == true && currentUnixtime - player.LastTauntTimestamp < 30)
@@ -309,6 +353,11 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        /// <summary>
+        /// This method handles the stealth ability.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="currentUnixTime"></param>
         public void StealthHandler(Player player, double currentUnixTime)
         {
             if (player.Stealth == true && currentUnixTime - player.LastSneakTimestamp > 30)
@@ -334,6 +383,11 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        /// <summary>
+        /// This method handles the LifeWell ability.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="currentUnixtime"></param>
         public void LifeWellHandler(Player player, double currentUnixtime)
         {
             if (LifeWell == true && currentUnixtime - LastLifeWellTimestamp > 30)
@@ -421,12 +475,12 @@ namespace ACE.Server.WorldObjects
         /// <param name="currentUnixTime"></param>
         public void DefenseRatingBuffHandler(Player player, double currentUnixTime)
         {
+            int playerDefenseRating = player.LumAugDamageReductionRating;
+            int ratingIncreaseAmount = playerDefenseRating * 4;
+            int finalRatingAmount = ratingIncreaseAmount;
+
             if (currentUnixTime - LastTankBuffTimestamp > 30 && IsTankBuffed && GetEquippedShield() != null)
             {
-                int playerDefenseRating = player.LumAugDamageReductionRating;
-                int ratingIncreaseAmount = playerDefenseRating * 4;
-                int finalRatingAmount = playerDefenseRating + ratingIncreaseAmount;
-
                 player.TankDefenseRatingIncrease = ratingIncreaseAmount;
                 player.LumAugDamageReductionRating = finalRatingAmount;
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, finalRatingAmount));
@@ -437,7 +491,7 @@ namespace ACE.Server.WorldObjects
             }
             if (currentUnixTime - LastTankBuffTimestamp >= 10 && TankBuffedTimer == true)
             {
-                var returnValue = player.LumAugDamageReductionRating - player.TankDefenseRatingIncrease;
+                var returnValue = playerDefenseRating / 4;
 
                 player.LumAugDamageReductionRating = returnValue;
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, returnValue));
@@ -678,6 +732,10 @@ namespace ACE.Server.WorldObjects
             }
         }
 
+        /// <summary>
+        /// This is the handler for the SoT spell. It will check if the spell is active and if so, it will cast the spell every 3 seconds for the duration of the spell.
+        /// </summary>
+        /// <param name="currentUnixTime"></param>
         public void SoTBuffHandler(double currentUnixTime)
         {
             if (Sot8)

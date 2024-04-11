@@ -113,6 +113,51 @@ namespace ACE.DatLoader.Entity
             ManaMod = reader.ReadUInt32();
         }
 
+        //This will take a distionary of spells create a .txt file for each spell using the spell name as the file name and dump the spell data into the file
+        public static void DumpSpells(Dictionary<uint, SpellBase> spells)
+        {
+            foreach (KeyValuePair<uint, SpellBase> spell in spells)
+            {
+                string fileName = spell.Value.Name + ".txt";
+                using (StreamWriter writer = new StreamWriter(fileName))
+                {
+                    writer.WriteLine("Name: " + spell.Value.Name);
+                    writer.WriteLine("Desc: " + spell.Value.Desc);
+                    writer.WriteLine("School: " + spell.Value.School);
+                    writer.WriteLine("Icon: " + spell.Value.Icon);
+                    writer.WriteLine("Category: " + spell.Value.Category);
+                    writer.WriteLine("Bitfield: " + spell.Value.Bitfield);
+                    writer.WriteLine("BaseMana: " + spell.Value.BaseMana);
+                    writer.WriteLine("BaseRangeConstant: " + spell.Value.BaseRangeConstant);
+                    writer.WriteLine("BaseRangeMod: " + spell.Value.BaseRangeMod);
+                    writer.WriteLine("Power: " + spell.Value.Power);
+                    writer.WriteLine("SpellEconomyMod: " + spell.Value.SpellEconomyMod);
+                    writer.WriteLine("FormulaVersion: " + spell.Value.FormulaVersion);
+                    writer.WriteLine("ComponentLoss: " + spell.Value.ComponentLoss);
+                    writer.WriteLine("MetaSpellType: " + spell.Value.MetaSpellType);
+                    writer.WriteLine("MetaSpellId: " + spell.Value.MetaSpellId);
+                    writer.WriteLine("Duration: " + spell.Value.Duration);
+                    writer.WriteLine("DegradeModifier: " + spell.Value.DegradeModifier);
+                    writer.WriteLine("DegradeLimit: " + spell.Value.DegradeLimit);
+                    writer.WriteLine("PortalLifetime: " + spell.Value.PortalLifetime);
+                    writer.WriteLine("CasterEffect: " + spell.Value.CasterEffect);
+                    writer.WriteLine("TargetEffect: " + spell.Value.TargetEffect);
+                    writer.WriteLine("FizzleEffect: " + spell.Value.FizzleEffect);
+                    writer.WriteLine("RecoveryInterval: " + spell.Value.RecoveryInterval);
+                    writer.WriteLine("RecoveryAmount: " + spell.Value.RecoveryAmount);
+                    writer.WriteLine("DisplayOrder: " + spell.Value.DisplayOrder);
+                    writer.WriteLine("NonComponentTargetType: " + spell.Value.NonComponentTargetType);
+                    writer.WriteLine("ManaMod: " + spell.Value.ManaMod);
+                    writer.WriteLine("Formula: ");
+                    foreach (uint comp in spell.Value.Formula)
+                    {
+                        writer.WriteLine(comp);
+                    }
+                }
+            }
+        }
+        
+
         private const uint HIGHEST_COMP_ID = 198; // "Essence of Kemeroi", for Void Spells -- not actually ever in game!
 
         /// <summary>

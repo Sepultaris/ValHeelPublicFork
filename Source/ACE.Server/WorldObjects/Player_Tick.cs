@@ -81,7 +81,48 @@ namespace ACE.Server.WorldObjects
             }
 
             ValHeelAbilityManager(this);
+            CheckClaimableLandblock(Session);
+
+            if(AmIHome)
+                HandleAmIHome(Session);
+            
         }
+
+        public static void CheckClaimableLandblock(Session session)
+        {
+            var player = session.Player;
+
+            if (player.IsOnClaimableLandblock)
+            {
+                if (!player.ClaimableLandblock)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"You have entered a player community region.", ChatMessageType.Broadcast);
+                    player.ApplyVisualEffects(PlayScript.VisionUpWhite);
+                    player.ClaimableLandblock = true;
+                }
+            }
+            else if (!player.IsOnClaimableLandblock)
+            {
+                if (player.ClaimableLandblock)
+                {
+                    CommandHandlerHelper.WriteOutputInfo(session, $"You have left the player community region.", ChatMessageType.Broadcast);
+                    player.ApplyVisualEffects(PlayScript.VisionUpWhite);
+                    player.ClaimableLandblock = false;
+                }
+            }
+        }
+
+        public static void HandleAmIHome(Session session)
+        {
+            if (session.Player.AmIHome)
+            {
+                if (session.Player.CurrentLandblock.Id.Landblock == session.Player.ClaimedLandblockId)
+                {
+                    session.Player.ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
+                }
+            }
+        }
+
         public static void CalculatePlayerAge(Player player, double currentUnixTime)
         {
             var dob = player.GetProperty(PropertyString.DateOfBirth);
@@ -135,23 +176,15 @@ namespace ACE.Server.WorldObjects
                 if (pyrealMultiplier < 0.01)
                     pyrealMultiplier = 0.01f;
 
-                long baseScore = (long)((player.Level * player.CreatureKills) + ((player.HcAgeTimestamp /60) /60));
+                long baseScore = (long)((player.Level * player.CreatureKills) + ((player.HcAgeTimestamp / 60) / 60));
 
                 float score = (float)(baseScore + (baseScore * pyrealMultiplier) - ((player.HcAgeTimestamp / 60) / 60)) / 1000;
 
                 if (score < 0)
                     score = 0;
 
-                    player.HcScore = (long)Math.Round(score);
+                player.HcScore = (long)Math.Round(score);
             }
-        }
-
-        public static void PlayerAcheivements(Player player)
-        {
-            if (!player.Hardcore)
-                return;
-
-
         }
 
         private static readonly TimeSpan MaximumTeleportTime = TimeSpan.FromMinutes(5);
@@ -332,8 +365,12 @@ namespace ACE.Server.WorldObjects
             MonitorCombatPets(CombatPets, player);
         }
 
-        
 
+        /// <summary>
+        /// Monitor combat pets and remove those that are no longer visible or in range of the player.
+        /// </summary>
+        /// <param name="CombatPets"></param>
+        /// <param name="player"></param>
         public void MonitorCombatPets(List<Creature> CombatPets, Player player)
         {
             var session = Session;
@@ -342,7 +379,7 @@ namespace ACE.Server.WorldObjects
 
             foreach (var creature in visibleCreatures)
             {
-                
+
             }
 
             // Remove combat pets that are no longer visible and decrease player's pet count
@@ -430,7 +467,7 @@ namespace ACE.Server.WorldObjects
                 player.SpeedrunEndTime = currentUnixTime;
                 var milTime = (double)(player.SpeedrunEndTime - player.SpeedrunStartTime);
 
-                if(milTime >= 1200)
+                if (milTime >= 1200)
                 {
                     if (player.Location.LandblockId.Landblock == 0x9204)
                     {
@@ -489,12 +526,12 @@ namespace ACE.Server.WorldObjects
             {
                 player.SpeedrunEndTime = currentUnixTime;
                 var milTime = (double)(player.SpeedrunEndTime - player.SpeedrunStartTime);
-                                               
+
                 player.PlaySoundEffect(Sound.UI_Bell, player.Guid, 1.0f);
                 player.ApplyVisualEffects(PlayScript.VisionUpWhite);
                 player.ApplyVisualEffects(PlayScript.RestrictionEffectBlue);
                 var span = new TimeSpan(0, 0, (int)milTime); //Or TimeSpan.FromSeconds(seconds);
-                var formatedTime = string.Format("{0}:{1:00}", (int)span.TotalMinutes, span.Seconds);                
+                var formatedTime = string.Format("{0}:{1:00}", (int)span.TotalMinutes, span.Seconds);
 
                 if (milTime < player.BestTime)
                 {
@@ -513,25 +550,25 @@ namespace ACE.Server.WorldObjects
                     {
                         player.BestTime = player.LastTime;
                     }
-                }                
+                }
             }
             if (player.SpeedRunning == true && !player.IsOnSpeedRunLandblock && !player.QuestManager.HasQuest("PrimordialMatronKilled"))
-            {               
-                    player.LastTime = 0;
-                    player.SpeedRunning = false;
-                    CommandHandlerHelper.WriteOutputInfo(player.Session, $"You've been disqualified!", ChatMessageType.Broadcast);
-                    player.QuestManager.Erase("PrimordialMatronKilled");
-                    player.QuestManager.Erase("PartOneDone");
-                    player.QuestManager.Erase("PartTwoDone");
-                    player.QuestManager.Erase("haroldinggemtimer");
-                    player.QuestManager.Erase("GotTheGem");
-                    player.QuestManager.Erase("RoomCleared");
-                    player.QuestManager.Erase("SRRatKilled");
-                    player.QuestManager.Erase("SRRatKilled2");
-                    player.QuestManager.Erase("wildmushroompickup");
+            {
+                player.LastTime = 0;
+                player.SpeedRunning = false;
+                CommandHandlerHelper.WriteOutputInfo(player.Session, $"You've been disqualified!", ChatMessageType.Broadcast);
+                player.QuestManager.Erase("PrimordialMatronKilled");
+                player.QuestManager.Erase("PartOneDone");
+                player.QuestManager.Erase("PartTwoDone");
+                player.QuestManager.Erase("haroldinggemtimer");
+                player.QuestManager.Erase("GotTheGem");
+                player.QuestManager.Erase("RoomCleared");
+                player.QuestManager.Erase("SRRatKilled");
+                player.QuestManager.Erase("SRRatKilled2");
+                player.QuestManager.Erase("wildmushroompickup");
             }
         }
-        
+
         public static float MaxSpeed = 50;
         public static float MaxSpeedSq = MaxSpeed * MaxSpeed;
 
@@ -853,7 +890,7 @@ namespace ACE.Server.WorldObjects
                         if (curCell != null)
                         {
                             //if (PhysicsObj.CurCell == null || curCell.ID != PhysicsObj.CurCell.ID)
-                                //PhysicsObj.change_cell_server(curCell);
+                            //PhysicsObj.change_cell_server(curCell);
 
                             PhysicsObj.set_request_pos(newPosition.Pos, newPosition.Rotation, curCell, Location.LandblockId.Raw);
                             if (FastTick)

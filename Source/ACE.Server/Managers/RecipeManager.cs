@@ -14,20 +14,15 @@ using ACE.DatLoader.FileTypes;
 using ACE.Entity.Enum;
 using ACE.Entity.Enum.Properties;
 using ACE.Entity.Models;
-using ACE.Server.Command.Handlers;
 using ACE.Server.Entity;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Factories;
 using ACE.Server.Network.GameEvent.Events;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.WorldObjects;
-using System.Reflection.Metadata;
-using Renci.SshNet.Messages.Authentication;
 using static ACE.Server.WorldObjects.Player;
 using static ACE.Server.Factories.LootGenerationFactory;
-using ACE.Database.Models.Auth;
 using ACE.Server.Network;
-using System.Reflection.Metadata.Ecma335;
 
 namespace ACE.Server.Managers
 {
@@ -45,7 +40,7 @@ namespace ACE.Server.Managers
             // if none exists, try finding new recipe
             return GetNewRecipe(player, source, target);
         }
-
+        
         public static void HandleMirra(Player player, WorldObject source, WorldObject target)
         {
             
@@ -57,10 +52,11 @@ namespace ACE.Server.Managers
                 if (target.Sockets >= 1)
                 {
                     var mirraId = source.Guid;
-                    var armorbonus = source.MirraArmorBonus;
-                    var startingArmorLevel = target.GetProperty(PropertyInt.ArmorLevel).Value;
+                    int? armorbonus = source.MirraArmorBonus;
+                    int? startingArmorLevel = target.GetProperty(PropertyInt.ArmorLevel).Value;
+                    int? newArmorLevel = startingArmorLevel + armorbonus;
 
-                    target.ArmorLevel = startingArmorLevel + armorbonus;
+                    target.ArmorLevel = newArmorLevel;
                     target.Sockets--;
                     success = true;
                     player.Session.Network.EnqueueSend(new GameMessageUpdateObject(target));
@@ -114,6 +110,9 @@ namespace ACE.Server.Managers
                         target.IconOverlayId = 0x6006C35; // 2
                         player.Session.Network.EnqueueSend(new GameMessagePublicUpdatePropertyDataID(target, PropertyDataId.IconOverlay, 0x6006C35));                       
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
             }
             if (source.WeenieClassId == 801967)
@@ -124,7 +123,7 @@ namespace ACE.Server.Managers
                 if (target.Sockets >= 1)
                 {
                     var mirraId = source.Guid;
-                    var damagebonus = source.MirraWeaponBonus;
+                    int? damagebonus = source.MirraWeaponBonus;
 
                     target.Damage = target.Damage + damagebonus;
                     target.Sockets--;
@@ -173,6 +172,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C34; // 2
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
             }
             if (source.WeenieClassId == 801968)
@@ -237,6 +239,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C35; // 2
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
             }
             if (source.WeenieClassId == 801969)
@@ -301,6 +306,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C35; // 2
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
@@ -366,6 +374,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C35; // 2
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
@@ -431,6 +442,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C35; // 2
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
@@ -496,6 +510,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C35; // 2
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
@@ -561,6 +578,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C35; // 2
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
@@ -626,6 +646,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C35; // 2
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
@@ -687,6 +710,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C34; // 1
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
@@ -748,6 +774,9 @@ namespace ACE.Server.Managers
                     {
                         target.IconOverlayId = 0x6006C34; // 1
                     }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
@@ -820,13 +849,13 @@ namespace ACE.Server.Managers
                     player.PlayParticleEffect(PlayScript.ShieldUpGrey, player.Guid);
 
                     if (target.Sockets == 1)
-                    {
                         target.IconOverlayId = 0x6006C34; // 1
-                    }
+
                     if (target.Sockets == 0)
-                    {
                         target.IconOverlayId = 0x6006C35; // 2
-                    }
+
+                    player.TryRemoveFromInventoryWithNetworking(target.Guid, out target, RemoveFromInventoryAction.ConsumeItem);
+                    player.TryCreateInInventoryWithNetworking(target);
                 }
 
             }
