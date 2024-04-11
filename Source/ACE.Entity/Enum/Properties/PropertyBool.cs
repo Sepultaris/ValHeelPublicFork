@@ -251,6 +251,11 @@ namespace ACE.Entity.Enum.Properties
         IsSoTCasting                     = 9054,
         MissileAoE                       = 9055,
         DoMissileAoE                     = 9056,
+        HasClaimedLandblock              = 9057,
+        ClaimableLandblock               = 9058,
+        AmIHome                          = 9059,
+        IsInvited                        = 9060,
+        IsInviting                       = 9061,
     }
 
     public static class PropertyBoolExtensions

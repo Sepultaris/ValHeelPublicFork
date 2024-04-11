@@ -178,6 +178,11 @@ namespace ACE.Entity.Enum.Properties
         RelativeDestination = 26,
         TeleportedCharacter = 27,
 
+        /// <summary>
+        /// Player landblock Recall location
+        /// </summary>
+        LandblockRecall = 28,
+
         [ServerOnly]
         PCAPRecordedLocation = 8040
     }

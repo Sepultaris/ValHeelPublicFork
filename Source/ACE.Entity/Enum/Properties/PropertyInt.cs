@@ -686,6 +686,7 @@ namespace ACE.Entity.Enum.Properties
         DamageRatingIncrease = 9059,
         HoTsTicked = 9060,
         HoTLevel = 9061,
+        ClaimedLandblockId = 9062,
     }
 
     public static class PropertyIntExtensions

@@ -2,16 +2,8 @@ using System.Collections.Generic;
 
 using ACE.Common;
 using ACE.Database.Models.World;
-using ACE.Server.Entity;
-using ACE.Server.Factories.Enum;
-using ACE.Server.Factories.Tables;
-using ACE.Server.Factories.Tables.Wcids;
-using ACE.Entity.Enum.Properties;
 using ACE.Entity.Enum;
 using ACE.Server.WorldObjects;
-using log4net.Appender;
-using Org.BouncyCastle.Crypto.Engines;
-using ACE.Server.Factories.Entity;
 
 namespace ACE.Server.Factories
 {
@@ -107,7 +99,8 @@ namespace ACE.Server.Factories
             }
             else return 1; //default
         }
-        
+
+
         public static void MutateMirra(WorldObject wo, TreasureDeath profile, bool isMagical = true)
         {
             if (profile != null && profile.Tier < 10)
@@ -169,27 +162,27 @@ namespace ACE.Server.Factories
                 if (wo.Level == 1)
                 {
                     wo.IconOverlayId = 0x6006C34; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(15, 24);
+                    wo.MirraWeaponBonus = 15;
                 }
                 if (wo.Level == 2)
                 {
                     wo.IconOverlayId = 0x6006C35; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(25, 49);
+                    wo.MirraWeaponBonus = 25;
                 }
                 if (wo.Level == 3)
                 {
                     wo.IconOverlayId = 0x6006C36; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(50, 74);
+                    wo.MirraWeaponBonus = 50;
                 }
                 if (wo.Level == 4)
                 {
                     wo.IconOverlayId = 0x6006C37; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(75, 90);
+                    wo.MirraWeaponBonus = 75;
                 }
                 if (wo.Level == 5)
                 {
                     wo.IconOverlayId = 0x6006C38; // 1
-                    wo.MirraArmorBonus = ThreadSafeRandom.Next(90, 100);
+                    wo.MirraWeaponBonus = 100;
                 }
             }
             if (wo.WeenieClassId == 801968)

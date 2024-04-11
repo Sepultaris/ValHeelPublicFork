@@ -355,6 +355,12 @@ namespace ACE.Server.Entity
             set { if (!value.HasValue) RemoveProperty(PropertyInt64.PriceOnHead); else SetProperty(PropertyInt64.PriceOnHead, value.Value); }
         }
 
+        public int ClaimedLandblockId
+        {
+            get => GetProperty(PropertyInt.ClaimedLandblockId) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.ClaimedLandblockId); else SetProperty(PropertyInt.ClaimedLandblockId, value); }
+        }
+
         public Allegiance Allegiance { get; set; }
 
         public AllegianceNode AllegianceNode { get; set; }

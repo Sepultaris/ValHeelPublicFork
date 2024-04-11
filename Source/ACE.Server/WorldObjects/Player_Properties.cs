@@ -1305,7 +1305,8 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyInt.RaisedSelf) ?? 1;
             set { if (value == 0) RemoveProperty(PropertyInt.RaisedSelf); else SetProperty(PropertyInt.RaisedSelf, value); }
-        }        
+        }
+
         //new vitals
         public int RaisedHealth
         {
@@ -1830,6 +1831,42 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyBool.DoMissileAoE) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.DoMissileAoE); else SetProperty(PropertyBool.DoMissileAoE, value); }
+        }
+
+        public bool ClaimableLandblock
+        {
+            get => GetProperty(PropertyBool.ClaimableLandblock) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.ClaimableLandblock); else SetProperty(PropertyBool.ClaimableLandblock, value); }
+        }
+
+        public bool AmIHome
+        {
+            get => GetProperty(PropertyBool.AmIHome) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.AmIHome); else SetProperty(PropertyBool.AmIHome, value); }
+        }
+
+        public double? LastRecallFriendTimestamp
+        {
+            get => GetProperty(PropertyFloat.LastRecallFriendTimestamp);
+            set { if (!value.HasValue) RemoveProperty(PropertyFloat.LastRecallFriendTimestamp); else SetProperty(PropertyFloat.LastRecallFriendTimestamp, value.Value); }
+        }
+
+        public bool IsInvited
+        {
+            get => GetProperty(PropertyBool.IsInvited) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsInvited); else SetProperty(PropertyBool.IsInvited, value); }
+        }
+
+        public bool IsInviting
+        {
+            get => GetProperty(PropertyBool.IsInviting) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.IsInviting); else SetProperty(PropertyBool.IsInviting, value); }
+        }
+
+        public string InviterName
+        {
+            get => GetProperty(PropertyString.InviterName);
+            set { if (value == null) RemoveProperty(PropertyString.InviterName); else SetProperty(PropertyString.InviterName, value); }
         }
 
         /// <summary>

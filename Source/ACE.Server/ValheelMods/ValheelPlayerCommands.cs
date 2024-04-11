@@ -14,12 +14,258 @@ using System.Collections.Generic;
 using ACE.Server.Entity;
 using System.Text;
 using System.Linq;
-using ACE.Entity.Models;
+using Position = ACE.Entity.Position;
+using ACE.Server.ShalebridgeMods;
+using ACE.DatLoader;
+using ACE.DatLoader.FileTypes;
+using ACE.Server.Network.GameEvent.Events;
 
 namespace ACE.Server.Command.Handlers
 {
     public static class ValheelPlayerCommands
     {
+        public static float RecallMoveThreshold = 8.0f;
+        public static float RecallMoveThresholdSq = RecallMoveThreshold * RecallMoveThreshold;
+
+        [CommandHandler("lr", AccessLevel.Admin, CommandHandlerFlag.None, "Use this to recall to your claimed landblock.")]
+
+        public static void LandblockRecallCommandHandler(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+
+            if (player.HasClaimedLandblock == false)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You must claim a landblock and set a recall location before you can recall to it.", ChatMessageType.x1B));
+                return;
+            }
+            else
+            {
+                HandleLandblockRecall(session);
+                return;
+            }
+        }
+
+
+        public static void HandleLandblockRecall(Session session)
+        {
+            PositionType positionType = PositionType.LandblockRecall;
+
+            var motionCommand = MotionCommand.HouseRecall;
+            var position = session.Player.GetPosition(positionType);
+            var currentStance = session.Player.CurrentMotionState.Stance;
+
+            if (position != null)
+            {
+                var startPos = new Position(session.Player.Location);
+
+                // Wait for animation
+                var actionChain = new ActionChain();
+                session.Player.SendMotionAsCommands(motionCommand, currentStance);
+
+                // Then do teleport
+                var animLength = DatManager.PortalDat.ReadFromDat<MotionTable>(session.Player.MotionTableId).GetAnimationLength(MotionCommand.HouseRecall);
+                actionChain.AddDelaySeconds(animLength);
+                session.Player.IsBusy = true;
+                actionChain.AddAction(session.Player, () =>
+                {
+                    session.Player.IsBusy = false;
+                    var endPos = new Position(session.Player.Location);
+                    if (startPos.SquaredDistanceTo(endPos) > RecallMoveThresholdSq)
+                    {
+                        session.Network.EnqueueSend(new GameEventWeenieError(session, WeenieError.YouHaveMovedTooFar));
+                        return;
+                    }
+                    session.Player.TeleToPosition(positionType);
+                });
+
+                actionChain.EnqueueChain();
+
+                return;
+            }
+        }
+
+        [CommandHandler("srl", AccessLevel.Admin, CommandHandlerFlag.None, "Use this to set the claimed landblock recall location.")]
+
+        public static void SetRecallLocationCommandHandler(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+
+            if (player.HasClaimedLandblock == false)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You must claim a landblock before you can set a recall location.", ChatMessageType.x1B));
+                return;
+            }
+            else if (session.Player.CurrentLandblock.Id.Landblock != player.ClaimedLandblockId)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You must be in your claimed landblock to set a recall location.", ChatMessageType.x1B));
+                return;
+            }
+            else
+            {
+                HandleSetRecallLocation(session);
+                return;
+            }
+        }
+
+        public static void HandleSetRecallLocation(Session session)
+        {
+            Position playerPosition = session.Player.Location;
+            PositionType positionType = PositionType.LandblockRecall;
+
+            // Save the position
+            session.Player.SetPosition(positionType, new Position(playerPosition));
+            // Report changes to client
+            var positionMessage = new GameMessageSystemChat($"Set: {positionType} to Loc: {playerPosition}", ChatMessageType.Broadcast);
+            session.Network.EnqueueSend(positionMessage);
+            return;
+        }
+
+        [CommandHandler("rf", AccessLevel.Admin, CommandHandlerFlag.None, "Use this to recall a friend to your location.")]
+
+        public static void HandleRecallFriendCommand(Session session, params string[] parameters)
+        {
+            if (parameters[1] == null)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Use this command to invite a player to be teleported to your position.", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You can use this command once every thirty minutes.", ChatMessageType.x1B));
+                return;
+            }
+
+            if (parameters[1] != null && parameters[1] is string)
+            {
+                HandleRecallFriend(session, parameters[1]);
+                return;
+            }
+        }
+
+        public static void HandleRecallFriend(Session session, params string[] parameters)
+        {
+            var currentUnixTime = Time.GetUnixTime();
+
+            if (session.Player.LastRecallFriendTimestamp == null)
+                session.Player.LastRecallFriendTimestamp = (Time.GetUnixTime() - 1800);
+
+            var lastRecallTime = session.Player.LastRecallFriendTimestamp;
+            var timerCountdown = (lastRecallTime - currentUnixTime) - 1800;
+
+            DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime timestamp = epoch.AddSeconds((double)timerCountdown);
+
+            TimeSpan timeSpan = timestamp.TimeOfDay;
+
+            string formattedTime = timeSpan.ToString(@"m\:ss");
+
+            if (currentUnixTime - lastRecallTime < 1800) // 1800 seconds = half hour
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have used that ability this too recently. You may use it again in {formattedTime} (mm:ss).", ChatMessageType.x1B));
+                return;
+            }
+
+            if (parameters == null || parameters.Length == 0)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Use this command once every thirty minutes to invite a player to be teleported to your position.", ChatMessageType.x1B));
+                return;
+            }
+
+            string playerName = string.Join(" ", parameters); // Combine all elements in parameters array into a single string
+
+            if (playerName == null)
+                return;
+
+            InvitePlayer(session.Player, playerName, currentUnixTime);
+            return;
+        }
+
+        public static void InvitePlayer(Player issuer, string playerName, double currentUnixtime)
+        {
+            var player = PlayerManager.GetOnlinePlayer(playerName);
+            string issuerName = issuer.Name;
+
+            if (player == null)
+            {
+                issuer.Session.Network.EnqueueSend(new GameMessageSystemChat($"Player {playerName} was not found.", ChatMessageType.Broadcast));
+                return;
+            }
+
+            player.SetProperty(PropertyBool.IsInvited, true);
+            player.SetProperty(PropertyString.InviterName, issuerName);
+            player.SaveBiotaToDatabase();
+            issuer.LastRecallFriendTimestamp = currentUnixtime;
+            issuer.IsInviting = true;
+
+            return;
+        }
+
+        [CommandHandler("amihome", AccessLevel.Admin, CommandHandlerFlag.None, "Survival Instincts.", "")]
+
+        public static void AmIHome(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+            var claimedLandblockId = player.ClaimedLandblockId;
+
+            if (claimedLandblockId == 0)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have not claimed a landblock.", ChatMessageType.x1B));
+                return;
+            }
+
+            if (parameters.Length == 0)
+            {
+                return;
+            }
+            else
+                switch (parameters?[0].ToLower())
+                {
+                    case "1":
+                    case "on":
+                        session.Player.AmIHome = true;
+                        break;
+
+                    case "0":
+                    case "off":
+                        session.Player.AmIHome = false;
+                        break;
+                }
+
+        }
+
+        [CommandHandler("ca", AccessLevel.Admin, CommandHandlerFlag.None, "Use this for landblock availability.")]
+
+        public static void CheckLandblockAvailabilityHandler(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+
+            if (!player.IsOnClaimableLandblock)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You must be in a player community region to use this command.", ChatMessageType.x1B));
+                return;
+            }
+
+            if (Claimed_Landblock.LandblockAlreadyClaimed(session.Player.CurrentLandblock.Id.Landblock) == true)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"This landblock has already been claimed.", ChatMessageType.x1B));
+                return;
+            }
+            else
+                session.Network.EnqueueSend(new GameMessageSystemChat($"This landblock is available.", ChatMessageType.x1B));
+            return;
+        }
+
+        [CommandHandler("cl", AccessLevel.Admin, CommandHandlerFlag.None, "Use this for landblock claiming.")]
+
+        public static void ClaimLandblockHandler(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+
+            if (!player.IsOnClaimableLandblock)
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You must be in a player community region to use this command.", ChatMessageType.x1B));
+                return;
+            }
+                Claimed_Landblock.HandleClaimLandblock(session);
+            return;
+        }
+
         [CommandHandler("va", AccessLevel.Admin, CommandHandlerFlag.None, "This is the ValHeel ability command Handler.")]
 
         public static void ValheelAbilityHandler(Session session, params string[] parameters)
@@ -176,7 +422,14 @@ namespace ACE.Server.Command.Handlers
                 }
             }
             if (parameters[0] == "ba")
+            {
+                double currentUnixTime = Time.GetUnixTime();
+
                 player.IsTankBuffed = true;
+                player.DefenseRatingBuffHandler(player, currentUnixTime); // Bastion
+                return;
+            }
+                
             if (parameters[0] == "pa")
                 player.IsDamageBuffed = true;
             if (parameters[0] == "br")
@@ -643,7 +896,7 @@ namespace ACE.Server.Command.Handlers
                     {
                         skill.InitLevel += 1;
                         session.Player.AvailableSkillCredits -= 2;
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Missile Defense 1 point.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Arcane Lore 1 point.", ChatMessageType.Broadcast));
                         session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
                         session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
                     }
@@ -652,7 +905,7 @@ namespace ACE.Server.Command.Handlers
                         skillCreditCost = amount * 2;
                         skill.InitLevel += (uint)amount;
                         session.Player.AvailableSkillCredits -= skillCreditCost;
-                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Missile Defense {amount} points.", ChatMessageType.Broadcast));
+                        session.Network.EnqueueSend(new GameMessageSystemChat($"You have raised Arcane Lore {amount} points.", ChatMessageType.Broadcast));
                         session.Network.EnqueueSend(new GameMessagePrivateUpdateSkill(session.Player, skill));
                         session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.AvailableSkillCredits, (int)numOfCredits - skillCreditCost));
                     }
