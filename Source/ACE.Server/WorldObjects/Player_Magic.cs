@@ -947,7 +947,7 @@ namespace ACE.Server.WorldObjects
                 if (LastWarChannelTimestamp == 0)
                     LastWarChannelTimestamp = currentUnixTime - WarChannelTimerDuration;
                 
-                if (spell.School == MagicSchool.WarMagic && spell.NumProjectiles > 0 && /*currentUnixTime - LastWarChannelTimestamp >= WarChannelTimerDuration &&*/ warChannelChance >= warChannelRoll && warMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
+                if (spell.School == MagicSchool.WarMagic && spell.NumProjectiles > 0 && warChannelChance >= warChannelRoll && warMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
                 {
                     var procSpell = spell;
                     int numCasts = NumOfChannelCasts;
@@ -959,6 +959,23 @@ namespace ACE.Server.WorldObjects
                 {
                     IsDamageBuffed = true;
                 }
+                
+                //Todo: move this to the ability manager.
+                if (spell.School == MagicSchool.WarMagic && spell.IsHarmful && warMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
+                {
+                    //Todo Gate by cooldown
+                    var splashCount = ThreadSafeRandom.Next(1, 5);
+                    var spalshRange = 6;
+                    var targets = ValheelMods.SplashHelper.GetSplashTargets(this, target, splashCount, spalshRange);
+
+                    if (targets.Count < 1)
+                        return;
+
+                    for (var i = 0; i < targets.Count; i++)
+                    {
+                        TryCastSpell(spell, targets[i], itemCaster, caster, isWeaponSpell, false);
+                    }
+                }          
             }
 
             if (IsSneaking == true)

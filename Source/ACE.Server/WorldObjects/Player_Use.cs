@@ -196,7 +196,7 @@ namespace ACE.Server.WorldObjects
 
                     CreateMoveToChain(item, (success) => TryUseItem(item, success));
                 }
-                if (item.Personal_Struct_Gen_Spawner == true)
+                else if (item.Personal_Struct_Gen_Spawner == true)
                 {
                     var player = Session.Player;
 

@@ -9,6 +9,7 @@ using ACE.Entity.Enum;
 using ACE.Server.Entity.Actions;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Network.Managers;
+using ACE.Server.Mods;
 
 namespace ACE.Server.Managers
 {
@@ -99,6 +100,8 @@ namespace ACE.Server.Managers
             ShutdownTime = shutdownTime;
 
             var lastNoticeTime = DateTime.UtcNow;
+
+            ModManager.Shutdown();
 
             // wait for shutdown interval to expire
             while (shutdownTime != DateTime.MinValue && shutdownTime >= DateTime.UtcNow)
