@@ -343,9 +343,9 @@ namespace ACE.Server.Factories
                     wo = CreateDinnerware(profile, isMagical);
                     break;
 
-                /*case (TreasureItemType)ItemType.Mirra:
+                case (TreasureItemType)ItemType.Mirra:
                     wo = CreateMirra(profile, isMagical, true);
-                    break;*/
+                    break;
             }
 
             return wo;

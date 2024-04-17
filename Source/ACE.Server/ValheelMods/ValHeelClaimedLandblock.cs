@@ -1,6 +1,5 @@
 
 using ACE.Server.Command.Handlers;
-using ACE.Database.Models.World;
 using ACE.Entity.Enum;
 using ACE.Entity;
 using ACE.Server.Network.GameMessages.Messages;
@@ -61,7 +60,7 @@ namespace ACE.Server.ShalebridgeMods
                     session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
                     return;
                 }
-                else if (player.GetNumInventoryItemsOfWCID(300000) == 0)
+                else if (player.GetNumInventoryItemsOfWCID(803296) == 0)
                 {
                     session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
                     session.Network.EnqueueSend(new GameMessageSystemChat($"You do not have a Land Attunment Crystal in your inventory.", ChatMessageType.x1B));
@@ -78,7 +77,7 @@ namespace ACE.Server.ShalebridgeMods
         {
             var player = session.Player;
             var landblock = session.Player.CurrentLandblock.Id.Landblock;
-            var item = player.GetInventoryItemsOfWCID(300000);
+            var item = player.GetInventoryItemsOfWCID(803296);
 
             session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
             session.Network.EnqueueSend(new GameMessageSystemChat($"You have laid claim to this landblock.", ChatMessageType.x1B));
@@ -111,6 +110,7 @@ namespace ACE.Server.ShalebridgeMods
                 var wo = obj.WeenieObj.WorldObject.Generator;
 
                 DeveloperContentCommands.RemoveLandblockInstances(session, wo);
+                DeveloperContentCommands.HandleRemoveEnc(session);
             }
 
             DeveloperCommands.HandleReloadLandblocks(session);

@@ -687,6 +687,8 @@ namespace ACE.Entity.Enum.Properties
         HoTsTicked = 9060,
         HoTLevel = 9061,
         ClaimedLandblockId = 9062,
+        NumberOfPersonalStructures = 9063,
+        GeneratorWCID = 9064,
     }
 
     public static class PropertyIntExtensions

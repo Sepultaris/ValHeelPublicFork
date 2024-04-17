@@ -585,7 +585,6 @@ namespace ACE.Server.WorldObjects
 
                 var nextRefillTime = PowerLevel * refillMod;
                 NextRefillTime = DateTime.UtcNow.AddSeconds(nextRefillTime);
-                var dotRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
 
                 var dist = GetCylinderDistance(target);
 
@@ -599,16 +598,21 @@ namespace ACE.Server.WorldObjects
                     nextAttack.AddAction(this, () => Attack(target, attackSequence, true));
                     nextAttack.EnqueueChain();
 
+                    //Check to see if an ability has been activated
                     if (IsDps)
                     {
+                        var dotRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+                        var paRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
                         if (MeleeDoTChance >= dotRoll)
                         {
-                            //var dot = DatabaseManager.World.GetCachedWeenie(300501);
                             var dotTarget = target as Creature;
                             var targets = GetDoTTarget(dotTarget);
-                            //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
 
                             CreateDoTSpot(this, targets);
+                        }
+                        if (PowerAttackChance >= paRoll)
+                        {
+                            IsDamageBuffed = true;
                         }
                     }
                     if (IsTank)
@@ -647,6 +651,9 @@ namespace ACE.Server.WorldObjects
 
                     if (IsDps)
                     {
+                        var dotRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+                        var paRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
                         if (MeleeDoTChance >= dotRoll)
                         {
                             //var dot = DatabaseManager.World.GetCachedWeenie(300501);
@@ -655,6 +662,10 @@ namespace ACE.Server.WorldObjects
                             //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
 
                             CreateDoTSpot(this, targets);
+                        }
+                        if (PowerAttackChance >= paRoll)
+                        {
+                            IsDamageBuffed = true;
                         }
                     }
                     if (IsTank)
@@ -694,6 +705,9 @@ namespace ACE.Server.WorldObjects
 
                     if (IsDps)
                     {
+                        var dotRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+                        var paRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
                         if (MeleeDoTChance >= dotRoll)
                         {
                             //var dot = DatabaseManager.World.GetCachedWeenie(300501);
@@ -702,6 +716,10 @@ namespace ACE.Server.WorldObjects
                             //var obj = WorldObjectFactory.CreateNewWorldObject(dot);
 
                             CreateDoTSpot(this, targets);
+                        }
+                        if (PowerAttackChance >= paRoll)
+                        {
+                            IsDamageBuffed = true;
                         }
                     }
                     if (IsTank)

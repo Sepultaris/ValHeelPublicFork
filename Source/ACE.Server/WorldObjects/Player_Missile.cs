@@ -264,6 +264,16 @@ namespace ACE.Server.WorldObjects
                     }
                 }
 
+                if (IsDps)
+                {
+                    var paRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                    if (PowerAttackChance >= paRoll)
+                    {
+                        IsDamageBuffed = true;
+                    }
+                }
+
                 if (DoMissileAoE)
                 {
                     LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);

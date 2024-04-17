@@ -40,7 +40,7 @@ namespace ACE.Server.WorldObjects
 
             if (Hardcore)
             {
-                PlayerManager.BroadcastToAll(new GameMessageSystemChat($"The Hardcore player {Name}, has died at level {Level}, with a score of {HcScore}.", ChatMessageType.Broadcast));
+                PlayerManager.BroadcastToAll(new GameMessageSystemChat($"The Hardcore player {Name}, has died at level {Level}, with a score of {HcScore}.", ChatMessageType.WorldBroadcast));
             }
 
             var deathMessage = base.OnDeath(lastDamager, damageType, criticalHit);

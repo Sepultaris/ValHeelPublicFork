@@ -264,6 +264,7 @@ namespace ACE.Entity.Enum.Properties
         LastHoTCastTimestamp           = 8047,
         LastMissileAoETimestamp        = 8048,
         LastRecallFriendTimestamp      = 8049,
+        PowerAttackChance              = 8050,
     }
 
     public static class PropertyFloatExtensions

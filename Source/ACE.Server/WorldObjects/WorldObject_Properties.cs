@@ -3210,5 +3210,17 @@ namespace ACE.Server.WorldObjects
             get => GetProperty(PropertyBool.HasClaimedLandblock) ?? false;
             set { if (!value) RemoveProperty(PropertyBool.HasClaimedLandblock); else SetProperty(PropertyBool.HasClaimedLandblock, value); }
         }
+
+        public bool Personal_Struct_Gen_Spawner
+        {
+            get => GetProperty(PropertyBool.Personal_Struct_Gen_Spawner) ?? false;
+            set { if (!value) RemoveProperty(PropertyBool.Personal_Struct_Gen_Spawner); else SetProperty(PropertyBool.Personal_Struct_Gen_Spawner, value); }
+        }
+
+        public int? GeneratorWCID
+        {
+            get => GetProperty(PropertyInt.GeneratorWCID);
+            set { if (!value.HasValue) RemoveProperty(PropertyInt.GeneratorWCID); else SetProperty(PropertyInt.GeneratorWCID, value.Value); }
+        }
     }
 }

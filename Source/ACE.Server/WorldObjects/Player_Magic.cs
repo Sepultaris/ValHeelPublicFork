@@ -942,6 +942,8 @@ namespace ACE.Server.WorldObjects
             // War Channeling
             if (IsDps)
             {
+                var paRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
                 if (LastWarChannelTimestamp == 0)
                     LastWarChannelTimestamp = currentUnixTime - WarChannelTimerDuration;
                 
@@ -952,6 +954,10 @@ namespace ACE.Server.WorldObjects
 
                     WarMagicChannel(this, (Creature)target, procSpell, numCasts, false);
                     LastWarChannelTimestamp = currentUnixTime;
+                }
+                if (PowerAttackChance >= paRoll)
+                {
+                    IsDamageBuffed = true;
                 }
             }
 

@@ -157,7 +157,7 @@ namespace ACE.Server.Command.Handlers
 
             if (currentUnixTime - lastRecallTime < 1800) // 1800 seconds = half hour
             {
-                session.Network.EnqueueSend(new GameMessageSystemChat($"You have used that ability this too recently. You may use it again in {formattedTime} (mm:ss).", ChatMessageType.x1B));
+                session.Network.EnqueueSend(new GameMessageSystemChat($"You have used that ability too recently. You may use it again in {formattedTime} (mm:ss).", ChatMessageType.x1B));
                 return;
             }
 
@@ -167,14 +167,18 @@ namespace ACE.Server.Command.Handlers
                 return;
             }
 
-            string playerName = string.Join(" ", parameters); // Combine all elements in parameters array into a single string
+            // Combine all elements in parameters array into a single string with spaces
+            string playerName = string.Join(" ", parameters);
 
-            if (playerName == null)
+            if (string.IsNullOrWhiteSpace(playerName)) // Check if player name is empty or whitespace
+            {
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Invalid player name.", ChatMessageType.x1B));
                 return;
+            }
 
             InvitePlayer(session.Player, playerName, currentUnixTime);
-            return;
         }
+
 
         public static void InvitePlayer(Player issuer, string playerName, double currentUnixtime)
         {
@@ -278,10 +282,12 @@ namespace ACE.Server.Command.Handlers
                 session.Network.EnqueueSend(new GameMessageSystemChat($"These are the current abilities: Power Attack /va pa, Bastion /va ba, Brutalize /va br, Life Well /va lw", ChatMessageType.Broadcast));
             }
 
+            double currentUnixTimeInSeconds = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+            double currentUnixTime = Time.GetUnixTime();
+
             if (parameters[0] == "hot")
             {
                 var fellows = player.GetFellowshipTargets();
-                double currentUnixTime = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
 
                 if (fellows != null)
                 {
@@ -292,68 +298,69 @@ namespace ACE.Server.Command.Handlers
                             if (parameters[1] == "8")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot8, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "7")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot7, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "6")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot6, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "5")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot5, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "4")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot4, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "3")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot3, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "2")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot2, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "1")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Hot1, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                         }
                     }
                 }
+
+                return;
             }
             if (parameters[0]== "sot")
             {
                 // This sets the HoT flag on the target
                 var fellows = player.GetFellowshipTargets();
-                double currentUnixTime = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
 
                 if (fellows != null)
                 {
@@ -364,82 +371,103 @@ namespace ACE.Server.Command.Handlers
                             if (parameters[1] == "8")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot8, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "7")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot7, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "6")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot6, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "5")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot5, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "4")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot4, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "3")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot3, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "2")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot2, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                             else if (parameters[1] == "1")
                             {
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyBool.Sot1, true);
-                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTime);
+                                fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyFloat.HoTTimestamp, currentUnixTimeInSeconds);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTDuration, fellow.MaxHoTDuration);
                                 fellow.SetProperty(ACE.Entity.Enum.Properties.PropertyInt.HoTTicks, fellow.MaxHoTTicks);
                             }
                         }
                     }
                 }
+
+                return;
             }
+
             if (parameters[0] == "ba")
             {
-                double currentUnixTime = Time.GetUnixTime();
-
                 player.IsTankBuffed = true;
                 player.DefenseRatingBuffHandler(player, currentUnixTime); // Bastion
                 return;
             }
-                
+
             if (parameters[0] == "pa")
+            {
                 player.IsDamageBuffed = true;
+                player.DamageRatingBuffHandler(player, currentUnixTime); // Power Attack
+                return;
+            }
             if (parameters[0] == "br")
+            {
                 player.Brutalize = true;
+                player.BrutalizeHandler(player, currentUnixTime); // Brutalize
+                return;
+            }
             if (parameters[0] == "lw")
+            {
                 player.LifeWell = true;
+                player.LifeWellHandler(player, currentUnixTime); // Life Well
+                return;
+            }
             if (parameters[0] == "st")
+            {
                 player.Stealth = true;
+                player.StealthHandler(player, currentUnixTime); // Stealth
+                return;
+            }
             if (parameters[0] == "th")
+            {
                 player.IsTaunting = true;
+                player.Taunting(player, currentUnixTime); // Taunt
+                return;
+            }
             else
             {
                 session.Network.EnqueueSend(new GameMessageSystemChat($"Could not find ability {parameters[0]}", ChatMessageType.Broadcast));

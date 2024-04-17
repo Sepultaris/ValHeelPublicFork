@@ -9,6 +9,7 @@ using ACE.Server.Factories;
 using System.Collections.Generic;
 using ACE.Server.Command.Handlers;
 using System;
+using ACE.Server.Managers;
 
 namespace ACE.Server.WorldObjects
 {
@@ -475,10 +476,22 @@ namespace ACE.Server.WorldObjects
         /// <param name="currentUnixTime"></param>
         public void DefenseRatingBuffHandler(Player player, double currentUnixTime)
         {
+            int defenseRatingMultiplier = (int)PropertyManager.GetLong("ba_defense_multiplier").Item;
             int playerDefenseRating = player.LumAugDamageReductionRating;
-            int ratingIncreaseAmount = playerDefenseRating * 4;
+            int ratingIncreaseAmount = playerDefenseRating * defenseRatingMultiplier;
             int finalRatingAmount = ratingIncreaseAmount;
 
+            if (playerDefenseRating == 0)
+            {
+                player.SetProperty(PropertyInt.LumAugDamageReductionRating, 1);
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, 1));
+            }
+            if (currentUnixTime - LastTankBuffTimestamp > 30 && IsTankBuffed && GetEquippedShield() == null)
+            {
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat("You must have a shield equipped to use this ability.", ChatMessageType.Broadcast));
+                IsTankBuffed = false;
+                return;
+            }
             if (currentUnixTime - LastTankBuffTimestamp > 30 && IsTankBuffed && GetEquippedShield() != null)
             {
                 player.TankDefenseRatingIncrease = ratingIncreaseAmount;
@@ -488,10 +501,11 @@ namespace ACE.Server.WorldObjects
                 player.PlayParticleEffect(PlayScript.ShieldUpGrey, Guid);
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You've activated Bastion, increaing your damage reduction rating for 10 seconds.", ChatMessageType.Broadcast));
                 TankBuffedTimer = true;
+                IsTankBuffed = false;
             }
             if (currentUnixTime - LastTankBuffTimestamp >= 10 && TankBuffedTimer == true)
             {
-                var returnValue = playerDefenseRating / 4;
+                var returnValue = playerDefenseRating / defenseRatingMultiplier;
 
                 player.LumAugDamageReductionRating = returnValue;
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageReductionRating, returnValue));
@@ -499,9 +513,10 @@ namespace ACE.Server.WorldObjects
                 player.PlayParticleEffect(PlayScript.ShieldDownGrey, Guid);
                 TankBuffedTimer = false;
             }
-            if (currentUnixTime - LastTankBuffTimestamp >= 29 && IsTankBuffed == true)
+            if (currentUnixTime - LastTankBuffTimestamp <= 29 && IsTankBuffed == true)
             {
                 IsTankBuffed = false;
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You can't use Bastion yet.", ChatMessageType.Broadcast));
             }
         }
 
@@ -510,12 +525,20 @@ namespace ACE.Server.WorldObjects
         /// </summary>
         public void DamageRatingBuffHandler(Player player, double currentUnixTime)
         {
+            int paDamageMultiplier = (int)PropertyManager.GetLong("pa_damage_multiplier").Item;
+            int playerDamageRating = player.LumAugDamageRating;
+
+            if (playerDamageRating == 0)
+            {
+                player.SetProperty(PropertyInt.LumAugDamageRating, 1);
+                player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, 1));
+            }
+
+            int ratingIncreaseAmount = playerDamageRating * paDamageMultiplier;
+            int finalRatingAmount = ratingIncreaseAmount;
+
             if (currentUnixTime - LastDamageBuffTimestamp > 30 && IsDamageBuffed)
             {
-                int playerDamageRating = player.LumAugDamageRating;
-                int ratingIncreaseAmount = playerDamageRating * 6;
-                int finalRatingAmount = playerDamageRating + ratingIncreaseAmount;
-
                 player.DamageRatingIncrease = ratingIncreaseAmount;
                 player.LumAugDamageRating = finalRatingAmount;
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, finalRatingAmount));
@@ -523,10 +546,11 @@ namespace ACE.Server.WorldObjects
                 player.PlayParticleEffect(PlayScript.ShieldUpRed, Guid);
                 player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You've activated Power Attack, increaing your damage rating for 10 seconds.", ChatMessageType.Broadcast));
                 DamageBuffedTimer = true;
+                IsDamageBuffed = false;
             }
             if (currentUnixTime - LastDamageBuffTimestamp >= 10 && DamageBuffedTimer == true)
             {
-                var returnValue = player.LumAugDamageRating - player.DamageRatingIncrease;
+                var returnValue = playerDamageRating / paDamageMultiplier;
 
                 player.LumAugDamageRating = returnValue;
                 player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.LumAugDamageRating, returnValue));
@@ -534,9 +558,10 @@ namespace ACE.Server.WorldObjects
                 player.PlayParticleEffect(PlayScript.ShieldDownRed, Guid);
                 DamageBuffedTimer = false;
             }
-            if (currentUnixTime - LastDamageBuffTimestamp >= 29 && IsDamageBuffed == true)
+            if (currentUnixTime - LastDamageBuffTimestamp <= 29 && IsDamageBuffed == true)
             {
                 IsDamageBuffed = false;
+                player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You can't use Power Attack yet.", ChatMessageType.Broadcast));
             }
         }
 

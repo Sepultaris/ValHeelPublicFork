@@ -256,6 +256,7 @@ namespace ACE.Entity.Enum.Properties
         AmIHome                          = 9059,
         IsInvited                        = 9060,
         IsInviting                       = 9061,
+        Personal_Struct_Gen_Spawner      = 9062,
     }
 
     public static class PropertyBoolExtensions

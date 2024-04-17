@@ -1647,6 +1647,12 @@ namespace ACE.Server.WorldObjects
             set { if (value == 0.0) RemoveProperty(PropertyFloat.MeleeDoTChance); else SetProperty(PropertyFloat.MeleeDoTChance, value); }
         }
 
+        public double PowerAttackChance
+        {
+            get => (double)(GetProperty(PropertyFloat.PowerAttackChance) ?? 0.25);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.PowerAttackChance); else SetProperty(PropertyFloat.PowerAttackChance, value); }
+        }
+
         public int WarChannelTimerDuration
         {
             get => GetProperty(PropertyInt.WarChannelTimerDuration) ?? 10;
@@ -1867,6 +1873,12 @@ namespace ACE.Server.WorldObjects
         {
             get => GetProperty(PropertyString.InviterName);
             set { if (value == null) RemoveProperty(PropertyString.InviterName); else SetProperty(PropertyString.InviterName, value); }
+        }
+
+        public int NumberOfPersonalStructures
+        {
+            get => GetProperty(PropertyInt.NumberOfPersonalStructures) ?? 0;
+            set { if (value == 0) RemoveProperty(PropertyInt.NumberOfPersonalStructures); else SetProperty(PropertyInt.NumberOfPersonalStructures, value); }
         }
 
         /// <summary>

@@ -18,6 +18,35 @@ namespace ACE.Server.Command.Handlers
 {
     public static class ValheelAdminCommands
     {
+        [CommandHandler("rcl", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, "This will clear all the properties of a targeted player associated with landblock ownership.")]
+
+        public static void HandleResetClaimedLandblock(Session session, params string[] parameters)
+        {
+            var player = session.Player;
+            var target = CommandHandlerHelper.GetLastAppraisedObject(session);
+
+            if (target != null && target is Player playerTarget)
+            {
+                if (playerTarget.HasClaimedLandblock)
+                {
+                    playerTarget.HasClaimedLandblock = false;
+                    playerTarget.ClaimedLandblockId = 0;
+                    playerTarget.SaveBiotaToDatabase(true);
+                    ChatPacket.SendServerMessage(session, $"Landblock ownership has been reset for {playerTarget.Name}.", ChatMessageType.Broadcast);
+                    return;
+                }
+                else
+                {
+                    ChatPacket.SendServerMessage(session, $"{playerTarget.Name} does not own a landblock.", ChatMessageType.Broadcast);
+                    return;
+                }
+            }
+            else
+            {
+                ChatPacket.SendServerMessage(session, $"No player {parameters[0]} found.", ChatMessageType.Broadcast);
+            }
+        }
+
         [CommandHandler("updateleaderboard", AccessLevel.Admin, CommandHandlerFlag.RequiresWorld, "Forces an update to the Hc leaderboard in ValHeel Discord")]
         public static void HandleUpdateLeaderboard(Session session, params string[] parameters)
         {
