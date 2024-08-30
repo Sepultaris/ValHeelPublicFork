@@ -400,11 +400,99 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
         WeaponMissileDefense += Random(0.0, 0.1)
         WeaponMagicDefense += Random(0.0, 0.1)
         
-        
-
 Armor Mutation #11:
 
-Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 14%:
+        ArmorLevel += 210
+        WeaponDefense = 1.03 
+        WeaponMissileDefense = 1.03 
+        WeaponMagicDefense = 1.03 
+        WeaponDefense += Random(0.0, 0.1)
+        WeaponMissileDefense += Random(0.0, 0.1)
+        WeaponMagicDefense += Random(0.0, 0.1)
+
+        
+       
+    - Chance: 15%:
+        ArmorLevel += 220
+        WeaponDefense = 1.04 
+        WeaponMissileDefense = 1.04 
+        WeaponMagicDefense = 1.04
+        WeaponDefense += Random(0.0, 0.1)
+        WeaponMissileDefense += Random(0.0, 0.1)
+        WeaponMagicDefense += Random(0.0, 0.1)
+
+        
+
+    - Chance: 14%:
+        ArmorLevel += 230
+        WeaponDefense = 1.05 
+        WeaponMissileDefense = 1.05 
+        WeaponMagicDefense = 1.05
+        WeaponDefense += Random(0.0, 0.1)
+        WeaponMissileDefense += Random(0.0, 0.1)
+        WeaponMagicDefense += Random(0.0, 0.1)
+
+       
+
+    - Chance: 13%:
+        ArmorLevel += 240
+        WeaponDefense = 1.06 
+        WeaponMissileDefense = 1.06 
+        WeaponMagicDefense = 1.06
+        WeaponDefense += Random(0.0, 0.1)
+        WeaponMissileDefense += Random(0.0, 0.1)
+        WeaponMagicDefense += Random(0.0, 0.1)
+
+        
+
+    - Chance: 13%:
+        ArmorLevel += 250
+        WeaponDefense = 1.07 
+        WeaponMissileDefense = 1.07 
+        WeaponMagicDefense = 1.07
+        WeaponDefense += Random(0.0, 0.1)
+        WeaponMissileDefense += Random(0.0, 0.1)
+        WeaponMagicDefense += Random(0.0, 0.1)
+
+        
+
+    - Chance: 13%:
+        ArmorLevel += 260
+        WeaponDefense = 1.08 
+        WeaponMissileDefense = 1.08 
+        WeaponMagicDefense = 1.08
+        WeaponDefense += Random(0.0, 0.1)
+        WeaponMissileDefense += Random(0.0, 0.1)
+        WeaponMagicDefense += Random(0.0, 0.1)
+
+        
+
+    - Chance: 12%:
+        ArmorLevel += 270
+        WeaponDefense = 1.09 
+        WeaponMissileDefense = 1.09 
+        WeaponMagicDefense = 1.09
+        WeaponDefense += Random(0.0, 0.1)
+        WeaponMissileDefense += Random(0.0, 0.1)
+        WeaponMagicDefense += Random(0.0, 0.1)
+
+        
+
+    - Chance: 6%:
+        ArmorLevel += 280
+        WeaponDefense = 1.10 
+        WeaponMissileDefense = 1.10 
+        WeaponMagicDefense = 1.10
+        WeaponDefense += Random(0.0, 0.1)
+        WeaponMissileDefense += Random(0.0, 0.1)
+        WeaponMagicDefense += Random(0.0, 0.1)
+
+Armor Mutation #12:
+
+Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 
     - Chance: 100%:
         ArmorLevel += Random(-5, 5)

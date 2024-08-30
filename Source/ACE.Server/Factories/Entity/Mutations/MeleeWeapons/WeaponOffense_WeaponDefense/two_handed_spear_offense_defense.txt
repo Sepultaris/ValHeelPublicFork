@@ -450,3 +450,31 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
     - Chance: 2.5%:
         WeaponDefense = 1.27
 
+Spear (TwoHandedCombat) Mutation #18:
+		
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 25%:
+        WeaponDefense = 1.22
+
+    - Chance: 15%:
+        WeaponDefense = 1.23
+
+    - Chance: 20%:
+        WeaponDefense = 1.24
+
+    - Chance: 12.5%:
+        WeaponDefense = 1.24
+
+    - Chance: 12.5%:
+        WeaponDefense = 1.25
+
+    - Chance: 7.5%:
+        WeaponDefense = 1.25
+
+    - Chance: 5%:
+        WeaponDefense = 1.26
+
+    - Chance: 2.5%:
+        WeaponDefense = 1.27
+

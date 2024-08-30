@@ -81,35 +81,10 @@ namespace ACE.Server.WorldObjects
             }
 
             ValHeelAbilityManager(this);
-            CheckClaimableLandblock(Session);
 
             if(AmIHome)
                 HandleAmIHome(Session);
             
-        }
-
-        public static void CheckClaimableLandblock(Session session)
-        {
-            var player = session.Player;
-
-            if (player.IsOnClaimableLandblock)
-            {
-                if (!player.ClaimableLandblock)
-                {
-                    CommandHandlerHelper.WriteOutputInfo(session, $"You have entered a player community region.", ChatMessageType.Broadcast);
-                    player.ApplyVisualEffects(PlayScript.VisionUpWhite);
-                    player.ClaimableLandblock = true;
-                }
-            }
-            else if (!player.IsOnClaimableLandblock)
-            {
-                if (player.ClaimableLandblock)
-                {
-                    CommandHandlerHelper.WriteOutputInfo(session, $"You have left the player community region.", ChatMessageType.Broadcast);
-                    player.ApplyVisualEffects(PlayScript.VisionUpWhite);
-                    player.ClaimableLandblock = false;
-                }
-            }
         }
 
         public static void HandleAmIHome(Session session)

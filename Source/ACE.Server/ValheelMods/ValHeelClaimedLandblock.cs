@@ -11,6 +11,10 @@ using System.Collections.Generic;
 using ACE.Server.WorldObjects;
 using ACE.Server.Entity;
 using ACE.Server.Command.Handlers.Processors;
+using Microsoft.VisualBasic;
+using System;
+using ACE.Database;
+using System.Linq;
 
 namespace ACE.Server.ShalebridgeMods
 {
@@ -76,7 +80,8 @@ namespace ACE.Server.ShalebridgeMods
         public static void HandleClaimedLandblock(Session session)
         {
             var player = session.Player;
-            var landblock = session.Player.CurrentLandblock.Id.Landblock;
+            var landblock = session.Player.CurrentLandblock;
+            var landblockId = session.Player.CurrentLandblock.Id.Landblock;
             var item = player.GetInventoryItemsOfWCID(803296);
 
             session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
@@ -86,7 +91,7 @@ namespace ACE.Server.ShalebridgeMods
             session.Network.EnqueueSend(new GameMessageSystemChat($"---------------------------", ChatMessageType.x1B));
 
             // This is where the player is given the landblock and the Attunement Crystal is consumed plus the pyreals are removed from the bank account
-            player.ClaimedLandblockId += landblock;
+            player.ClaimedLandblockId += landblockId;
             player.BankedPyreals -= 5000000;
 
             if (item.Count != 0)
@@ -95,22 +100,59 @@ namespace ACE.Server.ShalebridgeMods
                 var guid = wo.Guid;
 
                 player.TryRemoveFromInventoryWithNetworking(guid, out wo, Player.RemoveFromInventoryAction.ConsumeItem);
-                
             }
             
             player.UpdateProperty(player, PropertyInt64.BankedPyreals, player.BankedPyreals);
-            player.UpdateProperty(player, PropertyInt.ClaimedLandblockId, landblock);
+            player.UpdateProperty(player, PropertyInt.ClaimedLandblockId, landblockId);
             player.HasClaimedLandblock = true;
             player.UpdateProperty(player, PropertyBool.HasClaimedLandblock, player.HasClaimedLandblock);
-            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.ClaimedLandblockId, landblock));
+            player.Session.Network.EnqueueSend(new GameMessagePrivateUpdatePropertyInt(player, PropertyInt.ClaimedLandblockId, landblockId));
             player.SaveBiotaToDatabase();
 
-            foreach (var obj in session.Player.PhysicsObj.ObjMaint.GetVisibleObjectsValues())
+            // Kill everything in the landblock
+            foreach (var obj in landblock.GetAllWorldObjectsForDiagnostics())
             {
-                var wo = obj.WeenieObj.WorldObject.Generator;
+                var wo = obj;
 
-                DeveloperContentCommands.RemoveLandblockInstances(session, wo);
-                DeveloperContentCommands.HandleRemoveEnc(session);
+                if (wo is Player) // I don't recall if @smite all would kill players in range, assuming it didn't
+                    continue;
+
+                var useTakeDamage = PropertyManager.GetBool("smite_uses_takedamage").Item;
+
+                if (wo is Creature creature && creature.Attackable)
+                    creature.Smite(session.Player, useTakeDamage);
+            }
+
+            List <WorldObject> woList = new List<WorldObject>(landblock.GetAllWorldObjectsForDiagnostics());
+
+            var landlbockObjects = landblock.GetAllWorldObjectsForDiagnostics();
+
+            DeveloperContentCommands.HandleRemoveEncounters(session, landlbockObjects);
+
+            foreach (var obj in landlbockObjects)
+            {
+                var objLandblock = (ushort)obj.Location.Landblock;
+                var instances = DatabaseManager.World.GetCachedInstancesByLandblock(objLandblock);
+                var guid =obj.Guid.Full;
+
+                var instance = instances.FirstOrDefault(i => i.Guid == guid);
+
+                if (obj.Generator != null)
+                {
+                    if (instance != null)
+                    {
+                        foreach (var link in instance.LandblockInstanceLink)
+                            DeveloperContentCommands.RemoveChild(session, link, instances);
+                    }
+
+                    obj.DeleteObject();
+
+                    instances.Remove(instance);
+
+                    DeveloperContentCommands.SyncInstances(session, objLandblock, instances);
+
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"Removed {(instance.IsLinkChild ? "child " : "")}{obj.WeenieClassId} - {obj.Name} (0x{guid:X8}) from landblock instances", ChatMessageType.Broadcast));
+                }
             }
 
             DeveloperCommands.HandleReloadLandblocks(session);

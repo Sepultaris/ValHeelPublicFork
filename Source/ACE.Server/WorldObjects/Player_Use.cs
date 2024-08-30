@@ -196,42 +196,7 @@ namespace ACE.Server.WorldObjects
 
                     CreateMoveToChain(item, (success) => TryUseItem(item, success));
                 }
-                else if (item.Personal_Struct_Gen_Spawner == true)
-                {
-                    var player = Session.Player;
-
-                    if (player.ClaimedLandblockId == null || player.ClaimedLandblockId == 0)
-                    {
-                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must have a claimed landblock.", ChatMessageType.Help));
-                        SendUseDoneEvent(WeenieError.None);
-                        return;
-                    }
-
-                    if (player.CurrentLandblock.Id.Landblock != player.ClaimedLandblockId)
-                    {
-                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You must be within your own landblock.", ChatMessageType.Help));
-                        SendUseDoneEvent(WeenieError.None);
-                        return;
-                    }
-
-                    if (player.NumberOfPersonalStructures >= 20)
-                    {
-                        player.Session.Network.EnqueueSend(new GameMessageSystemChat($"You have reached your maximum number of structures.", ChatMessageType.Help));
-                        SendUseDoneEvent(WeenieError.None);
-                        return;
-                    }
-
-                    var wcid = item.GeneratorWCID;
-
-                    if (player != null)
-                    {
-                        ValheelMods.ValheelStrauctureGenSpawner.HandleAllegStructure(Session, player, wcid);
-                        player.NumberOfPersonalStructures++;
-                        player.TryConsumeFromInventoryWithNetworking(item);
-                        SendUseDoneEvent(WeenieError.None);
-                        return;
-                    }
-                }
+                
                 else
                     TryUseItem(item);
             }

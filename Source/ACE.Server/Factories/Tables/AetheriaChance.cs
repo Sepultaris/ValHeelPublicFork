@@ -49,6 +49,7 @@ namespace ACE.Server.Factories.Tables.Wcids
             T7_ItemMaxLevel,
             T8_ItemMaxLevel,
             T8_ItemMaxLevel,
+            T8_ItemMaxLevel,
             T8_ItemMaxLevel
         };
 

@@ -120,6 +120,48 @@ namespace ACE.Server.WorldObjects
         }
 
         /// <summary>
+        /// Instantly casts a spell for a WorldObject, with optional redirects for item enchantments
+        /// </summary>
+        public bool TryCastSpell_WithRedirects(Spell spell, WorldObject target, WorldObject itemCaster = null, WorldObject weapon = null, bool isWeaponSpell = false, bool fromProc = false, bool tryResist = true)
+        {
+            if (target is Creature creatureTarget)
+            {
+                var targets = GetNonComponentTargetTypes(spell, creatureTarget);
+
+                if (targets != null)
+                {
+                    foreach (var itemTarget in targets)
+                        TryCastSpell(spell, itemTarget, itemCaster, weapon, isWeaponSpell, fromProc, tryResist);
+
+                    return targets.Count > 0;
+                }
+            }
+
+            TryCastSpell(spell, target, itemCaster, weapon, isWeaponSpell, fromProc, tryResist);
+
+            return true;
+        }
+
+        /// <summary>
+        /// For spells with NonComponentTargetType, returns the list of equipped items matching the target type
+        /// </summary>
+        private static List<WorldObject> GetNonComponentTargetTypes(Spell spell, Creature target)
+        {
+            switch (spell.NonComponentTargetType)
+            {
+                case ItemType.Vestements:               // impen / bane
+                case ItemType.Weapon:                   // blood drinker
+                case ItemType.LockableMagicTarget:      // strengthen lock
+                case ItemType.Caster:                   // hermetic void
+                case ItemType.WeaponOrCaster:           // lure blade, defender cantrip, hermetic link cantrip, mukkir sense
+                case ItemType.Item:                     // essence lull
+
+                    return target.EquippedObjects.Values.Where(i => (i.ItemType & spell.NonComponentTargetType) != 0 && (i.ValidLocations & EquipMask.Selectable) != 0 && i.IsEnchantable).ToList();
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Determines whether a spell will be resisted,
         /// based upon the caster's magic skill vs target's magic defense skill
         /// </summary>

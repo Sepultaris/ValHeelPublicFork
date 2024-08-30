@@ -481,7 +481,29 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
 
 DaggerMS (HeavyWeapons) Mutation #10:
 
-Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 34%:
+        Damage += 82
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 33%:
+        Damage += 83
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 33%:
+        Damage += 84
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+DaggerMS (HeavyWeapons) Mutation #11:
+
+Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
 
     - Chance: 10%:
         DamageVariance = 0.58

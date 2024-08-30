@@ -42,6 +42,9 @@ namespace ACE.Server.WorldObjects
             {
                 if (wo is Creature creature1)
                 {
+                    if (wo.CurrentLandblock == null)
+                        return;
+
                     if (!Creatures.Contains(creature1.Guid))
                     {
                         //Console.WriteLine($"{Name} ({Guid}).OnCollideObject({creature.Name})");
@@ -57,6 +60,9 @@ namespace ACE.Server.WorldObjects
             }
             else
             {
+                if (wo.CurrentLandblock == null)
+                    return;
+
                 if (!(wo is Creature creature))
                     return;
 

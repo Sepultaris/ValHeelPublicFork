@@ -587,9 +587,37 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WieldSkillType = WeaponSkill
         WieldDifficulty = 440
 
-Spear (LightWeapons, FinesseWeapons) Mutation #8 (86 samples): #10:
+Spear (LightWeapons, FinesseWeapons) Mutation #10:
 
-Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 25%:
+        Damage += 90
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 91
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 92
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 93
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+Spear (LightWeapons, FinesseWeapons) Mutation #11:
+
+Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
 
     - Chance: 10%:
         DamageVariance = 0.8

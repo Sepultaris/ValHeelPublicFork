@@ -948,5 +948,27 @@ namespace ACE.Server.WorldObjects
                 }
             }
         }
+
+        public static void SpellSplash(Spell spell, Player player, WorldObject caster, WorldObject target, bool isWeaponSpell)
+        {
+            var warMagicSkill = player.GetCreatureSkill(Skill.WarMagic);
+
+            if (spell.School == MagicSchool.WarMagic && spell.IsHarmful && warMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
+            {
+                //Todo Gate by cooldown
+                var splashCount = ThreadSafeRandom.Next(1, 5);
+                var spalshRange = 6;
+                var targets = ValheelMods.SplashHelper.GetSplashTargets(player, target, splashCount, spalshRange);
+                var itemCaster = isWeaponSpell ? caster : null;
+
+                if (targets.Count < 1)
+                    return;
+
+                for (var i = 0; i < targets.Count; i++)
+                {
+                    player.TryCastSpell_WithRedirects(spell, targets[i], itemCaster, caster, isWeaponSpell, false);
+                }
+            }
+        }
     }
 }

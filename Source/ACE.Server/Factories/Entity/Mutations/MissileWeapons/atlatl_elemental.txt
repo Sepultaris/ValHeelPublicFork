@@ -324,52 +324,106 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
         WieldDifficulty = 390
-        DamageMod = 3.23
+        DamageMod = 3.43
 
     - Chance: 10%:
         ElementalDamageBonus = 36
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
         WieldDifficulty = 390
-        DamageMod = 3.25
+        DamageMod = 3.45
 
     - Chance: 10%:
         ElementalDamageBonus = 37
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
         WieldDifficulty = 390
-        DamageMod = 3.27
+        DamageMod = 3.47
 
     - Chance: 10%:
         ElementalDamageBonus = 38
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
         WieldDifficulty = 390
-        DamageMod = 3.3
+        DamageMod = 3.4
 
     - Chance: 15%:
         ElementalDamageBonus = 39
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
         WieldDifficulty = 390
-        DamageMod = 3.35
+        DamageMod = 3.45
 
     - Chance: 30%:
         ElementalDamageBonus = 40
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
         WieldDifficulty = 390
-        DamageMod = 3.37
+        DamageMod = 3.47
 
     - Chance: 15%:
         ElementalDamageBonus = 41
         WieldRequirements = RawSkill
         WieldSkillType = WeaponSkill
         WieldDifficulty = 390
-        DamageMod = 3.4
+        DamageMod = 3.5
 
     - Chance 100%:
         DamageMod += Random(-0.2, 0.2)
         
+Atlatl (MissileWeapons) Mutation #10 (6,996 samples):
 
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 10%:
+        ElementalDamageBonus = 35
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        DamageMod = 3.43
+
+    - Chance: 10%:
+        ElementalDamageBonus = 36
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        DamageMod = 3.45
+
+    - Chance: 10%:
+        ElementalDamageBonus = 37
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        DamageMod = 3.47
+
+    - Chance: 10%:
+        ElementalDamageBonus = 38
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        DamageMod = 3.4
+
+    - Chance: 15%:
+        ElementalDamageBonus = 39
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        DamageMod = 3.45
+
+    - Chance: 30%:
+        ElementalDamageBonus = 40
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        DamageMod = 3.47
+
+    - Chance: 15%:
+        ElementalDamageBonus = 41
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        DamageMod = 3.5
+
+    - Chance 100%:
+        DamageMod += Random(-0.2, 0.2)
 

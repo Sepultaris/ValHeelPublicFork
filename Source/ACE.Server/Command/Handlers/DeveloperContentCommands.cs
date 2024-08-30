@@ -25,6 +25,7 @@ using ACE.Server.Network;
 using ACE.Server.Network.GameMessages.Messages;
 using ACE.Server.Physics.Extensions;
 using ACE.Server.WorldObjects;
+using ACE.Server.Physics;
 
 namespace ACE.Server.Command.Handlers.Processors
 {
@@ -1768,6 +1769,49 @@ namespace ACE.Server.Command.Handlers.Processors
 
             // this is needed for any generators that don't have GeneratorDestructionType
             DestroyAll(obj);
+        }
+
+        public static void HandleRemoveEncounters(Session session, List<WorldObject> objList)
+        {
+            foreach (var obj in objList)
+            {
+                if (obj == null)
+                    return;
+
+                if (obj.Generator == null)
+                    continue;
+
+                var cellX = (int)obj.Generator.Location.PositionX / 24;
+                var cellY = (int)obj.Location.PositionY / 24;
+
+                var landblock = (ushort)obj.Generator.Location.Landblock;
+
+                // clear any cached encounters for this landblock
+                DatabaseManager.World.ClearCachedEncountersByLandblock(landblock);
+
+                // get existing encounters for this landblock
+                var encounters = DatabaseManager.World.GetCachedEncountersByLandblock(landblock);
+
+                // check for existing encounter
+                var encounter = encounters.FirstOrDefault(i => i.CellX == cellX && i.CellY == cellY && i.WeenieClassId == obj.Generator.WeenieClassId);
+
+                if (encounter == null)
+                {
+                    session.Network.EnqueueSend(new GameMessageSystemChat($"Couldn't find encounter for {obj.Generator.WeenieClassId} - {obj.Name}", ChatMessageType.Broadcast));
+                    return;
+                }
+
+                session.Network.EnqueueSend(new GameMessageSystemChat($"Removing encounter @ landblock {obj.Generator.Location.Landblock:X4}, cellX={cellX}, cellY={cellY}\n{obj.WeenieClassId} - {obj.Name}", ChatMessageType.Broadcast));
+
+                encounters.Remove(encounter);
+
+                SyncEncounters(session, landblock, encounters);
+
+                // this is needed for any generators that don't have GeneratorDestructionType
+                DestroyAll(obj);
+            }
+
+            
         }
 
         /// <summary>

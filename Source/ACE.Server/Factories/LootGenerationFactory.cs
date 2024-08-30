@@ -1202,16 +1202,11 @@ namespace ACE.Server.Factories
                     // other mundane items (mana stones, food/drink, healing kits, lockpicks, and spell components/peas) don't get mutated
             }
 
-            double mirraDrop = PropertyManager.GetDouble("mirra_drop").Item;
+            var dropChance = PropertyManager.GetLong("mirra_drop").Item;
 
-            float mirraDropFloat = (float)mirraDrop;
+            var mirraChance = (long)ThreadSafeRandom.Next(1, dropChance);
 
-            if (mirraDropFloat <= 0f)
-                mirraDropFloat = 40000f;
-
-            var mirraChance = ThreadSafeRandom.Next(0f, mirraDropFloat);
-
-            if (mirraChance <= 1)
+            if (mirraChance >= dropChance && treasureDeath.Tier >= 10)
             {               
                 wo = CreateMirra(treasureDeath, isMagical, true);
             }
@@ -1233,7 +1228,8 @@ namespace ACE.Server.Factories
             (250, 5000), // T7
             (250, 5000), // T8
             (500, 10000),// T9
-            (500, 10000) // T10
+            (500, 10000), // T10
+            (1000, 20000) // T11
         };
 
         private static void MutateCoins(WorldObject wo, TreasureDeath profile)

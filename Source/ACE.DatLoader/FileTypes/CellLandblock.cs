@@ -6,7 +6,7 @@ using System.Numerics;
 namespace ACE.DatLoader.FileTypes
 {
     /// <summary>
-    /// A landblock is divided into 8 x 8 tiles, which means 9 x 9 vertices reporesenting those tiles. 
+    /// A landblock is divided into 8 x 8 tiles, which means 9 x 9 vertices representing those tiles. 
     /// (Draw a grid of 9x9 dots; connect those dots to form squares; you'll have 8x8 squares)
     /// It is also divided in 192x192 units (this is the x and the y)
     /// 

@@ -575,9 +575,37 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WieldSkillType = WeaponSkill
         WieldDifficulty = 440
 
-Axe (LightWeapons, FinesseWeapons) Mutation #10:
+Dagger (LightWeapons, FinesseWeapons) Mutation #10:
 
-Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 25%:
+        Damage += 88
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 89
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 90
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 91
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+Axe (LightWeapons, FinesseWeapons) Mutation #11:
+
+Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
 
     - Chance: 10%:
         DamageVariance = 0.6

@@ -47,6 +47,7 @@ namespace ACE.Server.Factories
                 case 8:
                 case 9:
                 case 10:
+                case 11:
                     maxType = LootTables.ArmorType.OlthoiAlduressaArmor;
                     break;
             }
@@ -147,7 +148,8 @@ namespace ACE.Server.Factories
                         7 => 150,  // In this instance, used for indicating player level, rather than skill level
                         8 => 180,  // In this instance, used for indicating player level, rather than skill level
                         9 => 350,
-                        _ => 500,
+                       10 => 500,
+                        _ => 600,
                     };
                 }
             }
@@ -241,6 +243,58 @@ namespace ACE.Server.Factories
                 TryMutateGearRating(wo, profile, roll);
                 TryRollEquipmentSet(wo, profile, roll);
 
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
+            }
+
+            if (profile.Tier == 11 && armorType == LootTables.ArmorType.MiscClothing && !wo.HasArmorLevel())
+            {
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Apex {oldname}";
+                var maxlevel = 50;
+                var basexp = 10000000000;
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.WieldRequirements, 7);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 10000);
+                wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsBludgeon = Math.Min((wo.ArmorModVsBludgeon ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsAcid = Math.Min((wo.ArmorModVsAcid ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsFire = Math.Min((wo.ArmorModVsFire ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsCold = Math.Min((wo.ArmorModVsCold ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsElectric = Math.Min((wo.ArmorModVsElectric ?? 0) + 6.0f, 6.5f);
+                TryMutateGearRating(wo, profile, roll);
+                TryRollEquipmentSet(wo, profile, roll);
+
+                wo.EquipmentSetId = (EquipmentSet)ThreadSafeRandom.Next((int)EquipmentSet.Soldiers, (int)EquipmentSet.Lightningproof);
+
+                if (wo.EquipmentSetId != null)
+                {
+                    var equipSetId = wo.EquipmentSetId;
+
+                    var equipSetName = equipSetId.ToString();
+
+                    if (equipSetId >= EquipmentSet.Soldiers && equipSetId <= EquipmentSet.Crafters)
+                        equipSetName = equipSetName.TrimEnd('s') + "'s";
+
+                    wo.Name = $"{equipSetName} {wo.Name}";
+                }
             }
 
             if (roll == null)
@@ -374,6 +428,40 @@ namespace ACE.Server.Factories
                 }
                 wo.SetProperty(PropertyBool.Arramoran, true);
                 wo.SetProperty(PropertyInt.WieldDifficulty, 1500);
+            }
+            if (profile.Tier == 11 && wo.HasArmorLevel())
+            {
+                var maxlevel = 100;
+                var basexp = 20000000000;
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Apex {oldname}";
+                var armorlevel = wo.GetProperty(PropertyInt.ArmorLevel);
+                var armorbonus = 3680;
+                int newarmorlevel = (int)(armorlevel + armorbonus);
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.ArmorLevel, newarmorlevel);
+                wo.SetProperty(PropertyInt.Sockets, 5);
+                wo.ArmorModVsPierce = Math.Min((wo.ArmorModVsPierce ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsSlash = Math.Min((wo.ArmorModVsSlash ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsBludgeon = Math.Min((wo.ArmorModVsBludgeon ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsAcid = Math.Min((wo.ArmorModVsAcid ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsFire = Math.Min((wo.ArmorModVsFire ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsCold = Math.Min((wo.ArmorModVsCold ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsElectric = Math.Min((wo.ArmorModVsElectric ?? 0) + 6.0f, 6.5f);
+                wo.ArmorModVsNether = Math.Min((wo.ArmorModVsNether ?? 0) + 6.0f, 6.5f);
+                if (wo.IsShield)
+                {
+                    var hasmagicabsorbtion = ThreadSafeRandom.Next(0.0f, 1.0f);
+                    var absorbtionammount = ThreadSafeRandom.Next(1.15f, 1.20f);
+                    if (hasmagicabsorbtion >= 0f)
+                        wo.SetProperty(PropertyFloat.AbsorbMagicDamage, absorbtionammount);
+                }
+                wo.SetProperty(PropertyInt.WieldDifficulty, 10000);
             }
 
             if (profile.Tier >= 8)
@@ -1158,7 +1246,7 @@ namespace ACE.Server.Factories
                 var oldname = wo.GetProperty(PropertyString.Name);
                 var name = $"Arramoran {oldname}";
                 var maxlevel = 50;
-                var basexp = 50000000000;
+                var basexp = 10000000000;
 
                 wo.ItemMaxLevel = maxlevel;
                 wo.SetProperty(PropertyInt.ItemXpStyle, 1);
@@ -1175,6 +1263,25 @@ namespace ACE.Server.Factories
                     AssignMagic(wo, profile, roll, true);
                 }
 
+            }
+
+            if (wo.GetProperty(PropertyInt.ValidLocations) == 0x8000000 && profile.Tier == 11)
+            {
+
+                var oldname = wo.GetProperty(PropertyString.Name);
+                var name = $"Apex {oldname}";
+                var maxlevel = 100;
+                var basexp = 20000000000;
+
+                wo.ItemMaxLevel = maxlevel;
+                wo.SetProperty(PropertyInt.ItemXpStyle, 1);
+                wo.ItemBaseXp = basexp;
+                wo.SetProperty(PropertyInt64.ItemTotalXp, 0);
+                wo.SetProperty(PropertyBool.Arramoran, true);
+                wo.SetProperty(PropertyString.Name, name);
+                wo.SetProperty(PropertyInt.WieldRequirements, 7);
+                wo.SetProperty(PropertyInt.WieldDifficulty, 10000);
+                AssignMagic(wo, profile, roll, true);
             }
 
             if (roll != null && profile.Tier >= 8)
@@ -1474,6 +1581,33 @@ namespace ACE.Server.Factories
                     wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
                     wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
                     wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(5, 15)));
+                }
+                else if (roll.HasArmorLevel(wo) && profile.Tier == 11)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                }
+                else if (roll.IsClothing && profile.Tier == 11 || roll.IsCloak && profile.Tier == 11)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                }
+                else if (roll.IsJewelry && profile.Tier == 11)
+                {
+                    wo.SetProperty(PropertyInt.GearHealingBoost, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearMaxHealth, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearCritDamage, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearCritDamageResist, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearDamage, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
+                    wo.SetProperty(PropertyInt.GearDamageResist, t10gearRating + (ThreadSafeRandom.Next(1005, 1105)));
                 }
 
                 // T9 non-empowered ratings

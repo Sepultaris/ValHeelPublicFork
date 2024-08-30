@@ -618,6 +618,7 @@ namespace ACE.Server.Managers
                 ("teleport_visibility_fix", new Property<long>(0, "Fixes some possible issues with invisible players and mobs. 0 = default / disabled, 1 = players only, 2 = creatures, 3 = all world objects")),
                 ("interest_period", new Property<long>(30, "Defines the interes payment period in number of days.")),
                 ("pa_damage_multiplier", new Property<long>(2, "This is the damage multiplier for the Power Attack ability.")),
+                ("mirra_drop", new Property<long>(40000, "This is the global mirra drop rate.")),
                 ("ba_defense_multiplier", new Property<long>(4, "This is the damage multiplier for the Power Attack ability."))
                 );
 
@@ -655,7 +656,6 @@ namespace ACE.Server.Managers
                 ("void_pvp_modifier", new Property<double>(0.5, "Scales the amount of damage players take from Void Magic. Defaults to 0.5, as per retail. For earlier content where DRR isn't as readily available, this can be adjusted for balance.")),
                 ("xp_modifier", new Property<double>(1.0, "scales the amount of xp received by players")),
                 ("interest_rate", new Property<double>(0.0373, "determines the global base interest rate")),
-                ("mirra_drop", new Property<double>(40000, "Modifies the mirra drop rate via ratio 1 = 1:1, 2 = 1:2 and so on. Default is 40000.")),
                 ("global_monster_damage_mod", new Property<double>(1.0, "This is the global incoming damage modifier from monsters.")),
                 ("global_player_damage_mod", new Property<double>(1.0, "This is the global outgoing damage modifier from players.")),
                 ("global_pvp_damage_mod", new Property<double>(1.0, "This is the global outgoing damage modifier for pvp.")),

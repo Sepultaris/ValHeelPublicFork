@@ -86,8 +86,6 @@ namespace ACE.Server.WorldObjects
 
             var result = SummonCreature(player, wcid);
 
-
-
             if (result == null || result.Value)
             {
                 // CombatPet devices should always have structure

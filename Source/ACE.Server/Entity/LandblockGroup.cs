@@ -56,6 +56,20 @@ namespace ACE.Server.Entity
         private int width;
         private int height;
 
+        public double Heat { get; set; } = 0;
+        public double LastHeatDecayTick { get; set; } = 0;
+        public double LastHeatTrendTick { get; set; } = 0;
+        public double BaseHeatDecayRate { get; set; } = 7.0;
+
+        public enum HeatTrend
+        {
+            Stable,
+            Increasing,
+            Decreasing
+        }
+
+        public double LastHeat { get; set; } = 0;
+        public HeatTrend CurrentHeatTrend { get; set; } = HeatTrend.Stable;
         public LandblockGroup()
         {
         }

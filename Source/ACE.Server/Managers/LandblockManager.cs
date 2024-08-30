@@ -40,7 +40,7 @@ namespace ACE.Server.Managers
         private static readonly HashSet<Landblock> loadedLandblocks = new HashSet<Landblock>();
 
         private static readonly List<Landblock> landblockGroupPendingAdditions = new List<Landblock>();
-        private static readonly List<LandblockGroup> landblockGroups = new List<LandblockGroup>();
+        public static readonly List<LandblockGroup> landblockGroups = new List<LandblockGroup>();
 
         public static int LandblockGroupsCount
         {

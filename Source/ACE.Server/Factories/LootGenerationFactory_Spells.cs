@@ -183,6 +183,7 @@ namespace ACE.Server.Factories
             0.60f,  // T8
             0.80f,  // T9
             1.00f,  // T10
+            1.00f,  // T11
         };
 
         private static readonly List<float> EnchantmentChances_Caster = new List<float>()
@@ -197,6 +198,7 @@ namespace ACE.Server.Factories
             0.75f,  // T8
             0.90f,  // T9
             1.00f,  // T10
+            1.00f,  // T11
         };
 
         private static int RollNumEnchantments_Armor_Weapon(WorldObject wo, TreasureDeath profile, TreasureRoll roll)
@@ -323,62 +325,293 @@ namespace ACE.Server.Factories
             if (roll.ItemType == TreasureItemType_Orig.ArtObject)
                 return null;
 
-            var numCantrips = CantripChance.RollNumCantrips(profile);
+            var finalCantrips = new List<SpellId>();
 
-            if (numCantrips == 0)
-                return null;
-
-            var numAttempts = numCantrips * 3;
-
-            var cantrips = new HashSet<SpellId>();
-
-            for (var i = 0; i < numAttempts && cantrips.Count < numCantrips; i++)
+            if (profile.Tier != 11)
             {
-                var cantrip = RollCantrip(wo, profile, roll);
+                var numCantrips = CantripChance.RollNumCantrips(profile);
 
-                if (cantrip != SpellId.Undef)
-                    cantrips.Add(cantrip);
-                
-            }
+                if (numCantrips == 0)
+                    return null;
 
-            var finalCantrips = new List<SpellId>();           
+                var numAttempts = numCantrips * 3;
+                var hasLegendary = false;
+                var cantrips = new HashSet<SpellId>();
 
-            var hasLegendary = false;
-
-            foreach (var cantrip in cantrips)
-            {
-                var cantripLevel = CantripChance.RollCantripLevel(profile);
-
-                var cantripLevels = SpellLevelProgression.GetSpellLevels(cantrip);
-
-                if (cantripLevels.Count != 4)
+                for (var i = 0; i < numAttempts && cantrips.Count < numCantrips; i++)
                 {
-                    log.Error($"RollCantrips({wo.Name}, {profile.TreasureType}, {roll.ItemType}) - {cantrip} has {cantripLevels.Count} cantrip levels, expected 4");
-                    continue;
+                    var cantrip = RollCantrip(wo, profile, roll);
+
+                    if (cantrip != SpellId.Undef)
+                        cantrips.Add(cantrip);
+
                 }
 
-                finalCantrips.Add(cantripLevels[cantripLevel - 1]);
+                foreach (var cantrip in cantrips)
+                {
+                    var cantripLevel = CantripChance.RollCantripLevel(profile);
 
-                if (cantripLevel == 4)
-                    hasLegendary = true;
-            }
+                    var cantripLevels = SpellLevelProgression.GetSpellLevels(cantrip);
 
-            // if a legendary cantrip dropped on this item
-            if (hasLegendary)
-            {
-                // and if the item has a level requirement, ensure the level requirement is at least 180
-                // if the item does not already contain a level requirement, don't add one?
+                    if (cantripLevels.Count != 4)
+                    {
+                        log.Error($"RollCantrips({wo.Name}, {profile.TreasureType}, {roll.ItemType}) - {cantrip} has {cantripLevels.Count} cantrip levels, expected 4");
+                        continue;
+                    }
 
-                if (wo.WieldRequirements == WieldRequirement.Level && wo.WieldDifficulty < 180)
-                    wo.WieldDifficulty = 180;
+                    finalCantrips.Add(cantripLevels[cantripLevel - 1]);
 
-                if (wo.WieldRequirements2 == WieldRequirement.Level && wo.WieldDifficulty2 < 180)
-                    wo.WieldDifficulty2 = 180;
+                    if (cantripLevel == 4)
+                        hasLegendary = true;
+                }
+
+                // if a legendary cantrip dropped on this item
+                if (hasLegendary)
+                {
+                    // and if the item has a level requirement, ensure the level requirement is at least 180
+                    // if the item does not already contain a level requirement, don't add one?
+
+                    if (wo.WieldRequirements == WieldRequirement.Level && wo.WieldDifficulty < 180)
+                        wo.WieldDifficulty = 180;
+
+                    if (wo.WieldRequirements2 == WieldRequirement.Level && wo.WieldDifficulty2 < 180)
+                        wo.WieldDifficulty2 = 180;
+                }
             }
 
             var prodSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
             var secondProdSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
+            var thirdProdSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
+            var fourthProdSpell = (SpellId)ThreadSafeRandom.Next((int)SpellId.AlchemyMasteryRare, (int)SpellId.WeaponExpertiseRare);
             var twoprods = ThreadSafeRandom.Next(0.00f, 1.00f);
+            var fourprods = ThreadSafeRandom.Next(0.00f, 1.00f);
+
+            List<SpellId> meleeWeaponProds = new List<SpellId>()
+            {
+                SpellId.AlchemyMasteryRare,
+                SpellId.ArcaneEnlightenmentRare,
+                SpellId.ArmorExpertiseRare,
+                SpellId.BloodDrinkerRare,
+                SpellId.CookingMasteryRare,
+                SpellId.CoordinationRare,
+                SpellId.CreatureEnchantmentMasteryRare,
+                SpellId.DeceptionMasteryRare,
+                SpellId.DefenderRare,
+                SpellId.EnduranceRare,
+                SpellId.FealtyRare,
+                SpellId.FletchingMasteryRare,
+                SpellId.FocusRare,
+                SpellId.HealingMasteryRare,
+                SpellId.HeartSeekerRare,
+                SpellId.ItemEnchantmentMasteryRare,
+                SpellId.ItemExpertiseRare,
+                SpellId.JumpMasteryRare,
+                SpellId.LeadershipMasteryRare,
+                SpellId.LifeMagicMasteryRare,
+                SpellId.LockpickMasteryRare,
+                SpellId.MagicItemExpertiseRare,
+                SpellId.MagicResistanceRare,
+                SpellId.ManaRenewalRare,
+                SpellId.MonsterAttunementRare,
+                SpellId.PersonAttunementRare,
+                SpellId.QuicknessRare,
+                SpellId.RegenerationRare,
+                SpellId.RejuvenationRare,
+                SpellId.SelfRare,
+                SpellId.SprintRare,
+                SpellId.StrengthRare,
+                SpellId.SwiftKillerRare,
+                SpellId.WeaponExpertiseRare,
+            };
+
+            List<SpellId> missileWeaponProds = new List<SpellId>()
+            {
+                SpellId.AlchemyMasteryRare,
+                SpellId.ArcaneEnlightenmentRare,
+                SpellId.ArmorExpertiseRare,
+                SpellId.BloodDrinkerRare,
+                SpellId.CookingMasteryRare,
+                SpellId.CoordinationRare,
+                SpellId.DeceptionMasteryRare,
+                SpellId.DefenderRare,
+                SpellId.EnduranceRare,
+                SpellId.FealtyRare,
+                SpellId.FletchingMasteryRare,
+                SpellId.FocusRare,
+                SpellId.HealingMasteryRare,
+                SpellId.HeartSeekerRare,
+                SpellId.ItemExpertiseRare,
+                SpellId.JumpMasteryRare,
+                SpellId.LeadershipMasteryRare,
+                SpellId.LockpickMasteryRare,
+                SpellId.MagicItemExpertiseRare,
+                SpellId.MagicResistanceRare,
+                SpellId.MonsterAttunementRare,
+                SpellId.PersonAttunementRare,
+                SpellId.QuicknessRare,
+                SpellId.RegenerationRare,
+                SpellId.RejuvenationRare,
+                SpellId.SelfRare,
+                SpellId.SprintRare,
+                SpellId.StrengthRare,
+                SpellId.SwiftKillerRare,
+                SpellId.WeaponExpertiseRare,
+            };
+
+            List<SpellId> casterProds = new List<SpellId>()
+            {
+                SpellId.AlchemyMasteryRare,
+                SpellId.ArcaneEnlightenmentRare,
+                SpellId.ArmorExpertiseRare,
+                SpellId.CookingMasteryRare,
+                SpellId.CoordinationRare,
+                SpellId.CreatureEnchantmentMasteryRare,
+                SpellId.DeceptionMasteryRare,
+                SpellId.DefenderRare,
+                SpellId.EnduranceRare,
+                SpellId.FealtyRare,
+                SpellId.FletchingMasteryRare,
+                SpellId.FocusRare,
+                SpellId.HealingMasteryRare,
+                SpellId.HermeticLinkRare,
+                SpellId.ItemEnchantmentMasteryRare,
+                SpellId.ItemExpertiseRare,
+                SpellId.JumpMasteryRare,
+                SpellId.LeadershipMasteryRare,
+                SpellId.LifeMagicMasteryRare,
+                SpellId.LockpickMasteryRare,
+                SpellId.MagicItemExpertiseRare,
+                SpellId.MagicResistanceRare,
+                SpellId.ManaConvertMasteryRare,
+                SpellId.ManaRenewalRare,
+                SpellId.MonsterAttunementRare,
+                SpellId.PersonAttunementRare,
+                SpellId.QuicknessRare,
+                SpellId.RegenerationRare,
+                SpellId.RejuvenationRare,
+                SpellId.SelfRare,
+                SpellId.SpiritDrinkerRare,
+                SpellId.SprintRare,
+                SpellId.StrengthRare,
+                SpellId.WarMagicMasteryRare,
+                SpellId.WeaponExpertiseRare,
+            };
+
+            List<SpellId> armorProds = new List<SpellId>()
+            {
+                SpellId.AcidBaneRare,
+                SpellId.AlchemyMasteryRare,
+                SpellId.ArcaneEnlightenmentRare,
+                SpellId.ArmorExpertiseRare,
+                SpellId.ArmorRare,
+                SpellId.AxeMasteryRare,
+                SpellId.BladeBaneRare,
+                SpellId.BludgeonBaneRare,
+                SpellId.BowMasteryRare,
+                SpellId.CookingMasteryRare,
+                SpellId.CoordinationRare,
+                SpellId.CreatureEnchantmentMasteryRare,
+                SpellId.CrossbowMasteryRare,
+                SpellId.DaggerMasteryRare,
+                SpellId.DeceptionMasteryRare,
+                SpellId.DefenderRare,
+                SpellId.EnduranceRare,
+                SpellId.FealtyRare,
+                SpellId.FlameBaneRare,
+                SpellId.FletchingMasteryRare,
+                SpellId.FocusRare,
+                SpellId.FrostBaneRare,
+                SpellId.HealingMasteryRare,
+                SpellId.ImpregnabilityRare,
+                SpellId.InvulnerabilityRare,
+                SpellId.ItemEnchantmentMasteryRare,
+                SpellId.ItemExpertiseRare,
+                SpellId.JumpMasteryRare,
+                SpellId.LeadershipMasteryRare,
+                SpellId.LifeMagicMasteryRare,
+                SpellId.LightningBaneRare,
+                SpellId.LockpickMasteryRare,
+                SpellId.MaceMasteryRare,
+                SpellId.MagicItemExpertiseRare,
+                SpellId.MagicResistanceRare,
+                SpellId.ManaConvertMasteryRare,
+                SpellId.ManaRenewalRare,
+                SpellId.MonsterAttunementRare,
+                SpellId.PersonAttunementRare,
+                SpellId.PiercingBaneRare,
+                SpellId.QuicknessRare,
+                SpellId.RegenerationRare,
+                SpellId.RejuvenationRare,
+                SpellId.SelfRare,
+                SpellId.SpearMasteryRare,
+                SpellId.SprintRare,
+                SpellId.StaffMasteryRare,
+                SpellId.StrengthRare,
+                SpellId.SwordMasteryRare,
+                SpellId.ThrownWeaponMasteryRare,
+                SpellId.UnarmedCombatMasteryRare,
+                SpellId.WarMagicMasteryRare,
+                SpellId.WeaponExpertiseRare,
+            };
+
+            List<SpellId> jewelryProds = new List<SpellId>()
+            {
+                SpellId.AcidBaneRare,
+                SpellId.AlchemyMasteryRare,
+                SpellId.ArcaneEnlightenmentRare,
+                SpellId.ArmorExpertiseRare,
+                SpellId.ArmorRare,
+                SpellId.AxeMasteryRare,
+                SpellId.BladeBaneRare,
+                SpellId.BludgeonBaneRare,
+                SpellId.BowMasteryRare,
+                SpellId.CookingMasteryRare,
+                SpellId.CoordinationRare,
+                SpellId.CreatureEnchantmentMasteryRare,
+                SpellId.CrossbowMasteryRare,
+                SpellId.DaggerMasteryRare,
+                SpellId.DeceptionMasteryRare,
+                SpellId.DefenderRare,
+                SpellId.EnduranceRare,
+                SpellId.FealtyRare,
+                SpellId.FlameBaneRare,
+                SpellId.FletchingMasteryRare,
+                SpellId.FocusRare,
+                SpellId.FrostBaneRare,
+                SpellId.HealingMasteryRare,
+                SpellId.ImpenetrabilityRare,
+                SpellId.ImpregnabilityRare,
+                SpellId.InvulnerabilityRare,
+                SpellId.ItemEnchantmentMasteryRare,
+                SpellId.ItemExpertiseRare,
+                SpellId.JumpMasteryRare,
+                SpellId.LeadershipMasteryRare,
+                SpellId.LifeMagicMasteryRare,
+                SpellId.LightningBaneRare,
+                SpellId.LockpickMasteryRare,
+                SpellId.MaceMasteryRare,
+                SpellId.MagicItemExpertiseRare,
+                SpellId.MagicResistanceRare,
+                SpellId.ManaConvertMasteryRare,
+                SpellId.ManaRenewalRare,
+                SpellId.MonsterAttunementRare,
+                SpellId.PersonAttunementRare,
+                SpellId.PiercingBaneRare,
+                SpellId.QuicknessRare,
+                SpellId.RegenerationRare,
+                SpellId.RejuvenationRare,
+                SpellId.SelfRare,
+                SpellId.SpearMasteryRare,
+                SpellId.SprintRare,
+                SpellId.StaffMasteryRare,
+                SpellId.StrengthRare,
+                SpellId.SwiftKillerRare,
+                SpellId.SwordMasteryRare,
+                SpellId.ThrownWeaponMasteryRare,
+                SpellId.UnarmedCombatMasteryRare,
+                SpellId.WarMagicMasteryRare,
+                SpellId.WeaponExpertiseRare,
+            };
 
             // Tier 10 prod rolls
             if (profile.Tier == 10)
@@ -409,6 +642,102 @@ namespace ACE.Server.Factories
                 if (prodSpell == SpellId.Undef)
                     RollCantrips(wo, profile, roll);
             }
+
+            if (profile.Tier == 11)
+            {
+                if (wo.ItemType == ItemType.Armor || wo.ItemType == ItemType.Clothing)
+                {
+                    prodSpell = SpellId.ImpenetrabilityRare;
+                    finalCantrips.Add(prodSpell);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        prodSpell = armorProds[ThreadSafeRandom.Next(0, armorProds.Count - 1)];
+                        finalCantrips.Add(prodSpell);
+                    }
+                }
+                if (wo.ItemType == ItemType.MeleeWeapon)
+                {
+                    switch (wo.WieldSkillType)
+                    {
+                        case 44:
+                            prodSpell = SpellId.SwordMasteryRare;
+                            finalCantrips.Add(prodSpell);
+                            break;
+                        case 45:
+                            prodSpell = SpellId.AxeMasteryRare;
+                            finalCantrips.Add(prodSpell);
+                            break;
+                        case 46:
+                            prodSpell = SpellId.DaggerMasteryRare;
+                            finalCantrips.Add(prodSpell);
+                            break;
+                        case 41:
+                            prodSpell = SpellId.TwoHandedMasteryRare;
+                            finalCantrips.Add(prodSpell);
+                            break;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        prodSpell = meleeWeaponProds[ThreadSafeRandom.Next(0, meleeWeaponProds.Count - 1)];
+                        finalCantrips.Add(prodSpell);
+                    }
+                }
+                if (wo.ItemType == ItemType.MissileWeapon)
+                {
+                    switch (wo.W_WeaponType)
+                    {
+                        case WeaponType.Bow:
+                            prodSpell = SpellId.BowMasteryRare;
+                            finalCantrips.Add(prodSpell);
+                            break;
+                        case WeaponType.Crossbow:
+                            prodSpell = SpellId.CrossbowMasteryRare;
+                            finalCantrips.Add(prodSpell);
+                            break;
+                        case WeaponType.Thrown:
+                            prodSpell = SpellId.ThrownWeaponMasteryRare;
+                            finalCantrips.Add(prodSpell);
+                            break;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        prodSpell = missileWeaponProds[ThreadSafeRandom.Next(0, missileWeaponProds.Count - 1)];
+                        finalCantrips.Add(prodSpell);
+                    }
+                }
+                if (wo.ItemType == ItemType.Caster)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        prodSpell = casterProds[ThreadSafeRandom.Next(0, casterProds.Count - 1)];
+                        finalCantrips.Add(prodSpell);
+                    }
+                }
+                if (wo.ItemType == ItemType.Jewelry)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        prodSpell = jewelryProds[ThreadSafeRandom.Next(0, jewelryProds.Count - 1)];
+                        finalCantrips.Add(prodSpell);
+                    }
+                }
+                if (prodSpell == SpellId.Undef)
+                    RollCantrips(wo, profile, roll);
+            }
+
+            //check for duplicate spells and reroll if necessary
+            for (int i = 0; i < finalCantrips.Count; i++)
+            {
+                for (int j = i + 1; j < finalCantrips.Count; j++)
+                {
+                    if (finalCantrips[i] == finalCantrips[j])
+                    {
+                        finalCantrips.Clear();
+                        RollCantrips(wo, profile, roll);
+                    }
+                }
+            }
+
             return finalCantrips;
         }
 

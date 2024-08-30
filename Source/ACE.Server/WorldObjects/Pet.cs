@@ -60,7 +60,7 @@ namespace ACE.Server.WorldObjects
                 var playerRadius = player.PhysicsObj.GetPhysicsRadius();
                 var petRadius = GetPetRadius();
 
-                var spawnDist = playerRadius + petRadius + MinDistance;
+                var spawnDist = playerRadius + 2;
 
                 Location = player.Location.InFrontOf(spawnDist, true);
 

@@ -420,3 +420,31 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
     - Chance: 2.5%:
         WeaponDefense = 1.31
 
+Staff (HeavyWeapons, LightWeapons, FinesseWeapons) Mutation #18:
+		
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 25%:
+        WeaponDefense = 1.26
+
+    - Chance: 15%:
+        WeaponDefense = 1.27
+
+    - Chance: 20%:
+        WeaponDefense = 1.28
+
+    - Chance: 12.5%:
+        WeaponDefense = 1.28
+
+    - Chance: 12.5%:
+        WeaponDefense = 1.29
+
+    - Chance: 7.5%:
+        WeaponDefense = 1.29
+
+    - Chance: 5%:
+        WeaponDefense = 1.30
+
+    - Chance: 2.5%:
+        WeaponDefense = 1.31
+

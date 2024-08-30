@@ -186,6 +186,22 @@ namespace ACE.Server.Factories.Tables
             1.00f,
         };
 
+        private static readonly List<float> T11_QualityChances = new List<float>()
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.10f,
+            0.25f,
+            0.50f,
+            0.75f,
+            0.90f,
+            1.00f,
+        };
+
         /// <summary>
         /// Returns the quality chance tables for a tier
         /// </summary>
@@ -214,6 +230,8 @@ namespace ACE.Server.Factories.Tables
                     return T9_QualityChances;
                 case 10:
                     return T10_QualityChances;
+                case 11:
+                    return T11_QualityChances;
             }
         }
 

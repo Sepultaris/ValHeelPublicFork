@@ -959,23 +959,13 @@ namespace ACE.Server.WorldObjects
                 {
                     IsDamageBuffed = true;
                 }
-                
-                //Todo: move this to the ability manager.
-                if (spell.School == MagicSchool.WarMagic && spell.IsHarmful && warMagicSkill.AdvancementClass > SkillAdvancementClass.Trained)
+
+                var splashRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
+
+                if (splashRoll < 0.25f)
                 {
-                    //Todo Gate by cooldown
-                    var splashCount = ThreadSafeRandom.Next(1, 5);
-                    var spalshRange = 6;
-                    var targets = ValheelMods.SplashHelper.GetSplashTargets(this, target, splashCount, spalshRange);
-
-                    if (targets.Count < 1)
-                        return;
-
-                    for (var i = 0; i < targets.Count; i++)
-                    {
-                        TryCastSpell(spell, targets[i], itemCaster, caster, isWeaponSpell, false);
-                    }
-                }          
+                    SpellSplash(spell, this, caster, target, isWeaponSpell);
+                }  
             }
 
             if (IsSneaking == true)

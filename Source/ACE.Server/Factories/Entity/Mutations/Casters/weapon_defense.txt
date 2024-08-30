@@ -238,9 +238,9 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
     - Chance: 2%:
         WeaponDefense = 1.25
 
-Unarmed (HeavyWeapons, LightWeapons, FinesseWeapons) Mutation #17:
+Caster Mutation #10 (1357 samples):
 		
-Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
 
     - Chance: 25%:
         WeaponDefense = 1.28

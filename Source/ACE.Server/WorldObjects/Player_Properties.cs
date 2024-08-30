@@ -1881,6 +1881,12 @@ namespace ACE.Server.WorldObjects
             set { if (value == 0) RemoveProperty(PropertyInt.NumberOfPersonalStructures); else SetProperty(PropertyInt.NumberOfPersonalStructures, value); }
         }
 
+        public double LootGoblinTimeStamp
+        {
+            get => (double)(GetProperty(PropertyFloat.LootGoblinTimeStamp) ?? 0.0);
+            set { if (value == 0.0) RemoveProperty(PropertyFloat.LootGoblinTimeStamp); else SetProperty(PropertyFloat.LootGoblinTimeStamp, value); }
+        }
+
         /// <summary>
         /// Returns player's augmentation resistance for damage type
         /// </summary>

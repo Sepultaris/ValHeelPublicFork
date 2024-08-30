@@ -47,7 +47,6 @@ namespace ACE.Server.Entity
         public static float MaxObjectRange { get; } = 192f;
         public static float MaxObjectGhostRange { get; } = 250f;
 
-
         public LandblockId Id { get; }
 
         /// <summary>

@@ -2291,7 +2291,7 @@ namespace ACE.Server.Command.Handlers
 
             if ((int)wo.ItemType == 2304)
             {
-                LootGenerationFactory.MutateMirra(wo, profile, true);
+                LootGenerationFactory.MutateMirra(wo);
             }
         }
 

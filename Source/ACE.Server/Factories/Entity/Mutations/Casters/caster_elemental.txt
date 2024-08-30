@@ -217,3 +217,22 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
         WieldRequirements = RawSkill
         WieldDifficulty = 390
 
+Caster (Elemental) Mutation #10 (1,585 samples):
+
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 34%:
+        ElementalDamageMod = 1.22
+        WieldRequirements = RawSkill
+        WieldDifficulty = 390
+
+    - Chance: 33%:
+        ElementalDamageMod = 1.23
+        WieldRequirements = RawSkill
+        WieldDifficulty = 390
+
+    - Chance: 33%:
+        ElementalDamageMod = 1.24
+        WieldRequirements = RawSkill
+        WieldDifficulty = 390
+

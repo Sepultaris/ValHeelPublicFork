@@ -29,6 +29,7 @@ using ACE.Server.WorldObjects.Managers;
 using Character = ACE.Database.Models.Shard.Character;
 using MotionTable = ACE.DatLoader.FileTypes.MotionTable;
 using ACE.DatLoader.Entity;
+using System.IO;
 
 namespace ACE.Server.WorldObjects
 {

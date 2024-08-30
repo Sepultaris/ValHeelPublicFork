@@ -17,7 +17,7 @@ namespace ACE.Server.Factories
 
             //var wcid = MirraChance.Roll(profile);
 
-            var wo = WorldObjectFactory.CreateNewWorldObject((uint)wcid);
+            var wo = WorldObjectFactory.CreateNewWorldObject(wcid);
 
             var levelRoll = ThreadSafeRandom.Next(0, 1000);
 
@@ -35,7 +35,7 @@ namespace ACE.Server.Factories
                 wo.Level = 5;
             }
 
-            MutatePolishedMirra(wo);
+            MutateMirra(wo);
 
             return wo;
         }
@@ -51,7 +51,7 @@ namespace ACE.Server.Factories
             
             //var wcid = MirraChance.Roll(profile);
 
-            var wo = WorldObjectFactory.CreateNewWorldObject((uint)wcid);
+            var wo = WorldObjectFactory.CreateNewWorldObject(wcid);
 
             var chance = ThreadSafeRandom.Next(0.00f, 1.00f);
 
@@ -68,7 +68,7 @@ namespace ACE.Server.Factories
                 return null;
 
             if (wo != null && mutate)
-                MutateMirra(wo, profile, isMagical);
+                MutateMirra(wo);
 
             return wo;
         }
@@ -100,16 +100,10 @@ namespace ACE.Server.Factories
             else return 1; //default
         }
 
-
-        public static void MutateMirra(WorldObject wo, TreasureDeath profile, bool isMagical = true)
+        public static void MutateMirra(WorldObject wo)
         {
-            if (profile != null && profile.Tier < 10)
-            {
-                return;
-            }
-            else
-
-            wo.Level = Roll_MirraLevel(wo);
+            if (wo.Level == null)
+                wo.Level = Roll_MirraLevel(wo);
  
             if (wo.WeenieClassId == 801966)
             {
@@ -147,11 +141,10 @@ namespace ACE.Server.Factories
                 }
 
             }
-            if (wo.WeenieClassId == 801967)
+            else if (wo.WeenieClassId == 801967)
             {
                 var damageBonus = ThreadSafeRandom.Next(0, 100);
 
-                wo.MirraWeaponBonus = damageBonus;
                 wo.UiEffects = UiEffects.Magical;
                 wo.ItemUseable = Usable.SourceContainedTargetContained;
                 wo.TargetType = ItemType.MeleeWeapon;
@@ -185,7 +178,7 @@ namespace ACE.Server.Factories
                     wo.MirraWeaponBonus = 100;
                 }
             }
-            if (wo.WeenieClassId == 801968)
+            else if (wo.WeenieClassId == 801968)
             {                
                 wo.UiEffects = UiEffects.Magical;
                 wo.ItemUseable = Usable.SourceContainedTargetContained;
@@ -222,7 +215,7 @@ namespace ACE.Server.Factories
                 }
                               
             }
-            if (wo.WeenieClassId == 801969)
+            else if (wo.WeenieClassId == 801969)
             {
                 var resistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 1.00f);
 
@@ -261,7 +254,7 @@ namespace ACE.Server.Factories
 
                 }
             }
-            if (wo.WeenieClassId == 801970)
+            else if (wo.WeenieClassId == 801970)
             {
                 var resistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 1.00f);
 
@@ -300,7 +293,7 @@ namespace ACE.Server.Factories
 
                 }
             }
-            if (wo.WeenieClassId == 801971)
+            else if (wo.WeenieClassId == 801971)
             {
                 var resistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 1.00f);
 
@@ -339,7 +332,7 @@ namespace ACE.Server.Factories
 
                 }
             }
-            if (wo.WeenieClassId == 801972)
+            else if (wo.WeenieClassId == 801972)
             {
                 var resistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 1.00f);
 
@@ -378,7 +371,7 @@ namespace ACE.Server.Factories
 
                 }
             }
-            if (wo.WeenieClassId == 801973)
+            else if (wo.WeenieClassId == 801973)
             {
                 var resistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 1.00f);
 
@@ -417,7 +410,7 @@ namespace ACE.Server.Factories
 
                 }
             }
-            if (wo.WeenieClassId == 801974)
+            else if (wo.WeenieClassId == 801974)
             {
                 var resistanceBonus = (float)ThreadSafeRandom.Next(0.10f, 1.00f);
 
@@ -456,7 +449,7 @@ namespace ACE.Server.Factories
 
                 }
             }
-            if (wo.WeenieClassId == 801975)
+            else if (wo.WeenieClassId == 801975)
             {
                 var damageBonus = (float)ThreadSafeRandom.Next(0.00f, 1.00f);
 
@@ -496,7 +489,7 @@ namespace ACE.Server.Factories
                 }
 
             }
-            if (wo.WeenieClassId == 801976)
+            else if (wo.WeenieClassId == 801976)
             {
                 var damageBonus = (float)ThreadSafeRandom.Next(0.00f, 1.00f);
 
@@ -535,7 +528,7 @@ namespace ACE.Server.Factories
 
                 }
             }
-            if (wo.WeenieClassId == 801977)
+            else if (wo.WeenieClassId == 801977)
             {                
                 wo.UiEffects = UiEffects.Magical;
                 wo.ItemUseable = Usable.SourceContainedTargetContained;
@@ -571,6 +564,7 @@ namespace ACE.Server.Factories
 
                 }
             }
+            else return;
 
         }
 

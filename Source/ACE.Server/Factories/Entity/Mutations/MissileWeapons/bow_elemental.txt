@@ -386,4 +386,72 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
     - Chance 100%:
         DamageMod += Random(-0.2, 0.2)
 
+Bow (MissileWeapons) Mutation #10 (6,996 samples):
+
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 10%:
+        ElementalDamageBonus = 33
+        DamageMod = 3.23
+
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        
+
+    - Chance: 10%:
+        ElementalDamageBonus = 34
+        DamageMod = 3.25
+
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+       
+
+    - Chance: 10%:
+        ElementalDamageBonus = 35
+        WieldRequirements = RawSkill
+        DamageMod = 3.27
+
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        
+
+    - Chance: 10%:
+        ElementalDamageBonus = 36
+        DamageMod = 3.3
+
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        
+
+    - Chance: 15%:
+        ElementalDamageBonus = 37
+        DamageMod = 3.35
+
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+        
+
+    - Chance: 30%:
+        ElementalDamageBonus = 38
+        DamageMod = 3.37
+
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+
+    - Chance: 15%:
+        ElementalDamageBonus = 39
+        DamageMod = 3.4
+
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 390
+
+    - Chance 100%:
+        DamageMod += Random(-0.2, 0.2)
+
                 

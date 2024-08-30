@@ -274,10 +274,8 @@ namespace ACE.Server.WorldObjects
                     }
                 }
 
-                if (DoMissileAoE)
+                if (IsDps || !IsDps && DoMissileAoE)
                 {
-                    LaunchProjectile(launcher, ammo, target, origin, orientation, velocity);
-
                     // AoE Missile Attack
                     var aoeRoll = ThreadSafeRandom.Next(0.0f, 1.0f);
 

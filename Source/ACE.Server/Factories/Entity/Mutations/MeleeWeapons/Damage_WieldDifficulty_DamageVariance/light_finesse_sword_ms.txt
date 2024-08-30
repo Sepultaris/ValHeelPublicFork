@@ -388,7 +388,35 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
 
 SwordMS (LightWeapons, FinesseWeapons) Mutation #10:
 
-Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 25%:
+        Damage += 64
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 65
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 66
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 67
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+SwordMS (LightWeapons, FinesseWeapons) Mutation #11:
+
+Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
 
     - Chance: 10%:
         DamageVariance = 0.45

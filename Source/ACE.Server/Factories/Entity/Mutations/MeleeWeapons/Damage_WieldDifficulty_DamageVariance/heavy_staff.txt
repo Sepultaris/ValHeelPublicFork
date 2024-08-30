@@ -661,7 +661,35 @@ Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 1
 
 Staff (HeavyWeapons) Mutation #10:
 
-Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1
+Tier chances: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+    - Chance: 25%:
+        Damage += 96
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 97
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 98
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+    - Chance: 25%:
+        Damage += 99
+        WieldRequirements = RawSkill
+        WieldSkillType = WeaponSkill
+        WieldDifficulty = 440
+
+Staff (HeavyWeapons) Mutation #11:
+
+Tier chances: 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
 
     - Chance: 10%:
         DamageVariance = 0.52
